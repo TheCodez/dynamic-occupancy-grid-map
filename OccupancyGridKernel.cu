@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <thrust/scan.h>
 #include <thrust/device_vector.h>
+#include <thrust/random.h>
 
 #include <thrust/transform.h>
 #include <thrust/functional.h>
@@ -19,42 +20,20 @@ __device__ float separate_newborn_part(float occPred, float occUp, float pB)
 
 __device__ bool is_first_particle(Particle* particle_array, int i) 
 {
-	if (i == 0) 
-	{
-		return true;
-	} 
-	else
-	{
-		Particle& particle = particle_array[i];
-		if (particle_array[i - 1].gridCellIdx != particle.gridCellIdx)
-		{
-			return true;
-		}
-	}
+	return i == 0 || particle_array[i].gridCellIdx != particle_array[i - 1].gridCellIdx;
 }
 
 __device__ bool is_last_particle(Particle* particle_array, int i) 
 {
-	if (i == ARRAY_SIZE(particle_array) - 1)
-	{
-		return true;
-	}
-	else
-	{
-		Particle& particle = particle_array[i];
-		if (particle_array[i - 1].gridCellIdx != particle.gridCellIdx)
-		{
-			return true;
-		}
-	}
+	return i == ARRAY_SIZE(particle_array) - 1 || particle_array[i].gridCellIdx != particle_array[i + 1].gridCellIdx;
 }
 
-__device__ float subtract(float* weight_array, int startIdx, int endIdx)
+__device__ float subtract(float* accum_array, int startIdx, int endIdx)
 {
-	return weight_array[endIdx] - weight_array[startIdx];
+	return accum_array[endIdx] - accum_array[startIdx];
 }
 
-__device__ float  predict_free_mass(GridCell& grid_cell, float occPred, float alpha = 0.9f)
+__device__ float predict_free_mass(GridCell& grid_cell, float occPred, float alpha = 0.9f)
 {
 	return std::min(alpha * grid_cell.freeMass, 1.0f - occPred);
 }
@@ -121,17 +100,30 @@ __device__ float normalize(Particle& particle, GridCell* grid_cell_array, Measur
 __device__ void predict(Particle* particle_array, int i, float pS, const Eigen::Matrix4f transitionMatrix, const Eigen::Vector4f zeta,
 	int width, int height)
 {
-	int size = width * height;
-	int index = size;
-
-	int x = index % width + 0.5f;
-	int y = index / width + 0.5f;
-
-	particle_array[i].state << x, y, 0, 0;
-	particle_array[i].gridCellIdx = index;
-
-	particle_array[i].state = transitionMatrix * particle_array[i].state + Eigen::Vector4f::Random();
+	particle_array[i].state = transitionMatrix * particle_array[i].state + zeta;
 	particle_array[i].weight = pS * particle_array[i].weight;
+
+	float x = particle_array[i].state[0];
+	float y = particle_array[i].state[1];
+
+	if ((x > width - 1 || x < 0)
+		|| (y > height - 1 || y < 0))
+	{
+		// TODO: resolution?
+		int size = width * height;
+
+		thrust::default_random_engine rng;
+		thrust::uniform_int_distribution<int> distIdx(0, width * height);
+
+		int index = distIdx(rng);
+
+		int x = index % width + 0.5f;
+		int y = index / width + 0.5f;
+	}
+
+	x = std::max(std::min((int)x, width - 1), 0);
+	y = std::max(std::min((int)y, height - 1), 0);
+	particle_array[i].gridCellIdx = x + width * y;
 }
 
 template <typename T>
@@ -175,20 +167,20 @@ __device__ void store_weights(float wA, float wUA, GridCell* grid_cell_array, in
 	grid_cell_array[j].wUA = wUA;
 }
 
-__device__ void initialize_new_particle(Particle* birth_particle_array, int i, GridCell* grid_cell_array)
+__device__ void initialize_new_particle(Particle* birth_particle_array, int i, GridCell* grid_cell_array, int width)
 {
-	GridCell& gridCell = grid_cell_array[birth_particle_array[i].gridCellIdx];
-	
-	if (birth_particle_array[i].associated)
-	{
-		// TODO: sample state
-		birth_particle_array[i].weight = gridCell.wA;
-	}
-	else
-	{
-		// TODO: sample state
-		birth_particle_array[i].weight = gridCell.wUA;
-	}
+	int cellIdx = birth_particle_array[i].gridCellIdx;
+	GridCell& gridCell = grid_cell_array[cellIdx];
+
+	thrust::default_random_engine rng;
+	thrust::normal_distribution<float> distVel(0.0f, 4.0f);
+
+	float x = cellIdx % width + 0.5f;
+	float y = cellIdx / width + 0.5f;
+
+	bool associated = birth_particle_array[i].associated;
+	birth_particle_array[i].weight = associated ? gridCell.wA : gridCell.wUA;
+	birth_particle_array[i].state << x, y, distVel(rng), distVel(rng);
 }
 
 __device__ float calc_mean(float* vel_array_accum, int startIdx, int endIdx, float rhoP)
@@ -219,10 +211,31 @@ __device__ void store(GridCell* grid_cell_array, int j, float mean_x_vel, float 
 	grid_cell_array[j].covar_xy_vel = covar_xy_vel;
 }
 
+__global__ void initializationKernel(Particle* particle_array, int width, int height, int size)
+{
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(particle_array); i += blockDim.x * gridDim.x)
+	{
+		int size = width * height;
+
+		thrust::default_random_engine rng;
+		thrust::uniform_int_distribution<int> distIdx(0, size);
+		thrust::normal_distribution<float> distVel(0.0f, 4.0f);
+
+		int index = distIdx(rng);
+
+		float x = index % width + 0.5f;
+		float y = index / width + 0.5f;
+
+		particle_array[i].weight = 1.0f / size;
+		particle_array[i].state << x, y, distVel(rng), distVel(rng);
+	}
+}
+
 __global__ void predictKernel(Particle* particle_array, int width, int height, float pS, const Eigen::Matrix4f transitionMatrix,
 	const Eigen::Vector4f zeta)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(particle_array); i += blockDim.x * gridDim.x) {
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(particle_array); i += blockDim.x * gridDim.x)
+	{
 		predict(particle_array, i, pS, transitionMatrix, zeta, width, height);
 	}
 }
@@ -343,23 +356,24 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 		float wUA = calc_weight_unassoc(nuUA, pA, born_masses_array[j]);
 		store_weights(wA, wUA, grid_cell_array, j);
 
-		for (int i = startIdx; i < startIdx + nuA; i++)
+		for (int i = startIdx; i < startIdx + nuA + 1; i++)
 		{
 			set_cell_idx_A(birth_particle_array, i, j);
 		}
 
-		for (int i = startIdx + nuA; i < endIdx + 1; i++)
+		for (int i = startIdx + nuA + 1; i < endIdx; i++)
 		{
 			set_cell_idx_UA(birth_particle_array, i, j);
 		}
 	}
 }
 
-__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array)
+__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, float* birth_weight_array, int width)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(birth_particle_array); i += blockDim.x * gridDim.x)
 	{
-		initialize_new_particle(birth_particle_array, i, grid_cell_array);
+		initialize_new_particle(birth_particle_array, i, grid_cell_array, width);
+		birth_weight_array[i] = birth_particle_array[i].weight;
 	}
 }
 

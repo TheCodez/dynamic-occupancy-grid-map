@@ -85,6 +85,7 @@ private:
 	Particle* birth_particle_array;
 
 	float* weight_array;
+	float* birth_weight_array;
 	MeasurementCell* meas_cell_array;
 	float* born_masses_array;
 	float* particle_orders_array_accum;
