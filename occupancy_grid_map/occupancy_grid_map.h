@@ -5,20 +5,17 @@
 
 struct GridCell
 {
-	int startIdx;
-	int endIdx;
-	float newBornOccMass;
-	float persOccMass;
-	float freeMass;
-	float occMass;
-	float muA;
-	float muUA;
+	int start_idx;
+	int end_idx;
+	float new_born_occ_mass;
+	float pers_occ_mass;
+	float free_mass;
+	float occ_mass;
+	float mu_A;
+	float mu_UA;
 
-	float wA;
-	float wUA;
-
-	int x;
-	int y;
+	float w_A;
+	float w_UA;
 
 	float mean_x_vel;
 	float mean_y_vel;
@@ -29,20 +26,18 @@ struct GridCell
 
 struct MeasurementCell
 {
-	float freeMass;
-	float occMass;
+	float free_mass;
+	float occ_mass;
 	float likelihood;
-	float pA;
+	float p_A;
 };
 
 struct Particle
 {
-	int gridCellIdx;
+	int grid_cell_idx;
 	float weight;
-
-	Eigen::Vector4f state;
-
 	bool associated;
+	Eigen::Vector4f state;
 };
 
 struct GridParams
@@ -51,11 +46,11 @@ struct GridParams
 	int height;
 	int resolution;
 	int v;
-	int vB;
-	float pS;
-	float processNoisePosition;
-	float processNoiseVelocity;
-	float pB;
+	int vb;
+	float ps;
+	float process_noise_position;
+	float process_noise_velocity;
+	float pb;
 };
 
 class OccupancyGridMap
@@ -64,11 +59,13 @@ public:
 	OccupancyGridMap(const GridParams& params);
 	~OccupancyGridMap();
 
-	void update(float t);
+	void update(float dt);
 
 private:
 
-	void particlePrediction(float t);
+	void initialize();
+
+	void particlePrediction(float dt);
 	void particleAssignment();
 	void gridCellOccupancyUpdate();
 	void updatePersistentParticles();
@@ -98,10 +95,4 @@ private:
 	float* vel_xy_array;
 
 	float* rand_array;
-
-	float pS;
-	float pB;
-
-	int vB;
 };
-
