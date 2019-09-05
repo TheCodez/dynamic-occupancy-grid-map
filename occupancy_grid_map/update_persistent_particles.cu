@@ -76,7 +76,7 @@ void OccupancyGridMap::updatePersistentParticles()
 	thrust::device_vector<float> weightsAccum = accumulate(weight_array);
 	float* weight_array_accum = thrust::raw_pointer_cast(weightsAccum.data());
 
-	updatePersistentParticlesKernel2/*<<<(gridSize + 256 - 1) / 256, 256>>>*/(grid_cell_array, weight_array_accum);
+	updatePersistentParticlesKernel2<<<divUp(ARRAY_SIZE(grid_cell_array), 256), 256>>>(grid_cell_array, weight_array_accum);
 
 	CHECK_ERROR(cudaGetLastError());
 

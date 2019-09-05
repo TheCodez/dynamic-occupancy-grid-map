@@ -1,7 +1,8 @@
 #pragma once
 
 #include <thrust/device_vector.h>
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
+#include "cuda_utils.h"
 
 struct GridCell
 {
@@ -64,6 +65,8 @@ public:
 private:
 
 	void initialize();
+
+public:
 
 	void particlePrediction(float dt);
 	void particleAssignment();

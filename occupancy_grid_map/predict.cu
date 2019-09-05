@@ -1,6 +1,7 @@
 #include "occupancy_grid_map.h"
 #include "cuda_utils.h"
 
+#include <cmath>
 #include <thrust/device_ptr.h>
 #include <thrust/random.h>
 #include <cuda_runtime.h>
@@ -14,8 +15,8 @@ __global__ void predictKernel(Particle* particle_array, int width, int height, f
 		particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
 		particle_array[i].weight = ps * particle_array[i].weight;
 
-		float x = particle_array[i].state[0];
-		float y = particle_array[i].state[1];
+		float x = 0.0f;//particle_array[i].state[0];
+		float y = 0.0f; //particle_array[i].state[1];
 
 		if ((x > width - 1 || x < 0)
 			|| (y > height - 1 || y < 0))
@@ -28,33 +29,35 @@ __global__ void predictKernel(Particle* particle_array, int width, int height, f
 
 			int index = dist_idx(rng);
 
-			int x = index % width + 0.5f;
-			int y = index / width + 0.5f;
+			x = index % width + 0.5f;
+			y = index / width + 0.5f;
 		}
 
-		x = std::max(std::min((int)x, width - 1), 0);
-		y = std::max(std::min((int)y, height - 1), 0);
-		particle_array[i].grid_cell_idx = x + width * y;
+		int pos_x = 0; // max(min((int)x, width - 1), 0);
+		int pos_y = 0; // max(min((int)y, height - 1), 0);
+		particle_array[i].grid_cell_idx = pos_x + width * pos_y;
 	}
 }
 
 void OccupancyGridMap::particlePrediction(float dt)
 {
 	Eigen::Matrix4f transition_matrix;
+	/*
 	transition_matrix << 1, 0, dt, 0,
-						 0, 1, 0, dt,
-						 0, 0, 1, 0,
-						 0, 0, 0, 1;
+                         0, 1, 0, dt,
+                         0, 0, 1, 0,
+                         0, 0, 0, 1;
+	*/
 
 	thrust::default_random_engine rng;
 	thrust::normal_distribution<float> dist_pos(0.0f, params.process_noise_position);
 	thrust::normal_distribution<float> dist_vel(0.0f, params.process_noise_velocity);
 
 	Eigen::Vector4f process_noise;
-	process_noise << dist_pos(rng), dist_pos(rng), dist_vel(rng), dist_vel(rng);
+	//process_noise << dist_pos(rng), dist_pos(rng), dist_vel(rng), dist_vel(rng);
 
 	predictKernel<<<divUp(ARRAY_SIZE(particle_array), 256), 256>>>(particle_array, params.ps, params.width, params.height,
-		transitionMatrix, process_noise);
+		transition_matrix, process_noise);
 
 	CHECK_ERROR(cudaGetLastError());
 }

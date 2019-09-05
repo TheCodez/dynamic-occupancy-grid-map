@@ -39,8 +39,8 @@ __global__ void statisticalMomentsKernel1(Particle* particle_array, float* weigh
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(particle_array); i += blockDim.x * gridDim.x)
 	{
 		float weight = weight_array[i];
-		float vel_x = particle_array[i].state(2);
-		float vel_y = particle_array[i].state(3);
+		float vel_x = 0.0f;//particle_array[i].state(2);
+		float vel_y = 0.0f;//particle_array[i].state(3);
 		vel_x_array[i] = weight * vel_x;
 		vel_y_array[i] = weight * vel_y;
 		vel_x_squared_array[i] = weight * vel_x * vel_x;
@@ -86,7 +86,7 @@ void OccupancyGridMap::statisticalMoments()
 	float* vel_y_squared_array_accum = thrust::raw_pointer_cast(velYSquaredAccum.data());
 	float* vel_xy_array_accum = thrust::raw_pointer_cast(velXYAccum.data());
 
-	statisticalMomentsKernel2/*<<<(gridSize + 256 - 1) / 256, 256>>>*/(grid_cell_array, vel_x_array_accum, vel_y_array_accum,
+	statisticalMomentsKernel2<<<divUp(ARRAY_SIZE(grid_cell_array), 256), 256>>>(grid_cell_array, vel_x_array_accum, vel_y_array_accum,
 		vel_x_squared_array_accum, vel_y_squared_array_accum, vel_xy_array_accum);
 
 	CHECK_ERROR(cudaGetLastError());

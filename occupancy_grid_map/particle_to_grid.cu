@@ -37,17 +37,12 @@ __global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_ce
 
 void OccupancyGridMap::particleAssignment()
 {
-	struct sort_particles
-	{
-		__host__ __device__ bool operator()(Particle x, Particle y)
-		{
-			return x.grid_cell_idx < y.grid_cell_idx;
-		}
-	};
-
 	CHECK_ERROR(cudaDeviceSynchronize());
 	thrust::device_ptr<Particle> particles(particle_array);
-	thrust::sort(particles, particles + ARRAY_SIZE(particle_array), sort_particles());
+	thrust::sort(particles, particles + ARRAY_SIZE(particle_array), GPU_LAMBDA(Particle x, Particle y)
+	{
+		return x.grid_cell_idx < y.grid_cell_idx;
+	});
 
 	particleToGridKernel<<<divUp(ARRAY_SIZE(particle_array), 256), 256>>>(particle_array, grid_cell_array, weight_array);
 

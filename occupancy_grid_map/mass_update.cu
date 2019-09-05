@@ -5,7 +5,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__device__ float predict_free_mass(GridCell& grid_cell, float occPred, float alpha = 0.9f)
+__device__ __host__ float predict_free_mass(GridCell& grid_cell, float occPred, float alpha = 0.9f)
 {
 	return std::min(alpha * grid_cell.free_mass, 1.0f - occPred);
 }
@@ -55,8 +55,8 @@ void OccupancyGridMap::gridCellOccupancyUpdate()
 	thrust::device_vector<float> weightsAccum = accumulate(weight_array);
 	float* weight_array_accum = thrust::raw_pointer_cast(weightsAccum.data());
 
-	gridCellPredictionUpdateKernel/*<<<(gridSize + 256 - 1) / 256, 256>>>*/(grid_cell_array, weight_array_accum, meas_cell_array,
-		born_masses_array, params.pb);
+	gridCellPredictionUpdateKernel<<<divUp(ARRAY_SIZE(grid_cell_array), 256), 256>>>(grid_cell_array, weight_array_accum,
+		meas_cell_array, born_masses_array, params.pb);
 
 	CHECK_ERROR(cudaGetLastError());
 }

@@ -22,7 +22,7 @@ __global__ void initParticlesKernel(Particle* particle_array, int width, int hei
 		float y = index / width + 0.5f;
 
 		particle_array[i].weight = 1.0f / size;
-		particle_array[i].state << x, y, dist_vel(rng), dist_vel(rng);
+		//particle_array[i].state << x, y, dist_vel(rng), dist_vel(rng);
 	}
 }
 

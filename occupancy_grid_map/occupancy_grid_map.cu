@@ -1,11 +1,5 @@
 #include "occupancy_grid_map.h"
 #include "cuda_utils.h"
-#include <thrust/device_ptr.h>
-#include <thrust/sort.h>
-#include <thrust/scan.h>
-#include <thrust/random.h>
-#include <Eigen/Dense>
-
 #include "cuda_runtime.h"
 
 OccupancyGridMap::OccupancyGridMap(const GridParams& params)

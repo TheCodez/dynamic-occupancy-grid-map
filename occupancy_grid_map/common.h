@@ -3,11 +3,11 @@
 #include <thrust/device_vector.h>
 
 template <typename T>
-__device__ __host__ thrust::device_vector<T> accumulate(T* arr)
+__host__ thrust::device_vector<T> accumulate(T* arr)
 {
 	thrust::device_ptr<T> ptr(arr);
 	thrust::device_vector<T> result;
-	thrust::inclusive_scan(ptr, ptr + ARRAY_SIZE(array), result.begin());
+	thrust::inclusive_scan(ptr, ptr + ARRAY_SIZE(arr), result.begin());
 
 	return result;
 }

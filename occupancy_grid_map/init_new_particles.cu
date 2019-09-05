@@ -64,28 +64,18 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 
 	bool associated = birth_particle_array[i].associated;
 	birth_particle_array[i].weight = associated ? grid_cell.w_A : grid_cell.w_UA;
-	birth_particle_array[i].state << x, y, dist_vel(rng), dist_vel(rng);
+	//birth_particle_array[i].state << x, y, dist_vel(rng), dist_vel(rng);
 }
 
 __device__ __host__ void normalize_particle_orders(float* particle_orders_array_accum, int v_B)
 {
-	struct normalize
-	{
-		float max;
-		int vb;
-
-		normalize(float max, int vb) : max(max), vb(vb) {}
-
-		__host__ __device__ float operator()(float x)
-		{
-			return x * (vb / (1.0f * max));
-		}
-	};
-
 	int array_size = ARRAY_SIZE(particle_orders_array_accum);
 	float max = particle_orders_array_accum[array_size - 1];
-	thrust::device_ptr<Particle> particle_orders(particle_orders_array_accum);
-	thrust::transform(particle_orders, particle_orders + ARRAY_SIZE(particle_orders_array_accum), particle_orders, normalize(max, v_B));
+	thrust::device_ptr<float> particle_orders(particle_orders_array_accum);
+	thrust::transform(particle_orders, particle_orders + ARRAY_SIZE(particle_orders_array_accum), particle_orders, GPU_LAMBDA(float x)
+	{
+		return x * (v_B / (1.0f * max));
+	});
 }
 
 __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
@@ -135,7 +125,7 @@ void OccupancyGridMap::initializeNewParticles()
 
 	CHECK_ERROR(cudaGetLastError());
 
-	initNewParticlesKernel2/*<<<(birtParticlesSize + 256 - 1) / 256, 256>>>*/(birth_particle_array, grid_cell_array, birth_weight_array,
+	initNewParticlesKernel2<<<divUp(ARRAY_SIZE(birth_particle_array), 256), 256>>>(birth_particle_array, grid_cell_array, birth_weight_array,
 		params.width);
 
 	CHECK_ERROR(cudaGetLastError());
