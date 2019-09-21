@@ -1,13 +1,13 @@
-#include "occupancy_grid_map.h"
+#include "kernel/mass_update.h"
 #include "common.h"
 #include "cuda_utils.h"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__device__ __host__ float predict_free_mass(GridCell& grid_cell, float occPred, float alpha = 0.9f)
+__device__ float predict_free_mass(GridCell& grid_cell, float occPred, float alpha = 0.9f)
 {
-	return std::min(alpha * grid_cell.free_mass, 1.0f - occPred);
+	return min(alpha * grid_cell.free_mass, 1.0f - occPred);
 }
 
 __device__ float update_o(float occPred, float freePred, const MeasurementCell& meas)
@@ -48,15 +48,4 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, float*
 		born_masses_array[i] = rho_b;
 		store_values(rho_b, rho_p, free_up, occ_up, grid_cell_array, i);
 	}
-}
-
-void OccupancyGridMap::gridCellOccupancyUpdate()
-{
-	thrust::device_vector<float> weightsAccum = accumulate(weight_array);
-	float* weight_array_accum = thrust::raw_pointer_cast(weightsAccum.data());
-
-	gridCellPredictionUpdateKernel<<<divUp(ARRAY_SIZE(grid_cell_array), 256), 256>>>(grid_cell_array, weight_array_accum,
-		meas_cell_array, born_masses_array, params.pb);
-
-	CHECK_ERROR(cudaGetLastError());
 }

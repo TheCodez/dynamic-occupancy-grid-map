@@ -1,4 +1,4 @@
-#include "occupancy_grid_map.h"
+#include "kernel/init_new_particles.h"
 #include "common.h"
 #include "cuda_utils.h"
 
@@ -22,17 +22,17 @@ __device__ void set_cell_idx_UA(Particle* birth_particle_array, int i, int grid_
 
 __device__ int calc_start_idx(float* particle_orders_array_accum, int j)
 {
-	return j > 0 ? (int)particle_orders_array_accum[j - 1] : 0;
+	return j > 0 ? static_cast<int>(particle_orders_array_accum[j - 1]) : 0;
 }
 
 __device__ int calc_end_idx(float* particle_orders_array_accum, int j)
 {
-	return (int)particle_orders_array_accum[j] + 1;
+	return static_cast<int>(particle_orders_array_accum[j]) + 1;
 }
 
 __device__ int calc_num_assoc(int num_new_particles, float p_A)
 {
-	return (int)num_new_particles * p_A;
+	return static_cast<int>(num_new_particles * p_A);
 }
 
 __device__ float calc_weight_assoc(int nuA, float p_A, float born_mass)
@@ -64,7 +64,7 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 
 	bool associated = birth_particle_array[i].associated;
 	birth_particle_array[i].weight = associated ? grid_cell.w_A : grid_cell.w_UA;
-	//birth_particle_array[i].state << x, y, dist_vel(rng), dist_vel(rng);
+	birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 }
 
 __device__ __host__ void normalize_particle_orders(float* particle_orders_array_accum, int v_B)
@@ -112,21 +112,4 @@ __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell
 		initialize_new_particle(birth_particle_array, i, grid_cell_array, width);
 		birth_weight_array[i] = birth_particle_array[i].weight;
 	}
-}
-
-void OccupancyGridMap::initializeNewParticles()
-{
-	thrust::device_vector<float> particleOrdersAccum = accumulate(born_masses_array);
-	float* particle_orders_array_accum = thrust::raw_pointer_cast(particleOrdersAccum.data());
-	normalize_particle_orders(particle_orders_array_accum, params.vb);
-
-	initNewParticlesKernel1<<<divUp(ARRAY_SIZE(particle_array), 256), 256>>>(particle_array, grid_cell_array, meas_cell_array,
-		weight_array, born_masses_array, birth_particle_array, particle_orders_array_accum);
-
-	CHECK_ERROR(cudaGetLastError());
-
-	initNewParticlesKernel2<<<divUp(ARRAY_SIZE(birth_particle_array), 256), 256>>>(birth_particle_array, grid_cell_array, birth_weight_array,
-		params.width);
-
-	CHECK_ERROR(cudaGetLastError());
 }

@@ -1,4 +1,4 @@
-#include "occupancy_grid_map.h"
+#include "kernel/resampling.h"
 #include "common.h"
 #include "cuda_utils.h"
 
@@ -24,12 +24,4 @@ __global__ void resamplingKernel(Particle* particle_array, Particle* particle_ar
 	{
 		particle_array_next[i] = copy_particle(particle_array, birth_particle_array, idx_array_resampled[i]);
 	}
-}
-
-void OccupancyGridMap::resampling()
-{
-	resamplingKernel<<<divUp(ARRAY_SIZE(particle_array), 256), 256>>>(particle_array, particle_array/*_next*/, birth_particle_array,
-		rand_array, nullptr/*idx_array_resampled*/);
-
-	CHECK_ERROR(cudaGetLastError());
 }

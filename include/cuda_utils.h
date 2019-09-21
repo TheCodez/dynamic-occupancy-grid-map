@@ -9,7 +9,7 @@
 
 #define CHECK_ERROR(ans) { checkError((ans), __FILE__, __LINE__); }
 
-__host__ void checkError(cudaError_t code, const char* file, int line)
+static __host__ void checkError(cudaError_t code, const char* file, int line)
 {
 	if (code != cudaSuccess)
 	{
@@ -20,10 +20,4 @@ __host__ void checkError(cudaError_t code, const char* file, int line)
 static inline int divUp(int total, int grain)
 {
 	return (total + grain - 1) / grain;
-}
-
-namespace Eigen 
-{
-	typedef float Matrix4f;
-	typedef	float Vector4f;
 }

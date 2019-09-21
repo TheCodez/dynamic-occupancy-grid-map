@@ -1,4 +1,4 @@
-#include "occupancy_grid_map.h"
+#include "kernel/particle_to_grid.h"
 #include "cuda_utils.h"
 
 #include <thrust/device_ptr.h>
@@ -33,18 +33,4 @@ __global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_ce
 
 		weight_array[i] = particle_array[i].weight;
 	}
-}
-
-void OccupancyGridMap::particleAssignment()
-{
-	CHECK_ERROR(cudaDeviceSynchronize());
-	thrust::device_ptr<Particle> particles(particle_array);
-	thrust::sort(particles, particles + ARRAY_SIZE(particle_array), GPU_LAMBDA(Particle x, Particle y)
-	{
-		return x.grid_cell_idx < y.grid_cell_idx;
-	});
-
-	particleToGridKernel<<<divUp(ARRAY_SIZE(particle_array), 256), 256>>>(particle_array, grid_cell_array, weight_array);
-
-	CHECK_ERROR(cudaGetLastError());
 }

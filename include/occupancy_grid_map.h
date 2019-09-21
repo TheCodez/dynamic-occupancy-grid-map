@@ -1,8 +1,7 @@
 #pragma once
 
-#include <thrust/device_vector.h>
-//#include <Eigen/Dense>
-#include "cuda_utils.h"
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
 
 struct GridCell
 {
@@ -38,16 +37,16 @@ struct Particle
 	int grid_cell_idx;
 	float weight;
 	bool associated;
-	Eigen::Vector4f state;
+	glm::vec4 state;
 };
 
 struct GridParams
 {
 	int width;
 	int height;
-	int resolution;
-	int v;
-	int vb;
+	float resolution;
+	int particle_count;
+	int new_born_particle_count;
 	float ps;
 	float process_noise_position;
 	float process_noise_velocity;
@@ -60,7 +59,9 @@ public:
 	OccupancyGridMap(const GridParams& params);
 	~OccupancyGridMap();
 
-	void update(float dt);
+	void updateMeasurementGrid(float* measurements);
+
+	void update(float dt, float* measurements);
 
 private:
 
@@ -87,6 +88,8 @@ private:
 	float* weight_array;
 	float* birth_weight_array;
 	MeasurementCell* meas_cell_array;
+	float* meas_array;
+
 	float* born_masses_array;
 	float* particle_orders_array_accum;
 

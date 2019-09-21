@@ -1,4 +1,4 @@
-#include "occupancy_grid_map.h"
+#include "kernel/statistical_moments.h"
 #include "common.h"
 #include "cuda_utils.h"
 
@@ -64,30 +64,4 @@ __global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, float* vel_
 		float covar_xy_vel = calc_covariance(vel_xy_array_accum, start_idx, end_idx, rho_p, mean_x_vel, mean_y_vel);
 		store(grid_cell_array, i, mean_x_vel, mean_y_vel, var_x_vel, var_y_vel, covar_xy_vel);
 	}
-}
-
-void OccupancyGridMap::statisticalMoments()
-{
-	statisticalMomentsKernel1<<<divUp(ARRAY_SIZE(particle_array), 256), 256>>>(particle_array, weight_array, vel_x_array,
-		vel_y_array, vel_x_squared_array, vel_y_squared_array, vel_xy_array);
-
-	CHECK_ERROR(cudaGetLastError());
-	CHECK_ERROR(cudaDeviceSynchronize());
-
-	thrust::device_vector<float> velXAccum = accumulate(vel_x_array);
-	thrust::device_vector<float> velYAccum = accumulate(vel_y_array);
-	thrust::device_vector<float> velXSquaredAccum = accumulate(vel_x_squared_array);
-	thrust::device_vector<float> velYSquaredAccum = accumulate(vel_y_squared_array);
-	thrust::device_vector<float> velXYAccum = accumulate(vel_xy_array);
-
-	float* vel_x_array_accum = thrust::raw_pointer_cast(velXAccum.data());
-	float* vel_y_array_accum = thrust::raw_pointer_cast(velYAccum.data());
-	float* vel_x_squared_array_accum = thrust::raw_pointer_cast(velXSquaredAccum.data());
-	float* vel_y_squared_array_accum = thrust::raw_pointer_cast(velYSquaredAccum.data());
-	float* vel_xy_array_accum = thrust::raw_pointer_cast(velXYAccum.data());
-
-	statisticalMomentsKernel2<<<divUp(ARRAY_SIZE(grid_cell_array), 256), 256>>>(grid_cell_array, vel_x_array_accum, vel_y_array_accum,
-		vel_x_squared_array_accum, vel_y_squared_array_accum, vel_xy_array_accum);
-
-	CHECK_ERROR(cudaGetLastError());
 }

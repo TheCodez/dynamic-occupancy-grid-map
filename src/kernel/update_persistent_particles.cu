@@ -1,4 +1,4 @@
-#include "occupancy_grid_map.h"
+#include "kernel/update_persistent_particles.h"
 #include "common.h"
 #include "cuda_utils.h"
 
@@ -64,24 +64,4 @@ __global__ void updatePersistentParticlesKernel3(Particle* particle_array, Measu
 	{
 		weight_array[i] = normalize(particle_array[i], grid_cell_array, meas_cell_array, weight_array[i]);
 	}
-}
-
-void OccupancyGridMap::updatePersistentParticles()
-{
-	updatePersistentParticlesKernel1<<<divUp(ARRAY_SIZE(particle_array), 256), 256>>>(particle_array, meas_cell_array, weight_array);
-
-	CHECK_ERROR(cudaGetLastError());
-	CHECK_ERROR(cudaDeviceSynchronize());
-
-	thrust::device_vector<float> weightsAccum = accumulate(weight_array);
-	float* weight_array_accum = thrust::raw_pointer_cast(weightsAccum.data());
-
-	updatePersistentParticlesKernel2<<<divUp(ARRAY_SIZE(grid_cell_array), 256), 256>>>(grid_cell_array, weight_array_accum);
-
-	CHECK_ERROR(cudaGetLastError());
-
-	updatePersistentParticlesKernel3<<<divUp(ARRAY_SIZE(particle_array), 256), 256>>>(particle_array, meas_cell_array,
-		grid_cell_array, weight_array);
-
-	CHECK_ERROR(cudaGetLastError());
 }
