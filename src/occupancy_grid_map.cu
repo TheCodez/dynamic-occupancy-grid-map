@@ -83,7 +83,7 @@ void OccupancyGridMap::update(float dt, float* measurements)
 	statisticalMoments();
 	resampling();
 
-	CHECK_ERROR(cudaMemcpy(particle_array, particle_array_next, sizeof(particle_array_next), cudaMemcpyDeviceToDevice));
+	CHECK_ERROR(cudaMemcpy(particle_array, particle_array_next, particle_count * sizeof(Particle), cudaMemcpyDeviceToDevice));
 }
 
 void OccupancyGridMap::updateMeasurementGrid(float* measurements)
@@ -249,8 +249,13 @@ void OccupancyGridMap::statisticalMoments()
 
 void OccupancyGridMap::resampling()
 {
+	int* idx_array_resampled;
+	CHECK_ERROR(cudaMalloc(&idx_array_resampled, particle_count * sizeof(int)));
+
 	resamplingKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, particle_array_next,
-		birth_particle_array, rand_array, nullptr/*idx_array_resampled*/, particle_count);
+		birth_particle_array, rand_array, idx_array_resampled, particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
+
+	CHECK_ERROR(cudaFree(idx_array_resampled));
 }
