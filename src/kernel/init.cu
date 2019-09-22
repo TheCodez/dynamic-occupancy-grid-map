@@ -6,7 +6,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__global__ void initParticlesKernel(Particle* particle_array, int width, int height, int particles_size)
+__global__ void initParticlesKernel(Particle* particle_array, int width, int height)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(particle_array); i += blockDim.x * gridDim.x)
 	{
@@ -19,7 +19,7 @@ __global__ void initParticlesKernel(Particle* particle_array, int width, int hei
 		float x = index % width + 0.5f;
 		float y = index / width + 0.5f;
 
-		particle_array[i].weight = 1.0f / particles_size;
+		particle_array[i].weight = 1.0f / ARRAY_SIZE(particle_array);
 		particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 	}
 }

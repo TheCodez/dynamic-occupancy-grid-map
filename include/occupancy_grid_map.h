@@ -83,6 +83,7 @@ private:
 
 	GridCell* grid_cell_array;
 	Particle* particle_array;
+	Particle* particle_array_next;
 	Particle* birth_particle_array;
 
 	float* weight_array;
@@ -101,4 +102,10 @@ private:
 	float* vel_xy_array;
 
 	float* rand_array;
+
+	int grid_cell_count;
+	int particle_count;
+	int new_born_particle_count;
+
+	static int BLOCK_SIZE;
 };

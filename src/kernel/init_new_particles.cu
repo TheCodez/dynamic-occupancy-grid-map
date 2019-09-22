@@ -70,10 +70,11 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 __device__ __host__ void normalize_particle_orders(float* particle_orders_array_accum, int v_B)
 {
 	int array_size = ARRAY_SIZE(particle_orders_array_accum);
-	float max = particle_orders_array_accum[array_size - 1];
 	thrust::device_ptr<float> particle_orders(particle_orders_array_accum);
+
 	thrust::transform(particle_orders, particle_orders + ARRAY_SIZE(particle_orders_array_accum), particle_orders, GPU_LAMBDA(float x)
 	{
+		float max = particle_orders_array_accum[array_size - 1];
 		return x * (v_B / (1.0f * max));
 	});
 }

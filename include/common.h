@@ -5,13 +5,10 @@
 #include <thrust/device_vector.h>
 
 template <typename T>
-static __host__ thrust::device_vector<T> accumulate(T* arr)
+static void accumulate(T* arr, thrust::device_vector<T>& result)
 {
 	thrust::device_ptr<T> ptr(arr);
-	thrust::device_vector<T> result;
-	thrust::inclusive_scan(ptr, ptr + ARRAY_SIZE(arr), result.begin());
-
-	return result;
+	thrust::inclusive_scan(ptr, ptr + result.size(), result.begin());
 }
 
 static __device__ __host__ float subtract(float* accum_array, int start_idx, int end_idx)
