@@ -7,9 +7,9 @@
 #include <device_launch_parameters.h>
 
 __global__ void predictKernel(Particle* particle_array, int width, int height, float ps, const glm::mat4x4 transition_matrix,
-	const glm::vec4 process_noise)
+	const glm::vec4 process_noise, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(particle_array); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
 		particle_array[i].weight = ps * particle_array[i].weight;

@@ -33,9 +33,9 @@ __device__ void store_values(float rhoB, float rhoP, float freeUp, float occUp, 
 }
 
 __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, float* weight_array_accum, MeasurementCell* meas_cell_array,
-	float* born_masses_array, float pb)
+	float* born_masses_array, float pb, int cell_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(grid_cell_array); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		int start_idx = grid_cell_array[i].start_idx;
 		int end_idx = grid_cell_array[i].end_idx;

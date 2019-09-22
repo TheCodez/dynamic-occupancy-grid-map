@@ -34,13 +34,13 @@ __device__ void store(GridCell* grid_cell_array, int j, float mean_x_vel, float 
 }
 
 __global__ void statisticalMomentsKernel1(Particle* particle_array, float* weight_array, float* vel_x_array, float* vel_y_array,
-	float* vel_x_squared_array, float* vel_y_squared_array, float* vel_xy_array)
+	float* vel_x_squared_array, float* vel_y_squared_array, float* vel_xy_array, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(particle_array); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		float weight = weight_array[i];
-		float vel_x = 0.0f;//particle_array[i].state(2);
-		float vel_y = 0.0f;//particle_array[i].state(3);
+		float vel_x = particle_array[i].state[2];
+		float vel_y = particle_array[i].state[3];
 		vel_x_array[i] = weight * vel_x;
 		vel_y_array[i] = weight * vel_y;
 		vel_x_squared_array[i] = weight * vel_x * vel_x;
@@ -50,9 +50,9 @@ __global__ void statisticalMomentsKernel1(Particle* particle_array, float* weigh
 }
 
 __global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, float* vel_x_array_accum, float* vel_y_array_accum,
-	float* vel_x_squared_array_accum, float* vel_y_squared_array_accum, float* vel_xy_array_accum)
+	float* vel_x_squared_array_accum, float* vel_y_squared_array_accum, float* vel_xy_array_accum, int cell_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(grid_cell_array); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		float rho_p = grid_cell_array[i].pers_occ_mass;
 		int start_idx = grid_cell_array[i].start_idx;

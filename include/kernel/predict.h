@@ -4,4 +4,4 @@
 #include <device_launch_parameters.h>
 
 __global__ void predictKernel(Particle* particle_array, int width, int height, float ps, const glm::mat4x4 transition_matrix,
-	const glm::vec4 process_noise);
+	const glm::vec4 process_noise, int particle_count);

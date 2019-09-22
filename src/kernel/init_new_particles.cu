@@ -67,22 +67,21 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 	birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 }
 
-__device__ __host__ void normalize_particle_orders(float* particle_orders_array_accum, int v_B)
+__device__ __host__ void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B)
 {
-	int array_size = ARRAY_SIZE(particle_orders_array_accum);
 	thrust::device_ptr<float> particle_orders(particle_orders_array_accum);
 
-	thrust::transform(particle_orders, particle_orders + ARRAY_SIZE(particle_orders_array_accum), particle_orders, GPU_LAMBDA(float x)
+	thrust::transform(particle_orders, particle_orders + particle_orders_count, particle_orders, GPU_LAMBDA(float x)
 	{
-		float max = particle_orders_array_accum[array_size - 1];
+		float max = particle_orders_array_accum[particle_orders_count - 1];
 		return x * (v_B / (1.0f * max));
 	});
 }
 
 __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
-	float* weight_array, float* born_masses_array, Particle* birth_particle_array, float* particle_orders_array_accum)
+	float* weight_array, float* born_masses_array, Particle* birth_particle_array, float* particle_orders_array_accum, int cell_count)
 {
-	for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < ARRAY_SIZE(grid_cell_array); j += blockDim.x * gridDim.x)
+	for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
 	{
 		int start_idx = calc_start_idx(particle_orders_array_accum, j);
 		int end_idx = calc_end_idx(particle_orders_array_accum, j);
@@ -106,7 +105,8 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 	}
 }
 
-__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, float* birth_weight_array, int width)
+__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, float* birth_weight_array, int width,
+	int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(birth_particle_array); i += blockDim.x * gridDim.x)
 	{

@@ -4,4 +4,4 @@
 #include <device_launch_parameters.h>
 
 __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, float* weight_array_accum, MeasurementCell* meas_cell_array,
-	float* born_masses_array, float pb);
+	float* born_masses_array, float pb, int cell_count);

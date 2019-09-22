@@ -6,8 +6,8 @@ int main(int argc, const char** argv)
 	params.width = 80;//120;
 	params.height = 80;//120;
 	params.resolution = 0.1f;
-	params.particle_count = 300000;//2 * static_cast<int>(10e6);
-	params.new_born_particle_count = 200000;//2 * static_cast<int>(10e5);
+	params.particle_count = 3000;//2 * static_cast<int>(10e6);
+	params.new_born_particle_count = 2000;//2 * static_cast<int>(10e5);
 	params.ps = 0.99f;
 	params.process_noise_position = 0.02f;
 	params.process_noise_velocity = 0.8f;

@@ -11,14 +11,14 @@ __device__ bool is_first_particle(Particle* particle_array, int i)
 	return i == 0 || particle_array[i].grid_cell_idx != particle_array[i - 1].grid_cell_idx;
 }
 
-__device__ bool is_last_particle(Particle* particle_array, int i)
+__device__ bool is_last_particle(Particle* particle_array, int particle_count, int i)
 {
-	return i == ARRAY_SIZE(particle_array) - 1 || particle_array[i].grid_cell_idx != particle_array[i + 1].grid_cell_idx;
+	return i == particle_count - 1 || particle_array[i].grid_cell_idx != particle_array[i + 1].grid_cell_idx;
 }
 
-__global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_cell_array, float* weight_array)
+__global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_cell_array, float* weight_array, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(particle_array); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		int j = particle_array[i].grid_cell_idx;
 
@@ -26,7 +26,7 @@ __global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_ce
 		{
 			grid_cell_array[j].start_idx = i;
 		}
-		if (is_last_particle(particle_array, i))
+		if (is_last_particle(particle_array, particle_count, i))
 		{
 			grid_cell_array[j].end_idx = i;
 		}
