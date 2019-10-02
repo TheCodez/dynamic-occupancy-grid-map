@@ -67,7 +67,7 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 	birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 }
 
-__device__ __host__ void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B)
+__host__ void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B)
 {
 	thrust::device_ptr<float> particle_orders(particle_orders_array_accum);
 
@@ -81,7 +81,9 @@ __device__ __host__ void normalize_particle_orders(float* particle_orders_array_
 __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
 	float* weight_array, float* born_masses_array, Particle* birth_particle_array, float* particle_orders_array_accum, int cell_count)
 {
-	for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
+	const int j = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (j < cell_count)
 	{
 		int start_idx = calc_start_idx(particle_orders_array_accum, j);
 		int end_idx = calc_end_idx(particle_orders_array_accum, j);
@@ -108,7 +110,9 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, float* birth_weight_array, int width,
 	int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < ARRAY_SIZE(birth_particle_array); i += blockDim.x * gridDim.x)
+	const int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < particle_count)
 	{
 		initialize_new_particle(birth_particle_array, i, grid_cell_array, width);
 		birth_weight_array[i] = birth_particle_array[i].weight;

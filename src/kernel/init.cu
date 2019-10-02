@@ -8,7 +8,9 @@
 
 __global__ void initParticlesKernel(Particle* particle_array, int width, int height, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
+	const int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < particle_count)
 	{
 		thrust::default_random_engine rng;
 		thrust::uniform_int_distribution<int> dist_idx(0, width * height);
