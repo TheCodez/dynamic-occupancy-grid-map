@@ -1,0 +1,25 @@
+#pragma once
+
+#include <GL/glew.h>
+#include <cuda_gl_interop.h>
+
+class Texture
+{
+public:
+	Texture(int width, int height, float anisotropy_level = 0.0f);
+	~Texture();
+
+	void beginCudaAccess(cudaSurfaceObject_t* surfaceObject);
+	void endCudaAccess(cudaSurfaceObject_t surfaceObject);
+
+	void generateMipMap();
+
+	void bind(GLuint unit);
+
+private:
+	GLuint texture;
+	GLuint unit;
+
+	cudaGraphicsResource_t resource;
+};
+

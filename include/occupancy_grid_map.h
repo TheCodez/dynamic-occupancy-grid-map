@@ -3,6 +3,8 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
+class Renderer;
+
 struct GridCell
 {
 	int start_idx;
@@ -53,15 +55,21 @@ struct GridParams
 	float pb;
 };
 
+struct LaserSensorParams
+{
+	float max_range;
+	float fov;
+};
+
 class OccupancyGridMap
 {
 public:
-	OccupancyGridMap(const GridParams& params);
+	OccupancyGridMap(const GridParams& params, const LaserSensorParams& laser_params);
 	~OccupancyGridMap();
 
-	void updateMeasurementGrid(float* measurements);
+	void updateMeasurementGrid(float* measurements, int num_measurements);
 
-	void update(float dt, float* measurements);
+	void updateDynamicGrid(float dt);
 
 private:
 
@@ -77,9 +85,12 @@ public:
 	void statisticalMoments();
 	void resampling();
 
-private:
+public:
 
 	GridParams params;
+	LaserSensorParams laser_params;
+
+	Renderer* renderer;
 
 	GridCell* grid_cell_array;
 	Particle* particle_array;
