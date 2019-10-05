@@ -24,7 +24,7 @@ public:
 class Polygon
 {
 public:
-	Polygon(Vertex* vertices, int num_vertices);
+	Polygon(Vertex* vertices, size_t num_vertices);
 	~Polygon();
 
 	void draw();

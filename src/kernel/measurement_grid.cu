@@ -5,6 +5,13 @@
 
 #define PI 3.14159265358979323846f
 
+__device__ float binary_bayes_filter(float likelihood, float prior)
+{
+	float l = (likelihood / (1.0f - likelihood)) * (prior / (1.0f - prior));
+
+	return l / (1.0 + l);
+}
+
 __device__ float pFree(int i, float p_min, float p_max, int max_range)
 {
 	return p_min + i * (p_max - p_min) / max_range;
@@ -12,16 +19,14 @@ __device__ float pFree(int i, float p_min, float p_max, int max_range)
 
 __device__ float pOcc(float r, float zk, float i)
 {
-	float alpha = 2.0; //0.6f * (1.0f - min(1.0, (1.0f / max_range) * zk));
-	float delta = 0.9f; //1.f + 0.015f * zk;
+	float alpha = 2.0f; //0.6f * (1.0f - min(1.0, (1.0f / max_range) * zk));
+	float delta = 0.85f; //1.f + 0.015f * zk;
 
 	return (alpha / (delta * sqrt(2 * PI))) * exp(-pow(i - r, 2) / 2 * pow(delta, 2));
 }
 
-__device__ float inverse_sensor_model(int i, float resolution, float zk, float max_range)
+__device__ float inverse_sensor_model(int i, float resolution, float zk, float r_max)
 {
-	const int r_max = (int)(max_range / resolution);
-
 	if (isfinite(zk))
 	{
 		int r = (int)(zk / resolution);
@@ -52,8 +57,7 @@ __device__ float2 probability_to_masses(float prob)
 	}
 }
 
-__global__ void createPolarGridMapKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution,
-	float max_range)
+__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
 	const int range = blockIdx.y * blockDim.y + threadIdx.y;
@@ -63,10 +67,26 @@ __global__ void createPolarGridMapKernel(cudaSurfaceObject_t polar, float* measu
 		const float epsilon = 0.00001f;
 		const float zk = measurements[theta];
 
-		float prob = inverse_sensor_model(range, resolution, zk, max_range);
+		float prob = inverse_sensor_model(range, resolution, zk, height);
 		prob = max(epsilon, min(1.0f - epsilon, prob));
 
 		surf2Dwrite(prob, polar, theta * sizeof(float), range);
+	}
+}
+
+__global__ void fusePolarGridsKernel(cudaSurfaceObject_t result, cudaSurfaceObject_t polar, cudaSurfaceObject_t prev_polar,
+	int width, int height)
+{
+	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
+	const int range = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (theta < width && range < height)
+	{
+		float likelihood = surf2Dread<float>(polar, theta * sizeof(float), range);
+		float prior = surf2Dread<float>(prev_polar, theta * sizeof(float), range);
+		float prob = binary_bayes_filter(likelihood, prior);
+
+		surf2Dwrite(prob, result, theta * sizeof(float), range);
 	}
 }
 

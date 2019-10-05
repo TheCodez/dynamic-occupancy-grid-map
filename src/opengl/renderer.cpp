@@ -3,7 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-Renderer::Renderer(int width, int height, float fov, int polar_height)
+Renderer::Renderer(int width, int height, float fov)
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -19,17 +19,18 @@ Renderer::Renderer(int width, int height, float fov, int polar_height)
 	glewInit();
 
 	std::vector<Vertex> vertices;
-	float radius = 2.0f * (polar_height / static_cast<float>(height));
-	generateCircleSegmentVertices(vertices, 70.0f, radius, 0.0f, -1.0f);
+	generateCircleSegmentVertices(vertices, 70.0f, 2.0f, 0.0f, -1.0f);
 
 	polygon = new Polygon(vertices.data(), vertices.size());
 	shader = new Shader();
+	framebuffer = new Framebuffer(width, height);
 }
 
 Renderer::~Renderer()
 {
 	delete polygon;
 	delete shader;
+	delete framebuffer;
 
 	glfwTerminate();
 }
@@ -38,6 +39,8 @@ void Renderer::render(Texture& texture)
 {
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	glEnable(GL_CULL_FACE);
 
 	texture.bind(0);
 	texture.generateMipMap();

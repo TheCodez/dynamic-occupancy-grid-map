@@ -26,8 +26,10 @@ int OccupancyGridMap::BLOCK_SIZE = 256;
 OccupancyGridMap::OccupancyGridMap(const GridParams& params, const LaserSensorParams& laser_params)
 	: params(params),
 	  laser_params(laser_params),
+	  grid_width(static_cast<int>(params.width / params.resolution)),
+	  grid_height(static_cast<int>(params.height / params.resolution)),
 	  particle_count(params.particle_count),
-	  grid_cell_count(static_cast<int>(params.width / params.resolution) * static_cast<int>(params.height / params.resolution)),
+	  grid_cell_count(grid_width * grid_height),
 	  new_born_particle_count(params.new_born_particle_count)
 {
 	CHECK_ERROR(cudaMallocManaged((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
@@ -77,9 +79,7 @@ void OccupancyGridMap::initialize()
 
 	CHECK_ERROR(cudaGetLastError());
 	
-	const int polar_height = static_cast<int>(laser_params.max_range / params.resolution);
-	renderer = new Renderer(static_cast<int>(params.width / params.resolution), static_cast<int>(params.height / params.resolution),
-							laser_params.fov, polar_height);
+	renderer = new Renderer(grid_width, grid_height, laser_params.fov);
 }
 
 void OccupancyGridMap::updateDynamicGrid(float dt)
@@ -104,39 +104,36 @@ void OccupancyGridMap::updateMeasurementGrid(float* measurements, int num_measur
 	CHECK_ERROR(cudaMemcpy(d_measurements, measurements, num_measurements * sizeof(float), cudaMemcpyHostToDevice));
 
 	const int polar_width = num_measurements;
-	const int polar_height = static_cast<int>(laser_params.max_range / params.resolution);
-	
+	const int polar_height = grid_height;
+
 	dim3 block_dim(32, 32);
 	dim3 grid_dim(divUp(polar_width, block_dim.x), divUp(polar_height, block_dim.y));
+	dim3 cart_grid_dim(divUp(grid_width, block_dim.x), divUp(grid_height, block_dim.y));
 
-	Texture texture(polar_width, polar_height, 16.0f);
+	const float anisotropy_level = 16.0f;
+	Texture texture(polar_width, polar_height, anisotropy_level);
 	cudaSurfaceObject_t polar_surface;
-
+	
 	// create polar texture
 	texture.beginCudaAccess(&polar_surface);
-	createPolarGridMapKernel<<<grid_dim, block_dim>>>(polar_surface, d_measurements, polar_width, polar_height,
-		params.resolution, laser_params.max_range);
+	createPolarGridTextureKernel<<<grid_dim, block_dim>>>(polar_surface, d_measurements, polar_width, polar_height, params.resolution);
 
 	CHECK_ERROR(cudaGetLastError());
 	texture.endCudaAccess(polar_surface);
 	
-	const int width = static_cast<int>(params.width / params.resolution);
-	const int height = static_cast<int>(params.height / params.resolution);
-	dim3 cart_grid_dim(divUp(width, block_dim.x), divUp(height, block_dim.y));
-	Framebuffer framebuffer(width, height);
-	
+	Framebuffer* framebuffer = renderer->getFrameBuffer();	
 	// render cartesian image to texture
-	framebuffer.bind();
+	framebuffer->bind();
 	renderer->render(texture);
-	framebuffer.unbind();
+	framebuffer->unbind();
 	
 	cudaSurfaceObject_t cartesian_surface;
-	framebuffer.beginCudaAccess(&cartesian_surface);	
+	framebuffer->beginCudaAccess(&cartesian_surface);
 	// transform RGBA texture to measurement grid
-	cartesianGridToMeasurementGridKernel<<<cart_grid_dim, block_dim>>>(meas_cell_array, cartesian_surface, width, height);
+	cartesianGridToMeasurementGridKernel<<<cart_grid_dim, block_dim>>>(meas_cell_array, cartesian_surface, grid_width, grid_height);
 
 	CHECK_ERROR(cudaGetLastError());
-	framebuffer.endCudaAccess(cartesian_surface);
+	framebuffer->endCudaAccess(cartesian_surface);
 
 	CHECK_ERROR(cudaFree(d_measurements));
 	CHECK_ERROR(cudaDeviceSynchronize());
@@ -155,10 +152,7 @@ void OccupancyGridMap::particlePrediction(float dt)
 
 	glm::vec4 process_noise(dist_pos(rng), dist_pos(rng), dist_vel(rng), dist_vel(rng));
 
-	int width = static_cast<int>(params.width / params.resolution);
-	int height = static_cast<int>(params.height / params.resolution);
-
-	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, width, height, params.ps,
+	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_width, grid_height, params.ps,
 		transition_matrix, process_noise, particle_count);
 
 	CHECK_ERROR(cudaGetLastError());

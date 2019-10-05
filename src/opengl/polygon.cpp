@@ -1,6 +1,6 @@
 #include "opengl/polygon.h"
 
-Polygon::Polygon(Vertex* vertices, int numVertices)
+Polygon::Polygon(Vertex* vertices, size_t numVertices)
 {
 	vertices_count = numVertices;
 

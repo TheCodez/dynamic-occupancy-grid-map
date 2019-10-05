@@ -44,8 +44,8 @@ struct Particle
 
 struct GridParams
 {
-	int width;
-	int height;
+	float width;
+	float height;
 	float resolution;
 	int particle_count;
 	int new_born_particle_count;
@@ -68,15 +68,12 @@ public:
 	~OccupancyGridMap();
 
 	void updateMeasurementGrid(float* measurements, int num_measurements);
-
 	void updateDynamicGrid(float dt);
 
 private:
-
 	void initialize();
 
 public:
-
 	void particlePrediction(float dt);
 	void particleAssignment();
 	void gridCellOccupancyUpdate();
@@ -113,6 +110,9 @@ public:
 	float* vel_xy_array;
 
 	float* rand_array;
+
+	int grid_width;
+	int grid_height;
 
 	int grid_cell_count;
 	int particle_count;
