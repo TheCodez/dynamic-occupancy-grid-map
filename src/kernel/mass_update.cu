@@ -38,6 +38,7 @@ __device__ void store_values(float rhoB, float rhoP, float freeUp, float occUp, 
 	grid_cell_array[i].pers_occ_mass = rhoP;
 	grid_cell_array[i].new_born_occ_mass = rhoB;
 	grid_cell_array[i].free_mass = freeUp;
+	grid_cell_array[i].occ_mass = occUp;
 }
 
 __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, float* weight_array_accum, MeasurementCell* meas_cell_array,
