@@ -96,13 +96,13 @@ __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, float* mea
 	}
 }
 
-__global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* meas_grid, cudaSurfaceObject_t cart, int width, int height)
+__global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* meas_grid, cudaSurfaceObject_t cart, int grid_size)
 {
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;
-	const int index = (height - y - 1) * width + x;
+	const int index = (grid_size - y - 1) * grid_size + x;
 
-	if (x < width && y < height)
+	if (x < grid_size && y < grid_size)
 	{
 		float4 color = surf2Dread<float4>(cart, x * sizeof(float4), y);
 		float2 masses = probability_to_masses(color.x);

@@ -27,10 +27,9 @@ int OccupancyGridMap::BLOCK_SIZE = 256;
 OccupancyGridMap::OccupancyGridMap(const GridParams& params, const LaserSensorParams& laser_params)
 	: params(params),
 	  laser_params(laser_params),
-	  grid_width(static_cast<int>(params.width / params.resolution)),
-	  grid_height(static_cast<int>(params.height / params.resolution)),
+	  grid_size(static_cast<int>(params.size / params.resolution)),
 	  particle_count(params.particle_count),
-	  grid_cell_count(grid_width * grid_height),
+	  grid_cell_count(grid_size * grid_size),
 	  new_born_particle_count(params.new_born_particle_count)
 {
 	CHECK_ERROR(cudaMallocManaged((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
@@ -75,15 +74,13 @@ OccupancyGridMap::~OccupancyGridMap()
 
 void OccupancyGridMap::initialize()
 {
-	initParticlesKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_width, grid_height,
-		particle_count);
+	initParticlesKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, particle_count);
 
-	initGridCellsKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, grid_width, grid_height,
-		grid_cell_count);
+	initGridCellsKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, grid_size, grid_cell_count);
 
 	CHECK_ERROR(cudaGetLastError());
 	
-	renderer = new Renderer(grid_width, grid_height, laser_params.fov);
+	renderer = new Renderer(grid_size, laser_params.fov);
 }
 
 void OccupancyGridMap::updateDynamicGrid(float dt)
@@ -110,11 +107,11 @@ void OccupancyGridMap::updateMeasurementGrid(float* measurements, int num_measur
 	CHECK_ERROR(cudaMemcpy(d_measurements, measurements, num_measurements * sizeof(float), cudaMemcpyHostToDevice));
 
 	const int polar_width = num_measurements;
-	const int polar_height = grid_height;
+	const int polar_height = grid_size;
 
 	dim3 block_dim(32, 32);
 	dim3 grid_dim(divUp(polar_width, block_dim.x), divUp(polar_height, block_dim.y));
-	dim3 cart_grid_dim(divUp(grid_width, block_dim.x), divUp(grid_height, block_dim.y));
+	dim3 cart_grid_dim(divUp(grid_size, block_dim.x), divUp(grid_size, block_dim.y));
 
 	const float anisotropy_level = 16.0f;
 	Texture texture(polar_width, polar_height, anisotropy_level);
@@ -135,7 +132,7 @@ void OccupancyGridMap::updateMeasurementGrid(float* measurements, int num_measur
 
 	framebuffer->beginCudaAccess(&cartesian_surface);
 	// transform RGBA texture to measurement grid
-	cartesianGridToMeasurementGridKernel<<<cart_grid_dim, block_dim>>>(meas_cell_array, cartesian_surface, grid_width, grid_height);
+	cartesianGridToMeasurementGridKernel<<<cart_grid_dim, block_dim>>>(meas_cell_array, cartesian_surface, grid_size);
 
 	CHECK_ERROR(cudaGetLastError());
 	framebuffer->endCudaAccess(cartesian_surface);
@@ -159,7 +156,7 @@ void OccupancyGridMap::particlePrediction(float dt)
 
 	glm::vec4 process_noise(dist_pos(rng), dist_pos(rng), dist_vel(rng), dist_vel(rng));
 
-	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_width, grid_height, params.p_S,
+	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, params.p_S, 
 		transition_matrix, process_noise, particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
@@ -240,7 +237,7 @@ void OccupancyGridMap::initializeNewParticles()
 	CHECK_ERROR(cudaGetLastError());
 
 	initNewParticlesKernel2<<<divUp(new_born_particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(birth_particle_array,
-		grid_cell_array, birth_weight_array, grid_width, new_born_particle_count);
+		grid_cell_array, birth_weight_array, grid_size, new_born_particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
 }

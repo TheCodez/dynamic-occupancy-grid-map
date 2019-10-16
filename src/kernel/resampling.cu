@@ -12,7 +12,7 @@ void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, th
 {
 	thrust::device_vector<float> norm_weight_accum(joint_weight_accum.size());
 	float max = joint_weight_accum.back();
-	int size = joint_weight_accum.size();
+	size_t size = joint_weight_accum.size();
 	thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(), norm_weight_accum.begin(), GPU_LAMBDA(float x)
 	{
 		return  x * (size / max);

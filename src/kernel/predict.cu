@@ -6,7 +6,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__global__ void predictKernel(Particle* particle_array, int width, int height, float p_S, const glm::mat4x4 transition_matrix,
+__global__ void predictKernel(Particle* particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
 	const glm::vec4 process_noise, int particle_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -20,22 +20,21 @@ __global__ void predictKernel(Particle* particle_array, int width, int height, f
 
 		//printf("X: %f, Y: %f\n", x, y);
 
-		if ((x > width - 1 || x < 0)
-			|| (y > height - 1 || y < 0))
+		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
 		{
 			unsigned int seed = hash(i);
 			thrust::default_random_engine rng(seed);
-			thrust::uniform_int_distribution<int> dist_idx(0, width * height);
+			thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
 
 			const int index = dist_idx(rng);
 
-			x = index % width + 0.5f;
-			y = index / width + 0.5f;
+			x = index % grid_size + 0.5f;
+			y = index / grid_size + 0.5f;
 		}
 
-		int pos_x = clamp(static_cast<int>(x), 0, width - 1);
-		int pos_y = clamp(static_cast<int>(y), 0, height - 1);
-		particle_array[i].grid_cell_idx = pos_x + width * pos_y;
+		int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
+		int pos_y = clamp(static_cast<int>(y), 0, grid_size - 1);
+		particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
 
 		//printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + width * pos_y));
 	}

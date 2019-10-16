@@ -47,8 +47,7 @@ struct Particle
 
 struct GridParams
 {
-	float width;
-	float height;
+	float size;
 	float resolution;
 	int particle_count;
 	int new_born_particle_count;
@@ -73,8 +72,7 @@ public:
 	void updateMeasurementGrid(float* measurements, int num_measurements);
 	void updateDynamicGrid(float dt);
 
-	int getGridWidth() const { return grid_width; }
-	int getGridHeight() const { return grid_height; }
+	int getGridSize() const { return grid_size; }
 
 private:
 	void initialize();
@@ -117,8 +115,7 @@ public:
 
 	float* rand_array;
 
-	int grid_width;
-	int grid_height;
+	int grid_size;
 
 	int grid_cell_count;
 	int particle_count;

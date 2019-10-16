@@ -3,7 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-Renderer::Renderer(int width, int height, float fov)
+Renderer::Renderer(int grid_size, float fov)
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -12,7 +12,7 @@ Renderer::Renderer(int width, int height, float fov)
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 
-	window = glfwCreateWindow(width, height, "GPU Occupancy Grid Map", nullptr, nullptr);
+	window = glfwCreateWindow(grid_size, grid_size, "GPU Occupancy Grid Map", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	glewExperimental = GL_TRUE;
@@ -23,7 +23,7 @@ Renderer::Renderer(int width, int height, float fov)
 
 	polygon = new Polygon(vertices.data(), vertices.size());
 	shader = new Shader();
-	framebuffer = new Framebuffer(width, height);
+	framebuffer = new Framebuffer(grid_size, grid_size);
 }
 
 Renderer::~Renderer()
