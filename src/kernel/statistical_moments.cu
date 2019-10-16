@@ -37,7 +37,6 @@ __global__ void statisticalMomentsKernel1(Particle* particle_array, float* weigh
 	float* vel_x_squared_array, float* vel_y_squared_array, float* vel_xy_array, int particle_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
 	if (i < particle_count)
 	{
 		float weight = weight_array[i];
@@ -48,6 +47,8 @@ __global__ void statisticalMomentsKernel1(Particle* particle_array, float* weigh
 		vel_x_squared_array[i] = weight * vel_x * vel_x;
 		vel_y_squared_array[i] = weight * vel_y * vel_y;
 		vel_xy_array[i] = weight * vel_x * vel_y;
+
+		//printf("vx: %f, vy: %f\n", vel_x_array[i], vel_y_array[i]);
 	}
 }
 
@@ -55,10 +56,11 @@ __global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, float* vel_
 	float* vel_x_squared_array_accum, float* vel_y_squared_array_accum, float* vel_xy_array_accum, int cell_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
 	if (i < cell_count)
 	{
 		float rho_p = grid_cell_array[i].pers_occ_mass;
+		//printf("rho p: %f\n", rho_p);
+
 		int start_idx = grid_cell_array[i].start_idx;
 		int end_idx = grid_cell_array[i].end_idx;
 		float mean_x_vel = calc_mean(vel_x_array_accum, start_idx, end_idx, rho_p);
@@ -66,6 +68,9 @@ __global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, float* vel_
 		float var_x_vel = calc_variance(vel_x_squared_array_accum, start_idx, end_idx, rho_p, mean_x_vel);
 		float var_y_vel = calc_variance(vel_y_squared_array_accum, start_idx, end_idx, rho_p, mean_y_vel);
 		float covar_xy_vel = calc_covariance(vel_xy_array_accum, start_idx, end_idx, rho_p, mean_x_vel, mean_y_vel);
+
+		//printf("x: %f, y: %f\n", mean_x_vel, mean_y_vel);
+
 		store(grid_cell_array, i, mean_x_vel, mean_y_vel, var_x_vel, var_y_vel, covar_xy_vel);
 	}
 }

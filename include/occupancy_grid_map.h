@@ -2,6 +2,7 @@
 
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
+#include <cuda_runtime.h>
 
 class Renderer;
 
@@ -24,6 +25,8 @@ struct GridCell
 	float var_x_vel;
 	float var_y_vel;
 	float covar_xy_vel;
+
+	int2 pos;
 };
 
 struct MeasurementCell
@@ -49,10 +52,10 @@ struct GridParams
 	float resolution;
 	int particle_count;
 	int new_born_particle_count;
-	float ps;
+	float p_S;
 	float process_noise_position;
 	float process_noise_velocity;
-	float pb;
+	float p_B;
 };
 
 struct LaserSensorParams
@@ -69,6 +72,9 @@ public:
 
 	void updateMeasurementGrid(float* measurements, int num_measurements);
 	void updateDynamicGrid(float dt);
+
+	int getGridWidth() const { return grid_width; }
+	int getGridHeight() const { return grid_height; }
 
 private:
 	void initialize();

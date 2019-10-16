@@ -19,7 +19,7 @@ Renderer::Renderer(int width, int height, float fov)
 	glewInit();
 
 	std::vector<Vertex> vertices;
-	generateCircleSegmentVertices(vertices, 70.0f, 2.0f, 0.0f, -1.0f);
+	generateCircleSegmentVertices(vertices, fov, 2.0f, 0.0f, -1.0f);
 
 	polygon = new Polygon(vertices.data(), vertices.size());
 	shader = new Shader();
@@ -35,18 +35,22 @@ Renderer::~Renderer()
 	glfwTerminate();
 }
 
-void Renderer::render(Texture& texture)
+void Renderer::renderToTexture(Texture& polar_texture)
 {
+	framebuffer->bind();
+
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glEnable(GL_CULL_FACE);
 
-	texture.bind(0);
-	texture.generateMipMap();
+	polar_texture.bind(0);
+	polar_texture.generateMipMap();
 
 	shader->use();
 	polygon->draw();
+
+	framebuffer->unbind();
 }
 
 void Renderer::generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy)

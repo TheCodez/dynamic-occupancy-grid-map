@@ -17,12 +17,13 @@ __device__ float pFree(int i, float p_min, float p_max, int max_range)
 	return p_min + i * (p_max - p_min) / max_range;
 }
 
-__device__ float pOcc(float r, float zk, float i)
+__device__ float pOcc(int r, float zk, int index)
 {
-	float alpha = 2.0f; //0.6f * (1.0f - min(1.0, (1.0f / max_range) * zk));
-	float delta = 0.85f; //1.f + 0.015f * zk;
+	float alpha = 1.0f;
+	float delta = 2.5f;
 
-	return (alpha / (delta * sqrt(2 * PI))) * exp(-pow(i - r, 2) / 2 * pow(delta, 2));
+	//return (alpha / (delta * sqrt(2.0f * PI))) * exp(-0.5f * (index - r) * (index - r) / (delta * delta));
+	return 0.8f * exp(-0.5f * (index - r) * (index - r) / (delta * delta));
 }
 
 __device__ float inverse_sensor_model(int i, float resolution, float zk, float r_max)
@@ -31,16 +32,16 @@ __device__ float inverse_sensor_model(int i, float resolution, float zk, float r
 	{
 		int r = (int)(zk / resolution);
 
-		if (i < r)
+		if (i <= r)
 		{
-			return max(pFree(i, 0.01, 0.4f, r_max), pOcc(r, zk, i));
+			return max(pFree(i, 0.01, 0.5f, r_max), pOcc(r, zk, i));
 		}
 
 		return max(0.5f, pOcc(r, zk, i));
 	}
 	else
 	{
-		return pFree(i, 0.01, 0.4f, r_max);
+		return pFree(i, 0.01, 0.5f, r_max);
 	}
 }
 
@@ -74,19 +75,24 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* m
 	}
 }
 
-__global__ void fusePolarGridsKernel(cudaSurfaceObject_t result, cudaSurfaceObject_t polar, cudaSurfaceObject_t prev_polar,
-	int width, int height)
+__global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
 	const int range = blockIdx.y * blockDim.y + threadIdx.y;
 
 	if (theta < width && range < height)
 	{
-		float likelihood = surf2Dread<float>(polar, theta * sizeof(float), range);
-		float prior = surf2Dread<float>(prev_polar, theta * sizeof(float), range);
-		float prob = binary_bayes_filter(likelihood, prior);
+		const float epsilon = 0.00001f;
+		const float zk = measurements[theta];
 
-		surf2Dwrite(prob, result, theta * sizeof(float), range);
+		float prior = surf2Dread<float>(polar, theta * sizeof(float), range);
+		float likelihood = inverse_sensor_model(range, resolution, zk, height);
+		likelihood = max(epsilon, min(1.0f - epsilon, likelihood));
+
+		float prob = binary_bayes_filter(likelihood, prior);
+		//prob = max(epsilon, min(1.0f - epsilon, prob));
+
+		surf2Dwrite(prob, polar, theta * sizeof(float), range);
 	}
 }
 

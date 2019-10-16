@@ -12,7 +12,8 @@ __global__ void initParticlesKernel(Particle* particle_array, int width, int hei
 
 	if (i < particle_count)
 	{
-		thrust::default_random_engine rng;
+		unsigned int seed = hash(i);
+		thrust::default_random_engine rng(seed);
 		thrust::uniform_int_distribution<int> dist_idx(0, width * height);
 		thrust::normal_distribution<float> dist_vel(0.0f, 4.0f);
 
@@ -23,5 +24,22 @@ __global__ void initParticlesKernel(Particle* particle_array, int width, int hei
 
 		particle_array[i].weight = 1.0f / particle_count;
 		particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
+
+		//printf("w: %f, x: %f, y: %f, vx: %f, vy: %f\n", particle_array[i].weight, particle_array[i].state[0], particle_array[i].state[1],
+		//	particle_array[i].state[2], particle_array[i].state[3]);
+	}
+}
+
+__global__ void initGridCellsKernel(GridCell* grid_cell_array, int width, int height, int cell_count)
+{
+	const int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < cell_count)
+	{
+		const int x = i % width;
+		const int y = i / width;
+		grid_cell_array[i].pos = make_int2(x, y);
+		grid_cell_array[i].free_mass = 0.0f;
+		grid_cell_array[i].occ_mass = 0.0f;
 	}
 }

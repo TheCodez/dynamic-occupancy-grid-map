@@ -13,19 +13,7 @@ static void accumulate(T* arr, thrust::device_vector<T>& result)
 
 static __device__ __host__ float subtract(float* accum_array, int start_idx, int end_idx)
 {
-	return accum_array[end_idx] - accum_array[start_idx];
-}
-
-template <typename T>
-static __device__ __host__ T min(T a, T b)
-{
-	return a < b ? a : b;
-}
-
-template <typename T>
-static __device__ __host__ T max(T a, T b)
-{
-	return a > b ? a : b;
+	return accum_array[end_idx] - accum_array[start_idx - 1];
 }
 
 template <typename T>

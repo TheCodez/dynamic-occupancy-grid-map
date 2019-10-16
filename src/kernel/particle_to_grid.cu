@@ -32,6 +32,7 @@ __global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_ce
 			grid_cell_array[j].end_idx = i;
 		}
 
+		//printf("Cell: %d, Start idx: %d, End idx: %d\n", j, grid_cell_array[j].start_idx, grid_cell_array[j].end_idx);
 		weight_array[i] = particle_array[i].weight;
 	}
 }

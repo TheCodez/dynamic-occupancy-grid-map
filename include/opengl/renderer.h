@@ -17,7 +17,7 @@ public:
 	Renderer(int width, int height, float fov);
 	~Renderer();
 
-	void render(Texture& texture);
+	void renderToTexture(Texture& polar_texture);
 
 	Framebuffer* getFrameBuffer() const { return framebuffer; }
 
