@@ -43,26 +43,24 @@ __device__ float2 inverse_sensor_model(int i, float resolution, float zk, float 
 {
 	// Masses: mOcc, mFree
 
+	const float free = pFree(i, 0.1, 1.0f, r_max);
+
 	if (isfinite(zk))
 	{
-		int r = (int)(zk / resolution);
-		
+		const int r = (int)(zk / resolution);
+		const float occ = pOcc(r, zk, i);
+
 		if (i <= r)
 		{
-			float occ = pOcc(r, zk, i);
-			float free = pFree(i, 0.01, 0.5f, r_max);
-
 			return occ > free ? make_float2(occ, 0.0f) : make_float2(0.0f, 1.0f - free);
 		}
 		else
 		{
-			float occ = pOcc(r, zk, i);
 			return occ > 0.5f ? make_float2(occ, 0.0f) : make_float2(0.0f, 0.0f);
 		}
 	}
 	else
 	{
-		float free = pFree(i, 0.01, 0.5f, r_max);
 		return make_float2(0.0f, 1.0f - free);
 	}
 }
