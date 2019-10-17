@@ -125,15 +125,22 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 	}
 }
 
-__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, float* birth_weight_array,
-	int grid_size, int particle_count)
+__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, int grid_size, int particle_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (i < particle_count)
 	{
 		initialize_new_particle(birth_particle_array, i, grid_cell_array, grid_size);
+	}
+}
+
+__global__ void copyBirthWeightKernel(Particle* birth_particle_array, float* birth_weight_array, int particle_count)
+{
+	const int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < particle_count)
+	{
 		birth_weight_array[i] = birth_particle_array[i].weight;
-		//printf("Weight: %f\n", birth_weight_array[i]);
 	}
 }

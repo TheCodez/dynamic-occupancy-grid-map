@@ -237,7 +237,19 @@ void OccupancyGridMap::initializeNewParticles()
 	CHECK_ERROR(cudaGetLastError());
 
 	initNewParticlesKernel2<<<divUp(new_born_particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(birth_particle_array,
-		grid_cell_array, birth_weight_array, grid_size, new_born_particle_count);
+		grid_cell_array, grid_size, new_born_particle_count);
+
+	CHECK_ERROR(cudaGetLastError());
+
+	CHECK_ERROR(cudaDeviceSynchronize());
+	thrust::device_ptr<Particle> birth_particles(birth_particle_array);
+	thrust::sort(birth_particles, birth_particles + new_born_particle_count, GPU_LAMBDA(Particle x, Particle y)
+	{
+		return x.grid_cell_idx < y.grid_cell_idx;
+	});
+
+	copyBirthWeightKernel<<<divUp(new_born_particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(birth_particle_array, birth_weight_array,
+		new_born_particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
 }
