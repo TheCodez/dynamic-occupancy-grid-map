@@ -39,7 +39,8 @@ void Renderer::renderToTexture(Texture& polar_texture)
 {
 	framebuffer->bind();
 
-	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	// red=occ, green=free
+	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glEnable(GL_CULL_FACE);
