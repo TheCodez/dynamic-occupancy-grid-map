@@ -37,12 +37,12 @@ __device__ int calc_num_assoc(int num_new_particles, float p_A)
 
 __device__ float calc_weight_assoc(int nuA, float p_A, float born_mass)
 {
-	return (p_A * born_mass) / nuA;
+	return nuA > 0 ? (p_A * born_mass) / nuA : 0.0f;
 }
 
 __device__ float calc_weight_unassoc(int nuUA, float p_A, float born_mass)
 {
-	return ((1.0f - p_A) * born_mass) / nuUA;
+	return nuUA > 0 ? ((1.0f - p_A) * born_mass) / nuUA : 0.0f;
 }
 
 __device__ void store_weights(float w_A, float w_UA, GridCell* grid_cell_array, int j)
@@ -112,6 +112,8 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 		float w_A = calc_weight_assoc(nu_A, p_A, born_masses_array[j]);
 		float w_UA = calc_weight_unassoc(nu_UA, p_A, born_masses_array[j]);
 		store_weights(w_A, w_UA, grid_cell_array, j);
+
+		//printf("w_A: %f, w_UA: %f\n", w_A, w_UA);
 
 		for (int i = start_idx; i < start_idx + nu_A + 1; i++)
 		{
