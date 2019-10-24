@@ -18,28 +18,33 @@ void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, th
 		return  x * (size / max);
 	});
 
-	thrust::lower_bound(joint_weight_accum.begin(), joint_weight_accum.end(), rand_array.begin(), rand_array.end(), indices.begin());
+	float joint_max = norm_weight_accum.back();
+	//printf("Scaled: %f\n", joint_max);
+
+	thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(), indices.begin());
 }
 
 __device__ Particle copy_particle(Particle* particle_array, int particle_count, Particle* birth_particle_array, int idx)
 {
 	if (idx < particle_count)
 	{
+		//printf("Picked persistent\n");
 		return particle_array[idx];
 	}
 	else
 	{
+		//printf("Picked new born\n");
 		return birth_particle_array[idx - particle_count];
 	}
 }
 
 __global__ void resamplingKernel(Particle* particle_array, Particle* particle_array_next, Particle* birth_particle_array,
-	int* idx_array_resampled, int particle_count)
+	int* idx_array_resampled, float joint_max, int particle_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < particle_count)
 	{
 		particle_array_next[i] = copy_particle(particle_array, particle_count, birth_particle_array, idx_array_resampled[i]);
-		particle_array_next[i].weight = 1.0f / particle_count;
+		particle_array_next[i].weight = joint_max / particle_count;
 	}
 }
