@@ -13,22 +13,12 @@ __device__ float update_unnorm(Particle* particle_array, int i, MeasurementCell*
 
 __device__ float calc_norm_assoc(float occAccum, float rhoP)
 {
-	if (occAccum == 0.0f)
-	{
-		return 0.0f;
-	}
-
-	return rhoP / occAccum;
+	return occAccum > 0.0f ? rhoP / occAccum : 0.0f;
 }
 
 __device__ float calc_norm_unassoc(const GridCell& gridCell)
 {
-	if (gridCell.occ_mass == 0.0f)
-	{
-		return 0.0f;
-	}
-
-	return gridCell.pers_occ_mass / gridCell.occ_mass;
+	return gridCell.occ_mass > 0.0f ? gridCell.pers_occ_mass / gridCell.occ_mass : 0.0f;
 }
 
 __device__ void set_normalization_components(GridCell* grid_cell_array, int i, float mu_A, float mu_UA)
