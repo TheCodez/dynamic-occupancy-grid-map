@@ -40,14 +40,13 @@ OccupancyGridMap::OccupancyGridMap(const GridParams& params, const LaserSensorPa
 	CHECK_ERROR(cudaMallocManaged((void**)&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
 
 	CHECK_ERROR(cudaMalloc(&weight_array, particle_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&birth_weight_array, particle_count * sizeof(float)));
+	CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&born_masses_array, grid_cell_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&vel_x_array, particle_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&vel_y_array, particle_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&vel_x_squared_array, particle_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&vel_y_squared_array, particle_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&vel_xy_array, particle_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&rand_array, particle_count * sizeof(float)));
 
 	initialize();
 }
@@ -67,7 +66,6 @@ OccupancyGridMap::~OccupancyGridMap()
 	CHECK_ERROR(cudaFree(vel_x_squared_array));
 	CHECK_ERROR(cudaFree(vel_y_squared_array));
 	CHECK_ERROR(cudaFree(vel_xy_array));
-	CHECK_ERROR(cudaFree(rand_array));
 	
 	delete renderer;
 }
@@ -100,7 +98,7 @@ void OccupancyGridMap::updateDynamicGrid(float dt)
 
 void OccupancyGridMap::updateMeasurementGrid(float* measurements, int num_measurements)
 {
-	std::cout << "OccupancyGridMap::updateMeasurementGrid" << std::endl;
+	//std::cout << "OccupancyGridMap::updateMeasurementGrid" << std::endl;
 
 	float* d_measurements;
 	CHECK_ERROR(cudaMalloc(&d_measurements, num_measurements * sizeof(float)));
@@ -143,7 +141,7 @@ void OccupancyGridMap::updateMeasurementGrid(float* measurements, int num_measur
 
 void OccupancyGridMap::particlePrediction(float dt)
 {
-	std::cout << "OccupancyGridMap::particlePrediction" << std::endl;
+	//std::cout << "OccupancyGridMap::particlePrediction" << std::endl;
 
 	glm::mat4x4 transition_matrix(1, 0, dt, 0, 
 								  0, 1, 0, dt, 
@@ -164,7 +162,7 @@ void OccupancyGridMap::particlePrediction(float dt)
 
 void OccupancyGridMap::particleAssignment()
 {
-	std::cout << "OccupancyGridMap::particleAssignment" << std::endl;
+	//std::cout << "OccupancyGridMap::particleAssignment" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 	thrust::device_ptr<Particle> particles(particle_array);
@@ -181,12 +179,12 @@ void OccupancyGridMap::particleAssignment()
 
 void OccupancyGridMap::gridCellOccupancyUpdate()
 {
-	std::cout << "OccupancyGridMap::gridCellOccupancyUpdate" << std::endl;
+	//std::cout << "OccupancyGridMap::gridCellOccupancyUpdate" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
-	thrust::device_vector<float> weightsAccum(particle_count);
-	accumulate(weight_array, weightsAccum);
-	float* weight_array_accum = thrust::raw_pointer_cast(weightsAccum.data());
+	thrust::device_vector<float> weights_accum(particle_count);
+	accumulate(weight_array, weights_accum);
+	float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
 	gridCellPredictionUpdateKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, particle_array, weight_array_accum,
 		meas_cell_array, born_masses_array, params.p_B, params.p_S, grid_cell_count);
@@ -196,7 +194,7 @@ void OccupancyGridMap::gridCellOccupancyUpdate()
 
 void OccupancyGridMap::updatePersistentParticles()
 {
-	std::cout << "OccupancyGridMap::updatePersistentParticles" << std::endl;
+	//std::cout << "OccupancyGridMap::updatePersistentParticles" << std::endl;
 
 	updatePersistentParticlesKernel1<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, meas_cell_array,
 		weight_array, particle_count);
@@ -204,9 +202,9 @@ void OccupancyGridMap::updatePersistentParticles()
 	CHECK_ERROR(cudaGetLastError());
 	CHECK_ERROR(cudaDeviceSynchronize());
 
-	thrust::device_vector<float> weightsAccum(particle_count);
-	accumulate(weight_array, weightsAccum);
-	float* weight_array_accum = thrust::raw_pointer_cast(weightsAccum.data());
+	thrust::device_vector<float> weights_accum(particle_count);
+	accumulate(weight_array, weights_accum);
+	float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
 	updatePersistentParticlesKernel2<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array,
 		weight_array_accum, grid_cell_count);
@@ -221,13 +219,13 @@ void OccupancyGridMap::updatePersistentParticles()
 
 void OccupancyGridMap::initializeNewParticles()
 {
-	std::cout << "OccupancyGridMap::initializeNewParticles" << std::endl;
+	//std::cout << "OccupancyGridMap::initializeNewParticles" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 
-	thrust::device_vector<float> particleOrdersAccum(grid_cell_count);
-	accumulate(born_masses_array, particleOrdersAccum);
-	float* particle_orders_array_accum = thrust::raw_pointer_cast(particleOrdersAccum.data());
+	thrust::device_vector<float> particle_orders_accum(grid_cell_count);
+	accumulate(born_masses_array, particle_orders_accum);
+	float* particle_orders_array_accum = thrust::raw_pointer_cast(particle_orders_accum.data());
 
 	normalize_particle_orders(particle_orders_array_accum, grid_cell_count, params.new_born_particle_count);
 
@@ -256,7 +254,7 @@ void OccupancyGridMap::initializeNewParticles()
 
 void OccupancyGridMap::statisticalMoments()
 {
-	std::cout << "OccupancyGridMap::statisticalMoments" << std::endl;
+	//std::cout << "OccupancyGridMap::statisticalMoments" << std::endl;
 
 	statisticalMomentsKernel1<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, weight_array,
 		vel_x_array, vel_y_array, vel_x_squared_array, vel_y_squared_array, vel_xy_array, particle_count);
@@ -264,25 +262,25 @@ void OccupancyGridMap::statisticalMoments()
 	CHECK_ERROR(cudaGetLastError());
 	CHECK_ERROR(cudaDeviceSynchronize());
 
-	thrust::device_vector<float> velXAccum(particle_count);
-	accumulate(vel_x_array, velXAccum);
-	float* vel_x_array_accum = thrust::raw_pointer_cast(velXAccum.data());
+	thrust::device_vector<float> vel_x_accum(particle_count);
+	accumulate(vel_x_array, vel_x_accum);
+	float* vel_x_array_accum = thrust::raw_pointer_cast(vel_x_accum.data());
 
-	thrust::device_vector<float> velYAccum(particle_count);
-	accumulate(vel_y_array, velYAccum);
-	float* vel_y_array_accum = thrust::raw_pointer_cast(velYAccum.data());
+	thrust::device_vector<float> vel_y_accum(particle_count);
+	accumulate(vel_y_array, vel_y_accum);
+	float* vel_y_array_accum = thrust::raw_pointer_cast(vel_y_accum.data());
 
-	thrust::device_vector<float> velXSquaredAccum(particle_count);
-	accumulate(vel_x_squared_array, velXSquaredAccum);
-	float* vel_x_squared_array_accum = thrust::raw_pointer_cast(velXSquaredAccum.data());
+	thrust::device_vector<float> vel_x_squared_accum(particle_count);
+	accumulate(vel_x_squared_array, vel_x_squared_accum);
+	float* vel_x_squared_array_accum = thrust::raw_pointer_cast(vel_x_squared_accum.data());
 
-	thrust::device_vector<float> velYSquaredAccum(particle_count);
-	accumulate(vel_y_squared_array, velYSquaredAccum);
-	float* vel_y_squared_array_accum = thrust::raw_pointer_cast(velYSquaredAccum.data());
+	thrust::device_vector<float> vel_y_squared_accum(particle_count);
+	accumulate(vel_y_squared_array, vel_y_squared_accum);
+	float* vel_y_squared_array_accum = thrust::raw_pointer_cast(vel_y_squared_accum.data());
 
-	thrust::device_vector<float> velXYAccum(particle_count);
-	accumulate(vel_xy_array, velYSquaredAccum);
-	float* vel_xy_array_accum = thrust::raw_pointer_cast(velXYAccum.data());
+	thrust::device_vector<float> vel_xy_accum(particle_count);
+	accumulate(vel_xy_array, vel_xy_accum);
+	float* vel_xy_array_accum = thrust::raw_pointer_cast(vel_xy_accum.data());
 
 	statisticalMomentsKernel2<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, vel_x_array_accum,
 		vel_y_array_accum, vel_x_squared_array_accum, vel_y_squared_array_accum, vel_xy_array_accum, grid_cell_count);
@@ -292,7 +290,7 @@ void OccupancyGridMap::statisticalMoments()
 
 void OccupancyGridMap::resampling()
 {
-	std::cout << "OccupancyGridMap::resampling" << std::endl;
+	//std::cout << "OccupancyGridMap::resampling" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 
@@ -308,28 +306,30 @@ void OccupancyGridMap::resampling()
 	});
 	thrust::sort(random_numbers.begin(), random_numbers.end());
 
-	thrust::device_vector<float> weight_accum(particle_count);
-	thrust::device_vector<float> new_born_weight_accum(particle_count);
-	accumulate(weight_array, weight_accum);
+	thrust::device_vector<float> persistent_weight_accum(particle_count);
+	thrust::device_vector<float> new_born_weight_accum(new_born_particle_count);
+	accumulate(weight_array, persistent_weight_accum);
 	accumulate(birth_weight_array, new_born_weight_accum);
 
-	float offset = weight_accum.back();
+	float offset = persistent_weight_accum.back();
 	thrust::transform(new_born_weight_accum.begin(), new_born_weight_accum.end(), new_born_weight_accum.begin(),
 		GPU_LAMBDA(float x)
 	{
 		return x + offset;
 	});
 
-	thrust::device_vector<float> joint_weight_accum(weight_accum.size() + new_born_weight_accum.size());
-	joint_weight_accum.insert(joint_weight_accum.end(), weight_accum.begin(), weight_accum.end());
+	thrust::device_vector<float> joint_weight_accum(persistent_weight_accum.size() + new_born_weight_accum.size());
+	joint_weight_accum.insert(joint_weight_accum.end(), persistent_weight_accum.begin(), persistent_weight_accum.end());
 	joint_weight_accum.insert(joint_weight_accum.end(), new_born_weight_accum.begin(), new_born_weight_accum.end());
 
 	thrust::device_vector<int> idx_resampled(particle_count);
 	calc_resampled_indeces(joint_weight_accum, random_numbers, idx_resampled);
 	int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
+	float joint_max = joint_weight_accum.back();
+
 	resamplingKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, particle_array_next,
-		birth_particle_array, idx_array_resampled, particle_count);
+		birth_particle_array, idx_array_resampled, joint_max, particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
 }

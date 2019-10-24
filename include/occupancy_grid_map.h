@@ -113,8 +113,6 @@ public:
 	float* vel_y_squared_array;
 	float* vel_xy_array;
 
-	float* rand_array;
-
 	int grid_size;
 
 	int grid_cell_count;
