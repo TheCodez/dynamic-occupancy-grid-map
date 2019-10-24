@@ -25,7 +25,7 @@ const char* fragment_source = R"glsl(
 
     void main()
     {
-		vec2 uv = vec2(1.0 - (texCoord0.s / texCoord0.t), texCoord0.t);
+		vec2 uv = vec2(1.0 - (texCoord0.s / (texCoord0.t + 1e-10)), texCoord0.t);
 		fragColor = texture(tex, uv);
     }
 )glsl";
