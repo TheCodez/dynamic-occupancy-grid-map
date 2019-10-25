@@ -5,22 +5,34 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__device__ float calc_mean(float* vel_array_accum, int start_idx, int end_idx, float rhoP)
+__device__ float calc_mean(float* vel_array_accum, int start_idx, int end_idx, float rho_p)
 {
-	float velAccum = subtract(vel_array_accum, start_idx, end_idx);
-	return (1.0f / rhoP) * velAccum;
+	if (rho_p > 0.0f)
+	{
+		float vel_accum = subtract(vel_array_accum, start_idx, end_idx);
+		return (1.0f / rho_p) * vel_accum;
+	}
+	return 0.0f;
 }
 
-__device__ float calc_variance(float* vel_squared_array_accum, int start_idx, int end_idx, float rhoP, float mean_vel)
+__device__ float calc_variance(float* vel_squared_array_accum, int start_idx, int end_idx, float rho_p, float mean_vel)
 {
-	float velAccum = subtract(vel_squared_array_accum, start_idx, end_idx);
-	return (1.0f / rhoP) * velAccum - mean_vel * mean_vel;
+	if (rho_p > 0.0f)
+	{
+		float vel_accum = subtract(vel_squared_array_accum, start_idx, end_idx);
+		return (1.0f / rho_p) * vel_accum - mean_vel * mean_vel;
+	}
+	return 0.0f;
 }
 
-__device__ float calc_covariance(float* vel_xy_array_accum, int start_idx, int end_idx, float rhoP, float mean_x_vel, float mean_y_vel)
+__device__ float calc_covariance(float* vel_xy_array_accum, int start_idx, int end_idx, float rho_p, float mean_x_vel, float mean_y_vel)
 {
-	float velAccum = subtract(vel_xy_array_accum, start_idx, end_idx);
-	return (1.0f / rhoP) * velAccum - mean_x_vel * mean_y_vel;
+	if (rho_p > 0.0f)
+	{
+		float vel_accum = subtract(vel_xy_array_accum, start_idx, end_idx);
+		return (1.0f / rho_p) * vel_accum - mean_x_vel * mean_y_vel;
+	}
+	return 0.0f;
 }
 
 __device__ void store(GridCell* grid_cell_array, int j, float mean_x_vel, float mean_y_vel, float var_x_vel, float var_y_vel,

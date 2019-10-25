@@ -18,9 +18,6 @@ void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, th
 		return  x * (size / max);
 	});
 
-	float joint_max = norm_weight_accum.back();
-	//printf("Scaled: %f\n", joint_max);
-
 	thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(), indices.begin());
 }
 

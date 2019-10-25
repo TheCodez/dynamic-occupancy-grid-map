@@ -35,14 +35,14 @@ __device__ int calc_num_assoc(int num_new_particles, float p_A)
 	return static_cast<int>(num_new_particles * p_A);
 }
 
-__device__ float calc_weight_assoc(int nuA, float p_A, float born_mass)
+__device__ float calc_weight_assoc(int nu_A, float p_A, float born_mass)
 {
-	return nuA > 0 ? (p_A * born_mass) / nuA : 0.0f;
+	return nu_A > 0 ? (p_A * born_mass) / nu_A : 0.0f;
 }
 
-__device__ float calc_weight_unassoc(int nuUA, float p_A, float born_mass)
+__device__ float calc_weight_unassoc(int nu_UA, float p_A, float born_mass)
 {
-	return nuUA > 0 ? ((1.0f - p_A) * born_mass) / nuUA : 0.0f;
+	return nu_UA > 0 ? ((1.0f - p_A) * born_mass) / nu_UA : 0.0f;
 }
 
 __device__ void store_weights(float w_A, float w_UA, GridCell* grid_cell_array, int j)

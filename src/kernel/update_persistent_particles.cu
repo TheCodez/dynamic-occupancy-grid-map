@@ -11,14 +11,14 @@ __device__ float update_unnorm(Particle* particle_array, int i, MeasurementCell*
 	return meas_cell_array[particle.grid_cell_idx].likelihood * particle.weight;
 }
 
-__device__ float calc_norm_assoc(float occAccum, float rhoP)
+__device__ float calc_norm_assoc(float occ_accum, float rho_p)
 {
-	return occAccum > 0.0f ? rhoP / occAccum : 0.0f;
+	return occ_accum > 0.0f ? rho_p / occ_accum : 0.0f;
 }
 
-__device__ float calc_norm_unassoc(const GridCell& gridCell)
+__device__ float calc_norm_unassoc(const GridCell& grid_cell)
 {
-	return gridCell.occ_mass > 0.0f ? gridCell.pers_occ_mass / gridCell.occ_mass : 0.0f;
+	return grid_cell.occ_mass > 0.0f ? grid_cell.pers_occ_mass / grid_cell.occ_mass : 0.0f;
 }
 
 __device__ void set_normalization_components(GridCell* grid_cell_array, int i, float mu_A, float mu_UA)
@@ -52,13 +52,11 @@ __global__ void updatePersistentParticlesKernel2(GridCell* grid_cell_array, floa
 	{
 		int start_idx = grid_cell_array[i].start_idx;
 		int end_idx = grid_cell_array[i].end_idx;
-		float occ_accum = subtract(weight_array_accum, start_idx, end_idx);
+		float m_occ_accum = subtract(weight_array_accum, start_idx, end_idx);
 		float rho_p = grid_cell_array[i].pers_occ_mass;
-		float mu_A = calc_norm_assoc(occ_accum, rho_p);
+		float mu_A = calc_norm_assoc(m_occ_accum, rho_p);
 		float mu_UA = calc_norm_unassoc(grid_cell_array[i]);
 		set_normalization_components(grid_cell_array, i, mu_A, mu_UA);
-
-		//printf("occ_acum: %f, rho_p: %f, mu_A: %f, mu_UA: %f\n", occ_accum, rho_p, mu_A, mu_UA);
 	}
 }
 
