@@ -11,6 +11,12 @@ static void accumulate(T* arr, thrust::device_vector<T>& result)
 	thrust::inclusive_scan(ptr, ptr + result.size(), result.begin());
 }
 
+template <typename T>
+static void accumulate(thrust::device_vector<T>& arr, thrust::device_vector<T>& result)
+{
+	thrust::inclusive_scan(arr.begin(), arr.end(), result.begin());
+}
+
 static __device__ __host__ float subtract(float* accum_array, int start_idx, int end_idx)
 {
 	return accum_array[end_idx] - accum_array[start_idx - 1];

@@ -306,21 +306,15 @@ void OccupancyGridMap::resampling()
 	});
 	thrust::sort(random_numbers.begin(), random_numbers.end());
 
-	thrust::device_vector<float> persistent_weight_accum(particle_count);
-	thrust::device_vector<float> new_born_weight_accum(new_born_particle_count);
-	accumulate(weight_array, persistent_weight_accum);
-	accumulate(birth_weight_array, new_born_weight_accum);
+	thrust::device_ptr<float> persistent_weights(weight_array);
+	thrust::device_ptr<float> new_born_weights(birth_weight_array);
 
-	float offset = persistent_weight_accum.back();
-	thrust::transform(new_born_weight_accum.begin(), new_born_weight_accum.end(), new_born_weight_accum.begin(),
-		GPU_LAMBDA(float x)
-	{
-		return x + offset;
-	});
+	thrust::device_vector<float> joint_weight_array(particle_count + new_born_particle_count);
+	joint_weight_array.insert(joint_weight_array.end(), persistent_weights, persistent_weights + particle_count);
+	joint_weight_array.insert(joint_weight_array.end(), new_born_weights, new_born_weights + new_born_particle_count);
 
-	thrust::device_vector<float> joint_weight_accum(persistent_weight_accum.size() + new_born_weight_accum.size());
-	joint_weight_accum.insert(joint_weight_accum.end(), persistent_weight_accum.begin(), persistent_weight_accum.end());
-	joint_weight_accum.insert(joint_weight_accum.end(), new_born_weight_accum.begin(), new_born_weight_accum.end());
+	thrust::device_vector<float> joint_weight_accum(joint_weight_array.size());
+	accumulate(joint_weight_array, joint_weight_accum);
 
 	thrust::device_vector<int> idx_resampled(particle_count);
 	calc_resampled_indeces(joint_weight_accum, random_numbers, idx_resampled);
