@@ -299,7 +299,8 @@ void OccupancyGridMap::resampling()
 	thrust::transform(thrust::make_counting_iterator(0), thrust::make_counting_iterator(particle_count), random_numbers.begin(),
 		GPU_LAMBDA(int index)
 	{
-		thrust::default_random_engine rand_eng;
+		//unsigned int seed = hash(index);
+		thrust::default_random_engine rand_eng;//(seed);
 		thrust::uniform_real_distribution<float> dist(0.0f, max);
 		rand_eng.discard(index);
 		return dist(rand_eng);
@@ -309,7 +310,7 @@ void OccupancyGridMap::resampling()
 	thrust::device_ptr<float> persistent_weights(weight_array);
 	thrust::device_ptr<float> new_born_weights(birth_weight_array);
 
-	thrust::device_vector<float> joint_weight_array(particle_count + new_born_particle_count);
+	thrust::device_vector<float> joint_weight_array;
 	joint_weight_array.insert(joint_weight_array.end(), persistent_weights, persistent_weights + particle_count);
 	joint_weight_array.insert(joint_weight_array.end(), new_born_weights, new_born_weights + new_born_particle_count);
 

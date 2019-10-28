@@ -7,6 +7,7 @@
 
 #include <thrust/binary_search.h>
 
+
 void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<float>& rand_array,
 	thrust::device_vector<int>& indices)
 {
@@ -18,6 +19,15 @@ void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, th
 		return  x * (size / max);
 	});
 
+	float norm_max = norm_weight_accum.back();
+	float rand_max = rand_array.back();
+
+	if (norm_max != rand_max)
+	{
+		norm_weight_accum.back() = rand_max;
+	}
+
+	// multinomial sampling
 	thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(), indices.begin());
 }
 
@@ -25,12 +35,10 @@ __device__ Particle copy_particle(Particle* particle_array, int particle_count, 
 {
 	if (idx < particle_count)
 	{
-		//printf("Picked persistent\n");
 		return particle_array[idx];
 	}
 	else
 	{
-		//printf("Picked new born\n");
 		return birth_particle_array[idx - particle_count];
 	}
 }
