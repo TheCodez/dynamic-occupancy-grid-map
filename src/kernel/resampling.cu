@@ -7,8 +7,7 @@
 
 #include <thrust/binary_search.h>
 
-
-void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<float>& rand_array,
+void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<int>& rand_array,
 	thrust::device_vector<int>& indices)
 {
 	thrust::device_vector<float> norm_weight_accum(joint_weight_accum.size());
@@ -20,11 +19,11 @@ void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, th
 	});
 
 	float norm_max = norm_weight_accum.back();
-	float rand_max = rand_array.back();
+	int rand_max = rand_array.back();
 
 	if (norm_max != rand_max)
 	{
-		norm_weight_accum.back() = rand_max;
+		norm_weight_accum.back() = static_cast<float>(rand_max);
 	}
 
 	// multinomial sampling

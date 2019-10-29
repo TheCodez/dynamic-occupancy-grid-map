@@ -294,18 +294,18 @@ void OccupancyGridMap::resampling()
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 
-	float max = static_cast<float>(particle_count + new_born_particle_count);
-	thrust::device_vector<float> random_numbers(particle_count);
-	thrust::transform(thrust::make_counting_iterator(0), thrust::make_counting_iterator(particle_count), random_numbers.begin(),
+	const int max = particle_count + new_born_particle_count;
+	thrust::device_vector<int> rand_array(particle_count);
+	thrust::transform(thrust::make_counting_iterator(0), thrust::make_counting_iterator(particle_count), rand_array.begin(),
 		GPU_LAMBDA(int index)
 	{
 		//unsigned int seed = hash(index);
 		thrust::default_random_engine rand_eng;//(seed);
-		thrust::uniform_real_distribution<float> dist(0.0f, max);
+		thrust::uniform_int_distribution<int> dist(0, max);
 		rand_eng.discard(index);
 		return dist(rand_eng);
 	});
-	thrust::sort(random_numbers.begin(), random_numbers.end());
+	thrust::sort(rand_array.begin(), rand_array.end());
 
 	thrust::device_ptr<float> persistent_weights(weight_array);
 	thrust::device_ptr<float> new_born_weights(birth_weight_array);
@@ -318,7 +318,7 @@ void OccupancyGridMap::resampling()
 	accumulate(joint_weight_array, joint_weight_accum);
 
 	thrust::device_vector<int> idx_resampled(particle_count);
-	calc_resampled_indeces(joint_weight_accum, random_numbers, idx_resampled);
+	calc_resampled_indeces(joint_weight_accum, rand_array, idx_resampled);
 	int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
 	float joint_max = joint_weight_accum.back();
