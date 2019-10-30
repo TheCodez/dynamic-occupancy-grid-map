@@ -15,7 +15,7 @@ __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int
 		unsigned int seed = hash(i);
 		thrust::default_random_engine rng(seed);
 		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-		thrust::normal_distribution<float> dist_vel(0.0f, 4.0f);
+		thrust::normal_distribution<float> dist_vel(0.0f, 12.0f);
 
 		int index = dist_idx(rng);
 
@@ -30,7 +30,7 @@ __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int
 	}
 }
 
-__global__ void initGridCellsKernel(GridCell* grid_cell_array, int grid_size, int cell_count)
+__global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* meas_cell_array, int grid_size, int cell_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -41,5 +41,10 @@ __global__ void initGridCellsKernel(GridCell* grid_cell_array, int grid_size, in
 		grid_cell_array[i].pos = make_int2(x, y);
 		grid_cell_array[i].free_mass = 0.0f;
 		grid_cell_array[i].occ_mass = 0.0f;
+
+		meas_cell_array[i].occ_mass = 0.0f;
+		meas_cell_array[i].free_mass = 0.0f;
+		meas_cell_array[i].likelihood = 1.0f;
+		meas_cell_array[i].p_A = 1.0f;
 	}
 }

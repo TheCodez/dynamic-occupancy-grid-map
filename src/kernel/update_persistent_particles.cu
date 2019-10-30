@@ -5,12 +5,6 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__device__ float update_unnorm(Particle* particle_array, int i, MeasurementCell* meas_cell_array)
-{
-	Particle& particle = particle_array[i];
-	return meas_cell_array[particle.grid_cell_idx].likelihood * particle.weight;
-}
-
 __device__ float calc_norm_assoc(float occ_accum, float rho_p)
 {
 	return occ_accum > 0.0f ? rho_p / occ_accum : 0.0f;
@@ -27,12 +21,18 @@ __device__ void set_normalization_components(GridCell* grid_cell_array, int i, f
 	grid_cell_array[i].mu_UA = mu_UA;
 }
 
+__device__ float update_unnorm(Particle* particle_array, int i, MeasurementCell* meas_cell_array)
+{
+	Particle& particle = particle_array[i];
+	return meas_cell_array[particle.grid_cell_idx].likelihood * particle.weight;
+}
+
 __device__ float normalize(Particle& particle, GridCell* grid_cell_array, MeasurementCell* meas_cell_array, float weight)
 {
 	GridCell& cell = grid_cell_array[particle.grid_cell_idx];
-	MeasurementCell& measCell = meas_cell_array[particle.grid_cell_idx];
+	MeasurementCell& meas_cell = meas_cell_array[particle.grid_cell_idx];
 
-	return measCell.p_A * cell.mu_A * weight + (1.0f - measCell.p_A) * cell.mu_UA * particle.weight;
+	return meas_cell.p_A * cell.mu_A * weight + (1.0f - meas_cell.p_A) * cell.mu_UA * particle.weight;
 }
 
 __global__ void updatePersistentParticlesKernel1(Particle* particle_array, MeasurementCell* meas_cell_array, float* weight_array,

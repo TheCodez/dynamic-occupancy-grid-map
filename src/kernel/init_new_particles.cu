@@ -105,7 +105,7 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 
 		//printf("Start idx: %d, End idx: %d\n", start_idx, end_idx);
 
-		int num_new_particles = end_idx - start_idx + 1;
+		int num_new_particles = start_idx <= end_idx ? end_idx - start_idx + 1 : 0;
 		float p_A = meas_cell_array[j].p_A;
 		int nu_A = calc_num_assoc(num_new_particles, p_A);
 		int nu_UA = num_new_particles - nu_A;

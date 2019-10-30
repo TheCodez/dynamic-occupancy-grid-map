@@ -74,7 +74,7 @@ void OccupancyGridMap::initialize()
 {
 	initParticlesKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, particle_count);
 
-	initGridCellsKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, grid_size, grid_cell_count);
+	initGridCellsKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, meas_cell_array, grid_size, grid_cell_count);
 
 	CHECK_ERROR(cudaGetLastError());
 	
@@ -87,7 +87,7 @@ void OccupancyGridMap::updateDynamicGrid(float dt)
 	particleAssignment();
 	gridCellOccupancyUpdate();
 	updatePersistentParticles();
-	initializeNewParticles();
+	//initializeNewParticles();
 	statisticalMoments();
 	resampling();
 
@@ -186,8 +186,8 @@ void OccupancyGridMap::gridCellOccupancyUpdate()
 	accumulate(weight_array, weights_accum);
 	float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
-	gridCellPredictionUpdateKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, particle_array, weight_array_accum,
-		meas_cell_array, born_masses_array, params.p_B, params.p_S, grid_cell_count);
+	gridCellPredictionUpdateKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, particle_array, weight_array,
+		weight_array_accum, meas_cell_array, born_masses_array, params.p_B, params.p_S, grid_cell_count);
 
 	CHECK_ERROR(cudaGetLastError());
 }

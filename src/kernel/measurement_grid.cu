@@ -33,7 +33,7 @@ __device__ float pFree(int i, float p_min, float p_max, int max_range)
 __device__ float pOcc(int r, float zk, int index)
 {
 	float alpha = 1.0f;
-	float delta = 2.0f;
+	float delta = 2.2f;
 
 	//return (alpha / (delta * sqrt(2.0f * PI))) * exp(-0.5f * (index - r) * (index - r) / (delta * delta));
 	return 0.8f * exp(-0.5f * (index - r) * (index - r) / (delta * delta));

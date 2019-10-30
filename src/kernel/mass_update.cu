@@ -43,23 +43,23 @@ __device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_
 	grid_cell_array[i].occ_mass = m_occ_up;
 }
 
-__device__ void normalize_to_pS(Particle* particle_array, float p_S, int start_idx, int end_idx)
+__device__ void normalize_to_pS(Particle* particle_array, float* weight_array, float p_S, int start_idx, int end_idx)
 {
 	float sum = 0.0f;
-
 	for (int i = start_idx; i < end_idx + 1; i++)
 	{
-		sum += particle_array[i].weight;
+		sum += weight_array[i];
 	}
 
 	for (int i = start_idx; i < end_idx + 1; i++)
 	{
-		particle_array[i].weight = particle_array[i].weight / sum * p_S;
+		weight_array[i] = weight_array[i] / sum * p_S;
+		particle_array[i].weight = weight_array[i];
 	}
 }
 
-__global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, float* weight_array_accum,
-	MeasurementCell* meas_cell_array, float* born_masses_array, float p_B, float p_S, int cell_count)
+__global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, float* weight_array,
+	float* weight_array_accum, MeasurementCell* meas_cell_array, float* born_masses_array, float p_B, float p_S, int cell_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -72,7 +72,7 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Partic
 		if (m_occ_pred > p_S)
 		{
 			m_occ_pred = p_S;
-			normalize_to_pS(particle_array, p_S, start_idx, end_idx);
+			normalize_to_pS(particle_array, weight_array, p_S, start_idx, end_idx);
 		}
 
 		float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);
