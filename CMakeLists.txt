@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(occupancy_grid_map CXX CUDA)
+project(DOGM CXX CUDA)
 
 find_package(OpenGL REQUIRED)
 #find_package(glm REQUIRED)
@@ -68,7 +68,7 @@ set(SRC_FILES
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})
 
-add_library(occupancy_grid_map STATIC
+add_library(dogm STATIC
     ${HEADERS_FILES}
 	${SRC_FILES}
 )
@@ -77,9 +77,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
 set(CUDA_PROPAGATE_HOST_FLAGS ON)
 
-set_target_properties(occupancy_grid_map PROPERTIES PUBLIC_HEADER include/occupancy_grid_map.h)
+set_target_properties(dogm PROPERTIES PUBLIC_HEADER include/occupancy_grid_map.h)
 
-target_link_libraries(occupancy_grid_map
+target_link_libraries(dogm
 	${OPENGL_LIBRARY}
 	${GLFW_LIBRARY}
 	${GLEW_LIBRARY}
@@ -91,6 +91,6 @@ add_executable(demo
 )
 
 target_link_libraries(demo
-	occupancy_grid_map
+	dogm
 	${OPENCV_LIBRARY}
 )
