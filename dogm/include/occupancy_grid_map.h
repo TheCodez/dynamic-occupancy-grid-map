@@ -121,20 +121,11 @@ public:
 	Particle* particle_array_next;
 	Particle* birth_particle_array;
 
+	MeasurementCell* meas_cell_array;
+
 	float* weight_array;
 	float* birth_weight_array;
-	MeasurementCell* meas_cell_array;
-	float* meas_array;
-
 	float* born_masses_array;
-	float* particle_orders_array_accum;
-
-	float* vel_x_array;
-	float* vel_y_array;
-
-	float* vel_x_squared_array;
-	float* vel_y_squared_array;
-	float* vel_xy_array;
 
 	int grid_size;
 

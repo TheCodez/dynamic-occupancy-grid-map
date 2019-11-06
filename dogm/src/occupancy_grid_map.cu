@@ -65,11 +65,6 @@ OccupancyGridMap::OccupancyGridMap(const GridParams& params, const LaserSensorPa
 	CHECK_ERROR(cudaMalloc(&weight_array, particle_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&born_masses_array, grid_cell_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&vel_x_array, particle_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&vel_y_array, particle_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&vel_x_squared_array, particle_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&vel_y_squared_array, particle_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&vel_xy_array, particle_count * sizeof(float)));
 
 	initialize();
 }
@@ -84,11 +79,6 @@ OccupancyGridMap::~OccupancyGridMap()
 	CHECK_ERROR(cudaFree(weight_array));
 	CHECK_ERROR(cudaFree(birth_weight_array));
 	CHECK_ERROR(cudaFree(born_masses_array));
-	CHECK_ERROR(cudaFree(vel_x_array));
-	CHECK_ERROR(cudaFree(vel_y_array));
-	CHECK_ERROR(cudaFree(vel_x_squared_array));
-	CHECK_ERROR(cudaFree(vel_y_squared_array));
-	CHECK_ERROR(cudaFree(vel_xy_array));
 	
 	delete renderer;
 }
@@ -278,6 +268,21 @@ void OccupancyGridMap::initializeNewParticles()
 void OccupancyGridMap::statisticalMoments()
 {
 	//std::cout << "OccupancyGridMap::statisticalMoments" << std::endl;
+
+	thrust::device_vector<float> vel_x(particle_count);
+	float* vel_x_array = thrust::raw_pointer_cast(vel_x.data());
+
+	thrust::device_vector<float> vel_y(particle_count);
+	float* vel_y_array = thrust::raw_pointer_cast(vel_y.data());
+
+	thrust::device_vector<float> vel_x_squared(particle_count);
+	float* vel_x_squared_array = thrust::raw_pointer_cast(vel_x_squared.data());
+
+	thrust::device_vector<float> vel_y_squared(particle_count);
+	float* vel_y_squared_array = thrust::raw_pointer_cast(vel_y_squared.data());
+
+	thrust::device_vector<float> vel_xy(particle_count);
+	float* vel_xy_array = thrust::raw_pointer_cast(vel_xy.data());
 
 	statisticalMomentsKernel1<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, weight_array,
 		vel_x_array, vel_y_array, vel_x_squared_array, vel_y_squared_array, vel_xy_array, particle_count);
