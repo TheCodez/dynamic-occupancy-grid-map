@@ -8,6 +8,7 @@ Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps 
 
 - CMake
 - OpenCV
+- OpenGL, GLFW3, GLEW, GLM
 - CUDA
 
 ## How to build and run
@@ -24,8 +25,10 @@ make
 
 ## References
 
-Nuss et al. "A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application" [(arxiv)](https://arxiv.org/abs/1605.02406)
+Nuss et al. ["A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application"](https://arxiv.org/abs/1605.02406)
 
-Dominik Nuß. "A Random Finite Set Approach for Dynamic Occupancy Grid Maps" [(link)](https://d-nb.info/1133544290/34)
+Dominik Nuß. ["A Random Finite Set Approach for Dynamic Occupancy Grid Maps"](https://d-nb.info/1133544290/34)
+
+Homm et al. ["Efficient Occupancy Grid Computation on the GPU with Lidar and Radar for Road Boundary Detection"](https://mediatum.ub.tum.de/doc/1287438/726193.pdf)
 
 [mitkina/dogma](https://github.com/mitkina/dogma) has also been a great reference whenever I got stuck.
