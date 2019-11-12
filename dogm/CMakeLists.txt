@@ -111,9 +111,7 @@ add_executable(demo
 	demo/measurements.h
 )
 
-target_include_directories(demo
-    ${OpenCV_INCLUDE_DIRS}
-)
+target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS})
 
 target_link_libraries(demo
 	dogm
