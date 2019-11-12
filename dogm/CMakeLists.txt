@@ -28,9 +28,6 @@ if (NOT OpenCV_FOUND)
 	set(OpenCV_LIBRARY "" CACHE FILEPATH "" )
 endif()
 
-#set(OpenCV_INCLUDE_DIR "" CACHE PATH "" )
-#set(OpenCV_LIBRARY "" CACHE FILEPATH "" )
-
 #if(WIN32)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}d.dll" DESTINATION ${CMAKE_INSTALL_BINARY}/debug CONFIGURATIONS Debug)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}.dll" DESTINATION ${CMAKE_INSTALL_BINARY} CONFIGURATIONS RelWithDebInfo Release)
@@ -93,7 +90,7 @@ add_library(dogm STATIC
 )
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
 set(CUDA_PROPAGATE_HOST_FLAGS ON)
 
 set_target_properties(dogm PROPERTIES PUBLIC_HEADER include/occupancy_grid_map.h)
