@@ -1,37 +1,56 @@
 cmake_minimum_required(VERSION 3.9)
 project(DOGM CXX CUDA)
 
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
 find_package(OpenGL REQUIRED)
-#find_package(glm REQUIRED)
-#find_package(GLFW3 REQUIRED)
-#find_package(GLEW REQUIRED)
-#find_package(OpenCV REQUIRED)
 
-set(GLFW_INCLUDE_DIR "" CACHE PATH "" )
-set(GLFW_LIBRARY "" CACHE FILEPATH "" )
+find_package(GLM)
+if (NOT GLM_FOUND)
+	set(GLM_INCLUDE_DIR "" CACHE PATH "")
+endif()
 
-set(GLEW_INCLUDE_DIR "" CACHE PATH "" )
-set(GLEW_LIBRARY "" CACHE FILEPATH "" )
+find_package(GLFW3)
+if (NOT GLFW3_FOUND)
+	set(GLFW3_INCLUDE_DIR "" CACHE PATH "")
+	set(GLFW3_LIBRARY "" CACHE FILEPATH "" )
+endif()
 
-set(OPENCV_INCLUDE_DIR "" CACHE PATH "" )
-set(OPENCV_LIBRARY "" CACHE FILEPATH "" )
+find_package(GLEW)
+if (NOT GLEW_FOUND)
+	set(GLEW_INCLUDE_DIRS "" CACHE PATH "")
+	set(GLEW_LIBRARY "" CACHE FILEPATH "" )
+endif()
 
-set(GLM_INCLUDE_DIR "" CACHE PATH "" )
+find_package(OpenCV)
+if (NOT OpenCV_FOUND)
+	set(OpenCV_INCLUDE_DIRS "" CACHE PATH "" )
+	set(OpenCV_LIBRARY "" CACHE FILEPATH "" )
+endif()
+
+#set(OpenCV_INCLUDE_DIR "" CACHE PATH "" )
+#set(OpenCV_LIBRARY "" CACHE FILEPATH "" )
+
+#if(WIN32)
+#    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}d.dll" DESTINATION ${CMAKE_INSTALL_BINARY}/debug CONFIGURATIONS Debug)
+#    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}.dll" DESTINATION ${CMAKE_INSTALL_BINARY} CONFIGURATIONS RelWithDebInfo Release)
+#endif(WIN32)
 
 include_directories(
 	include
-	${GLFW_INCLUDE_DIR}
-	${GLEW_INCLUDE_DIR}
+	${CUDA_INCLUDE_DIRS}
+	${GLFW3_INCLUDE_DIR}
+	${GLEW_INCLUDE_DIRS}
 	${GLM_INCLUDE_DIR}
-	${OPENCV_INCLUDE_DIR}
+	${OpenCV_INCLUDE_DIRS}
 )
 
 set(HEADERS_FILES
-    include/opengl/texture.h
-    include/opengl/framebuffer.h
-    include/opengl/polygon.h
-    include/opengl/renderer.h
-    include/opengl/shader.h
+	include/opengl/texture.h
+	include/opengl/framebuffer.h
+	include/opengl/polygon.h
+	include/opengl/renderer.h
+	include/opengl/shader.h
 	include/kernel/init.h
 	include/kernel/init_new_particles.h
 	include/kernel/mass_update.h
@@ -49,11 +68,11 @@ set(HEADERS_FILES
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS_FILES})
 
 set(SRC_FILES
-    src/opengl/texture.cpp
-    src/opengl/framebuffer.cpp
-    src/opengl/polygon.cpp
-    src/opengl/renderer.cpp
-    src/opengl/shader.cpp
+	src/opengl/texture.cpp
+	src/opengl/framebuffer.cpp
+	src/opengl/polygon.cpp
+	src/opengl/renderer.cpp
+	src/opengl/shader.cpp
 	src/kernel/init.cu
 	src/kernel/init_new_particles.cu
 	src/kernel/mass_update.cu
@@ -81,7 +100,7 @@ set_target_properties(dogm PROPERTIES PUBLIC_HEADER include/occupancy_grid_map.h
 
 target_link_libraries(dogm
 	${OPENGL_LIBRARY}
-	${GLFW_LIBRARY}
+	${GLFW3_LIBRARY}
 	${GLEW_LIBRARY}
 )
 
@@ -92,5 +111,5 @@ add_executable(demo
 
 target_link_libraries(demo
 	dogm
-	${OPENCV_LIBRARY}
+	${OpenCV_LIBRARY}
 )
