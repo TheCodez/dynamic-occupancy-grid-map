@@ -100,7 +100,7 @@ void OccupancyGridMap::updateDynamicGrid(float dt)
 	particleAssignment();
 	gridCellOccupancyUpdate();
 	updatePersistentParticles();
-	//initializeNewParticles();
+	initializeNewParticles();
 	statisticalMoments();
 	resampling();
 
