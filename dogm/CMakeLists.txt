@@ -25,7 +25,7 @@ endif()
 find_package(OpenCV)
 if (NOT OpenCV_FOUND)
 	set(OpenCV_INCLUDE_DIRS "" CACHE PATH "" )
-	set(OpenCV_LIBRARY "" CACHE FILEPATH "" )
+	set(OpenCV_LIBS "" CACHE FILEPATH "" )
 endif()
 
 #if(WIN32)
@@ -39,7 +39,6 @@ include_directories(
 	${GLFW3_INCLUDE_DIR}
 	${GLEW_INCLUDE_DIRS}
 	${GLM_INCLUDE_DIR}
-	${OpenCV_INCLUDE_DIRS}
 )
 
 set(HEADERS_FILES
@@ -112,8 +111,11 @@ add_executable(demo
 	demo/measurements.h
 )
 
+target_include_directories(demo
+    ${OpenCV_INCLUDE_DIRS}
+)
+
 target_link_libraries(demo
 	dogm
-	${OpenCV_LIBRARY}
 	${OpenCV_LIBS}
 )
