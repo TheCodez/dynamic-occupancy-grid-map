@@ -92,10 +92,11 @@ add_library(dogm STATIC
 set(CMAKE_CXX_STANDARD 11)
 
 # support for gpu lambdas
-list(APPEND CMAKE_CUDA_FLAGS "--expt-extended-lambda")
+#list(APPEND CMAKE_CUDA_FLAGS "--expt-extended-lambda")
 # supress glm warnings
-list(APPEND CMAKE_CUDA_FLAGS "-Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
+#list(APPEND CMAKE_CUDA_FLAGS "-Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
 
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
 set(CUDA_PROPAGATE_HOST_FLAGS ON)
 
 set_target_properties(dogm PROPERTIES PUBLIC_HEADER include/occupancy_grid_map.h)
