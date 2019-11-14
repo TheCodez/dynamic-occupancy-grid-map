@@ -95,7 +95,7 @@ set(CMAKE_CXX_STANDARD 11)
 # supress glm warnings
 #list(APPEND CMAKE_CUDA_FLAGS "-Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
 
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
 set(CUDA_PROPAGATE_HOST_FLAGS ON)
 
 set_target_properties(dogm PROPERTIES PUBLIC_HEADER include/occupancy_grid_map.h)
