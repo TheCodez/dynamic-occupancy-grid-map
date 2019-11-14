@@ -93,7 +93,7 @@ set(CMAKE_CXX_STANDARD 11)
 # support for gpu lambdas
 string(APPEND CMAKE_CUDA_FLAGS " --expt-extended-lambda")
 # supress glm warnings
-string(APPEND CMAKE_CUDA_FLAGS " -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
+#string(APPEND CMAKE_CUDA_FLAGS " -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
 
 #set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
 set(CUDA_PROPAGATE_HOST_FLAGS ON)
