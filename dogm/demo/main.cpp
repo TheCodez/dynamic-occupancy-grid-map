@@ -173,27 +173,20 @@ int main(int argc, const char** argv)
 		std::cout << "Iteration took: " << ms << " ms" << std::endl;
 	}
 
-#if 0
-	cv::Mat outImg(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
-	
+	cv::Mat particle_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
 	for (int i = 0; i < grid_map.particle_count; i++)
 	{
 		const Particle& part = grid_map.particle_array[i];
+		float x = part.state[0];
+		float y = part.state[1];
 
-		if (part.state[0] >= 0 && part.state[0] < grid_map.getGridSize()
-			&& part.state[1] >= 0 && part.state[1] < grid_map.getGridSize())
+		if ((x >= 0 && x < grid_map.getGridSize()) && (y >= 0 && y < grid_map.getGridSize()))
 		{
-			outImg.at<cv::Vec3b>((int)part.state[1], (int)part.state[0]) = cv::Vec3b(0, 0, 255);
+			particle_img.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x)) = cv::Vec3b(0, 0, 255);
 		}
 	}
-	cv::namedWindow("particles", cv::WINDOW_NORMAL);
-	cv::imshow("particles", outImg);
-	cv::waitKey(0);
-#endif
 
-#if 1
-	cv::Mat outImg2(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
-
+	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
 		for (int x = 0; x < grid_map.getGridSize(); x++)
@@ -204,8 +197,6 @@ int main(int argc, const char** argv)
 			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
 			uchar temp = (uchar) floor(occ * 255);
 			
-			float speed = sqrt(cell.mean_x_vel * cell.mean_x_vel + cell.mean_y_vel * cell.mean_y_vel);
-
 			cv::Mat vel_img(2, 1, CV_32FC1);
 			vel_img.at<float>(0) = cell.mean_x_vel;
 			vel_img.at<float>(1) = cell.mean_y_vel;
@@ -218,26 +209,28 @@ int main(int argc, const char** argv)
 
 			cv::Mat mdist = vel_img.t() * covar_img.inv() * vel_img;
 
-			if (occ > 0.7f)// && mdist.at<float>(0) > 4.0)
+			if (occ >= 0.7f)// && mdist.at<float>(0, 0) > 4.0)
 			{
 				float angle = atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI);
 
 				int color[3];
 				HSVtoRGB((int)ceil(angle), 1.0, 1.0, color);
 
-				outImg2.at<cv::Vec3b>(y, x) = cv::Vec3b(color[2], color[1], color[0]);
+				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(color[2], color[1], color[0]);
 
 			}
 			else
 			{
-				outImg2.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
+				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
 			}
 		}
 	}
-	cv::namedWindow("image", cv::WINDOW_NORMAL);
-	cv::imshow("image", outImg2);
+	cv::namedWindow("dynamic_grid", cv::WINDOW_NORMAL);
+	cv::imshow("dynamic_grid", grid_img);
+	
+	cv::namedWindow("particles", cv::WINDOW_NORMAL);
+	cv::imshow("particles", particle_img);
 	cv::waitKey(0);
-#endif
 
 	save_image("result_measurement_grid.pgm", grid_map.meas_cell_array, grid_map.getGridSize(), grid_map.getGridSize());
 	save_image("result_dynamic_grid.pgm", grid_map.grid_cell_array, grid_map.getGridSize(), grid_map.getGridSize());
