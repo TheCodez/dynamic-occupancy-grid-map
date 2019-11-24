@@ -87,8 +87,8 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 	bool associated = birth_particle_array[i].associated;
 	if (associated)
 	{
-		float x = cell_idx % grid_size + 0.5f;
-		float y = cell_idx / grid_size + 0.5f;
+		float x = cell_idx % grid_size;
+		float y = cell_idx / grid_size;
 
 		birth_particle_array[i].weight = grid_cell.w_A;
 		birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
@@ -97,8 +97,8 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 	{
 		int index = dist_idx(rng);
 
-		float x = index % grid_size + 0.5f;
-		float y = index / grid_size + 0.5f;
+		float x = index % grid_size;
+		float y = index / grid_size;
 
 		birth_particle_array[i].weight = grid_cell.w_UA;
 		birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));

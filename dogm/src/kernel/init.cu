@@ -42,8 +42,8 @@ __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int
 
 		int index = dist_idx(rng);
 
-		float x = index % grid_size + 0.5f;
-		float y = index / grid_size + 0.5f;
+		float x = index % grid_size;
+		float y = index / grid_size;
 
 		particle_array[i].weight = 1.0f / particle_count;
 		particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));

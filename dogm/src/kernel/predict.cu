@@ -41,24 +41,25 @@ __global__ void predictKernel(Particle* particle_array, int grid_size, float p_S
 		float x = particle_array[i].state[0];
 		float y = particle_array[i].state[1];
 
-		//printf("X: %f, Y: %f\n", x, y);
-
 		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
 		{
 			unsigned int seed = hash(i);
 			thrust::default_random_engine rng(seed);
 			thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
+			thrust::normal_distribution<float> dist_vel(0.0f, 12.0f);
 
 			const int index = dist_idx(rng);
 
-			x = index % grid_size + 0.5f;
-			y = index / grid_size + 0.5f;
+			x = index % grid_size;
+			y = index / grid_size;
+
+			particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 		}
 
 		int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
 		int pos_y = clamp(static_cast<int>(y), 0, grid_size - 1);
 		particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
 
-		//printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + width * pos_y));
+		//printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
 	}
 }
