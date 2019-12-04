@@ -25,6 +25,7 @@ SOFTWARE.
 
 #include <glm/glm.hpp>
 
+#include <array>
 #include <iostream>
 #include <stdio.h>
 
@@ -50,53 +51,53 @@ using namespace std;
 
 #define PI 3.14159265358979323846f
 
-void HSVtoRGB(int H, double S, double V, int output[3])
+void hsv_to_rgb(int h, double s, double v, int output[3])
 {
-	double C = S * V;
-	double X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
-	double m = V - C;
-	double Rs, Gs, Bs;
+	double c = s * v;
+	double x = c * (1 - abs(fmod(h / 60.0, 2) - 1));
+	double m = v - c;
+	double rs, gs, bs;
 
-	if (H >= 0 && H < 60) 
+	if (h >= 0 && h < 60) 
 	{
-		Rs = C;
-		Gs = X;
-		Bs = 0;
+		rs = c;
+		gs = x;
+		bs = 0;
 	}
-	else if (H >= 60 && H < 120)
+	else if (h >= 60 && h < 120)
 	{
-		Rs = X;
-		Gs = C;
-		Bs = 0;
+		rs = x;
+		gs = c;
+		bs = 0;
 	}
-	else if (H >= 120 && H < 180)
+	else if (h >= 120 && h < 180)
 	{
-		Rs = 0;
-		Gs = C;
-		Bs = X;
+		rs = 0;
+		gs = c;
+		bs = x;
 	}
-	else if (H >= 180 && H < 240)
+	else if (h >= 180 && h < 240)
 	{
-		Rs = 0;
-		Gs = X;
-		Bs = C;
+		rs = 0;
+		gs = x;
+		bs = c;
 	}
-	else if (H >= 240 && H < 300)
+	else if (h >= 240 && h < 300)
 	{
-		Rs = X;
-		Gs = 0;
-		Bs = C;
+		rs = x;
+		gs = 0;
+		bs = c;
 	}
 	else 
 	{
-		Rs = C;
-		Gs = 0;
-		Bs = X;
+		rs = c;
+		gs = 0;
+		bs = x;
 	}
 
-	output[0] = (Rs + m) * 255;
-	output[1] = (Gs + m) * 255;
-	output[2] = (Bs + m) * 255;
+	output[0] = (rs + m) * 255;
+	output[1] = (gs + m) * 255;
+	output[2] = (bs + m) * 255;
 }
 
 float pignistic_transformation(float free_mass, float occ_mass)
@@ -104,36 +105,86 @@ float pignistic_transformation(float free_mass, float occ_mass)
 	return occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
 }
 
-template <typename T>
-void save_image(const char* filename, T* grid, int width, int height)
+cv::Mat compute_measurement_grid_image(const OccupancyGridMap& grid_map)
 {
-	FILE* pgmimg;
-	pgmimg = fopen(filename, "wb");
-
-	// Writing Magic Number to the File 
-	fprintf(pgmimg, "P2\n");
-
-	// Writing Width and Height 
-	fprintf(pgmimg, "%d %d\n", width, height);
-
-	// Writing the maximum gray value 
-	fprintf(pgmimg, "255\n");
-
-	for (int y = 0; y < height; y++)
+	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
+	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
-		for (int x = 0; x < width; x++)
+		for (int x = 0; x < grid_map.getGridSize(); x++)
 		{
-			int index = y * width + x;
+			int index = y * grid_map.getGridSize() + x;
 
-			const T& cell = grid[index];
+			const MeasurementCell& cell = grid_map.meas_cell_array[index];
 			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
-			int temp = (int)ceil(occ * 255);
-			fprintf(pgmimg, "%d ", 255 - temp);
+			uchar temp = (uchar)floor(occ * 255);
+			grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
 		}
-		fprintf(pgmimg, "\n");
 	}
 
-	fclose(pgmimg);
+	return grid_img;
+}
+
+cv::Mat compute_dogm_image(const OccupancyGridMap& grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
+{
+	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
+	for (int y = 0; y < grid_map.getGridSize(); y++)
+	{
+		for (int x = 0; x < grid_map.getGridSize(); x++)
+		{
+			int index = y * grid_map.getGridSize() + x;
+
+			const GridCell& cell = grid_map.grid_cell_array[index];
+			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
+			uchar temp = (uchar)floor(occ * 255);
+
+			cv::Mat vel_img(2, 1, CV_32FC1);
+			vel_img.at<float>(0) = cell.mean_x_vel;
+			vel_img.at<float>(1) = cell.mean_y_vel;
+
+			cv::Mat covar_img(2, 2, CV_32FC1);
+			covar_img.at<float>(0, 0) = cell.var_x_vel;
+			covar_img.at<float>(1, 0) = cell.covar_xy_vel;
+			covar_img.at<float>(0, 1) = cell.covar_xy_vel;
+			covar_img.at<float>(1, 1) = cell.var_y_vel;
+
+			cv::Mat mdist = vel_img.t() * covar_img.inv() * vel_img;
+
+			if (occ >= occ_tresh)// && mdist.at<float>(0, 0) > m_tresh)
+			{
+				float angle = atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI);
+
+				int color[3];
+				hsv_to_rgb(static_cast<int>(ceil(angle)), 1.0, 1.0, color);
+
+				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(color[2], color[1], color[0]);
+
+			}
+			else
+			{
+				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
+			}
+		}
+	}
+
+	return grid_img;
+}
+
+cv::Mat compute_particles_image(const OccupancyGridMap& grid_map)
+{
+	cv::Mat particles_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
+	for (int i = 0; i < grid_map.particle_count; i++)
+	{
+		const Particle& part = grid_map.particle_array[i];
+		float x = part.state[0];
+		float y = part.state[1];
+
+		if ((x >= 0 && x < grid_map.getGridSize()) && (y >= 0 && y < grid_map.getGridSize()))
+		{
+			particles_img.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x)) = cv::Vec3b(0, 0, 255);
+		}
+	}
+
+	return particles_img;
 }
 
 int main(int argc, const char** argv) 
@@ -154,84 +205,47 @@ int main(int argc, const char** argv)
 
 	OccupancyGridMap grid_map(params, laser_params);
 
-	float* measurements[9] = { ranges, ranges2, ranges3, ranges4, ranges4, ranges4, ranges4, ranges4, ranges4 };
-//	float* measurements[5] = { ranges4, ranges3, ranges2, ranges, ranges };
+	std::array<float*, 9> measurements = { ranges, ranges2, ranges3, ranges4, ranges4, ranges4, ranges4, ranges4, ranges4 };
+//	std::array<float*, 9> measurements = { ranges, ranges2, ranges3, ranges4, ranges4, ranges4, ranges4, ranges4, ranges4 };
+//	std::array<float*, 5> measurements = { ranges4, ranges3, ranges2, ranges, ranges };
 	int size = sizeof(ranges) / sizeof(ranges[0]);
 
-	for (float* meas : measurements)
+	for (int i = 0; i < measurements.size(); i++)
 	{
+		// Update measurement grid
+		grid_map.updateMeasurementGrid(measurements[i], size);
+
 		auto begin = chrono::high_resolution_clock::now();
 
-		grid_map.updateMeasurementGrid(meas, size);
-		//for (int i = 0; i < 10; i++)
-		{
-			grid_map.updateDynamicGrid(0.1f);
-		}
+		// Run Particle filter
+		grid_map.updateDynamicGrid(0.1f);
+
 		auto end = chrono::high_resolution_clock::now();
 		auto dur = end - begin;
 		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 		std::cout << "Iteration took: " << ms << " ms" << std::endl;
+		std::cout << "Saving result" << std::endl;
+		std::cout << "#####################" << std::endl;
+
+		cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
+		cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
+
+		cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
+		cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);
 	}
 
-	cv::Mat particle_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
-	for (int i = 0; i < grid_map.particle_count; i++)
-	{
-		const Particle& part = grid_map.particle_array[i];
-		float x = part.state[0];
-		float y = part.state[1];
+#if 1
+	cv::Mat particle_img = compute_particles_image(grid_map);
+	cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
 
-		if ((x >= 0 && x < grid_map.getGridSize()) && (y >= 0 && y < grid_map.getGridSize()))
-		{
-			particle_img.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x)) = cv::Vec3b(0, 0, 255);
-		}
-	}
-
-	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
-	for (int y = 0; y < grid_map.getGridSize(); y++)
-	{
-		for (int x = 0; x < grid_map.getGridSize(); x++)
-		{
-			int index = y * grid_map.getGridSize() + x;
-
-			const GridCell& cell = grid_map.grid_cell_array[index];
-			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
-			uchar temp = (uchar) floor(occ * 255);
-			
-			cv::Mat vel_img(2, 1, CV_32FC1);
-			vel_img.at<float>(0) = cell.mean_x_vel;
-			vel_img.at<float>(1) = cell.mean_y_vel;
-
-			cv::Mat covar_img(2, 2, CV_32FC1);
-			covar_img.at<float>(0, 0) = cell.var_x_vel;
-			covar_img.at<float>(1, 0) = cell.covar_xy_vel;
-			covar_img.at<float>(0, 1) = cell.covar_xy_vel;
-			covar_img.at<float>(1, 1) = cell.var_y_vel;
-
-			cv::Mat mdist = vel_img.t() * covar_img.inv() * vel_img;
-
-			if (occ >= 0.7f)// && mdist.at<float>(0, 0) > 4.0)
-			{
-				float angle = atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI);
-
-				int color[3];
-				HSVtoRGB((int)ceil(angle), 1.0, 1.0, color);
-
-				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(color[2], color[1], color[0]);
-
-			}
-			else
-			{
-				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
-			}
-		}
-	}
-	cv::namedWindow("dynamic_grid", cv::WINDOW_NORMAL);
-	cv::imshow("dynamic_grid", grid_img);
-	
 	cv::namedWindow("particles", cv::WINDOW_NORMAL);
 	cv::imshow("particles", particle_img);
-	cv::waitKey(0);
 
-	save_image("result_measurement_grid.pgm", grid_map.meas_cell_array, grid_map.getGridSize(), grid_map.getGridSize());
-	save_image("result_dynamic_grid.pgm", grid_map.grid_cell_array, grid_map.getGridSize(), grid_map.getGridSize());
+	cv::namedWindow("dynamic_grid", cv::WINDOW_NORMAL);
+	cv::imshow("dynamic_grid", grid_img);
+
+	cv::waitKey(0);
+#endif
+
+	return 0;
 }
