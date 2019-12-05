@@ -91,7 +91,7 @@ void OccupancyGridMap::initialize()
 
 	CHECK_ERROR(cudaGetLastError());
 	
-	renderer = new Renderer(grid_size, laser_params.fov);
+	renderer = new Renderer(grid_size, laser_params.fov, params.size, laser_params.max_range);
 }
 
 void OccupancyGridMap::updateDynamicGrid(float dt)

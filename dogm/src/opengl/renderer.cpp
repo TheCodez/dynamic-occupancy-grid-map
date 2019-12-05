@@ -26,7 +26,7 @@ SOFTWARE.
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-Renderer::Renderer(int grid_size, float fov)
+Renderer::Renderer(int grid_size, float fov, float grid_range, float max_range)
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -40,6 +40,8 @@ Renderer::Renderer(int grid_size, float fov)
 
 	glewExperimental = GL_TRUE;
 	glewInit();
+
+	float range = 2.0f * (max_range / grid_range);
 
 	std::vector<Vertex> vertices;
 	generateCircleSegmentVertices(vertices, fov, 2.0f, 0.0f, -1.0f);
@@ -96,6 +98,6 @@ void Renderer::generateCircleSegmentVertices(std::vector<Vertex>& vertices, floa
 		float y = radius * y_val;
 
 		vertices.push_back(Vertex(glm::vec2(cx + x, cy + y),
-			glm::vec2((angle - startAngle) / fov, 1)));
+			glm::vec2((angle - startAngle) / fov, 1.0f)));
 	}
 }

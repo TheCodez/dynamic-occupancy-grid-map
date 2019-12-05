@@ -37,7 +37,7 @@ SOFTWARE.
 class Renderer
 {
 public:
-	Renderer(int grid_size, float fov);
+	Renderer(int grid_size, float fov, float grid_range, float max_range);
 	~Renderer();
 
 	void renderToTexture(Texture& polar_texture);
