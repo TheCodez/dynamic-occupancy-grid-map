@@ -27,6 +27,7 @@ SOFTWARE.
 #include <math.h>
 
 Renderer::Renderer(int grid_size, float fov, float grid_range, float max_range)
+	: grid_size(grid_size)
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -62,6 +63,7 @@ Renderer::~Renderer()
 
 void Renderer::renderToTexture(Texture& polar_texture)
 {
+	glViewport(0, 0, grid_size, grid_size);
 	framebuffer->bind();
 
 	// red=occ, green=free
@@ -81,7 +83,7 @@ void Renderer::renderToTexture(Texture& polar_texture)
 
 void Renderer::generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy)
 {
-	vertices.push_back(Vertex(glm::vec2(cx, cy), glm::vec2(0.0, 0.0)));
+	vertices.push_back(Vertex(glm::vec2(cx, cy), glm::vec2(0.0f, 0.0f)));
 
 	float halfFov = fov / 2;
 	float startAngle = 90 - halfFov;

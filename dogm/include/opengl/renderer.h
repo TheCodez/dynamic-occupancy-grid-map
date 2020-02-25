@@ -48,6 +48,8 @@ private:
 	void generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy);
 
 private:
+	int grid_size;
+
 	Polygon* polygon;
 	Shader* shader;
 	Framebuffer* framebuffer;
