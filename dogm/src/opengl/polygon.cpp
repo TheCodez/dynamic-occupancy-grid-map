@@ -23,6 +23,8 @@ SOFTWARE.
 */
 #include "opengl/polygon.h"
 
+#include <cstddef>
+
 Polygon::Polygon(Vertex* vertices, size_t numVertices)
 {
 	vertices_count = numVertices;
@@ -38,7 +40,7 @@ Polygon::Polygon(Vertex* vertices, size_t numVertices)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)8);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, tex_coord));
 
 	glBindVertexArray(0);
 }

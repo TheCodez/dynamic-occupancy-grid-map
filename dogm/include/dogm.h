@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #pragma once
+
+#include <memory>
 
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
@@ -74,10 +76,10 @@ struct GridParams
 	float resolution;
 	int particle_count;
 	int new_born_particle_count;
-	float p_S;
+	float persistence_prob;
 	float process_noise_position;
 	float process_noise_velocity;
-	float p_B;
+	float birth_prob;
 };
 
 struct LaserSensorParams
@@ -86,14 +88,14 @@ struct LaserSensorParams
 	float fov;
 };
 
-class OccupancyGridMap
+class DOGM
 {
 public:
-	OccupancyGridMap(const GridParams& params, const LaserSensorParams& laser_params);
-	~OccupancyGridMap();
+	DOGM(const GridParams& params, const LaserSensorParams& laser_params);
+	~DOGM();
 
 	void updateMeasurementGrid(float* measurements, int num_measurements);
-	void updateDynamicGrid(float dt);
+	void updateParticleFilter(float dt);
 
 	int getGridSize() const { return grid_size; }
 
@@ -114,7 +116,7 @@ public:
 	GridParams params;
 	LaserSensorParams laser_params;
 
-	Renderer* renderer;
+	std::unique_ptr<Renderer> renderer;
 
 	GridCell* grid_cell_array;
 	Particle* particle_array;

@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include "occupancy_grid_map.h"
+#include "dogm.h"
 #include "cuda_utils.h"
 #include "common.h"
 
@@ -45,9 +45,9 @@ SOFTWARE.
 #include <thrust/transform.h>
 #include <cuda_runtime.h>
 
-int OccupancyGridMap::BLOCK_SIZE = 256;
+int DOGM::BLOCK_SIZE = 256;
 
-OccupancyGridMap::OccupancyGridMap(const GridParams& params, const LaserSensorParams& laser_params)
+DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
 	: params(params),
 	  laser_params(laser_params),
 	  grid_size(static_cast<int>(params.size / params.resolution)),
@@ -69,7 +69,7 @@ OccupancyGridMap::OccupancyGridMap(const GridParams& params, const LaserSensorPa
 	initialize();
 }
 
-OccupancyGridMap::~OccupancyGridMap()
+DOGM::~DOGM()
 {
 	CHECK_ERROR(cudaFree(grid_cell_array));
 	CHECK_ERROR(cudaFree(particle_array));
@@ -79,11 +79,9 @@ OccupancyGridMap::~OccupancyGridMap()
 	CHECK_ERROR(cudaFree(weight_array));
 	CHECK_ERROR(cudaFree(birth_weight_array));
 	CHECK_ERROR(cudaFree(born_masses_array));
-	
-	delete renderer;
 }
 
-void OccupancyGridMap::initialize()
+void DOGM::initialize()
 {
 	initParticlesKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, particle_count);
 
@@ -91,10 +89,10 @@ void OccupancyGridMap::initialize()
 
 	CHECK_ERROR(cudaGetLastError());
 	
-	renderer = new Renderer(grid_size, laser_params.fov, params.size, laser_params.max_range);
+	renderer = std::make_unique<Renderer>(grid_size, laser_params.fov, params.size, laser_params.max_range);
 }
 
-void OccupancyGridMap::updateDynamicGrid(float dt)
+void DOGM::updateParticleFilter(float dt)
 {
 	particlePrediction(dt);
 	particleAssignment();
@@ -109,9 +107,9 @@ void OccupancyGridMap::updateDynamicGrid(float dt)
 	CHECK_ERROR(cudaDeviceSynchronize());
 }
 
-void OccupancyGridMap::updateMeasurementGrid(float* measurements, int num_measurements)
+void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
 {
-	//std::cout << "OccupancyGridMap::updateMeasurementGrid" << std::endl;
+	//std::cout << "DOGM::updateMeasurementGrid" << std::endl;
 
 	float* d_measurements;
 	CHECK_ERROR(cudaMalloc(&d_measurements, num_measurements * sizeof(float)));
@@ -152,9 +150,9 @@ void OccupancyGridMap::updateMeasurementGrid(float* measurements, int num_measur
 	CHECK_ERROR(cudaDeviceSynchronize());
 }
 
-void OccupancyGridMap::particlePrediction(float dt)
+void DOGM::particlePrediction(float dt)
 {
-	//std::cout << "OccupancyGridMap::particlePrediction" << std::endl;
+	//std::cout << "DOGM::particlePrediction" << std::endl;
 
 	glm::mat4x4 transition_matrix(1, 0, dt, 0, 
 								  0, 1, 0, dt, 
@@ -167,15 +165,15 @@ void OccupancyGridMap::particlePrediction(float dt)
 
 	glm::vec4 process_noise(dist_pos(rng), dist_pos(rng), dist_vel(rng), dist_vel(rng));
 
-	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, params.p_S, 
+	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, params.persistence_prob, 
 		transition_matrix, process_noise, particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
 }
 
-void OccupancyGridMap::particleAssignment()
+void DOGM::particleAssignment()
 {
-	//std::cout << "OccupancyGridMap::particleAssignment" << std::endl;
+	//std::cout << "DOGM::particleAssignment" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 	thrust::device_ptr<Particle> particles(particle_array);
@@ -190,9 +188,9 @@ void OccupancyGridMap::particleAssignment()
 	CHECK_ERROR(cudaGetLastError());
 }
 
-void OccupancyGridMap::gridCellOccupancyUpdate()
+void DOGM::gridCellOccupancyUpdate()
 {
-	//std::cout << "OccupancyGridMap::gridCellOccupancyUpdate" << std::endl;
+	//std::cout << "DOGM::gridCellOccupancyUpdate" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 	thrust::device_vector<float> weights_accum(particle_count);
@@ -200,14 +198,14 @@ void OccupancyGridMap::gridCellOccupancyUpdate()
 	float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
 	gridCellPredictionUpdateKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, particle_array, weight_array,
-		weight_array_accum, meas_cell_array, born_masses_array, params.p_B, params.p_S, grid_cell_count);
+		weight_array_accum, meas_cell_array, born_masses_array, params.birth_prob, params.persistence_prob, grid_cell_count);
 
 	CHECK_ERROR(cudaGetLastError());
 }
 
-void OccupancyGridMap::updatePersistentParticles()
+void DOGM::updatePersistentParticles()
 {
-	//std::cout << "OccupancyGridMap::updatePersistentParticles" << std::endl;
+	//std::cout << "DOGM::updatePersistentParticles" << std::endl;
 
 	updatePersistentParticlesKernel1<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, meas_cell_array,
 		weight_array, particle_count);
@@ -230,9 +228,9 @@ void OccupancyGridMap::updatePersistentParticles()
 	CHECK_ERROR(cudaGetLastError());
 }
 
-void OccupancyGridMap::initializeNewParticles()
+void DOGM::initializeNewParticles()
 {
-	//std::cout << "OccupancyGridMap::initializeNewParticles" << std::endl;
+	//std::cout << "DOGM::initializeNewParticles" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 
@@ -265,9 +263,9 @@ void OccupancyGridMap::initializeNewParticles()
 	CHECK_ERROR(cudaGetLastError());
 }
 
-void OccupancyGridMap::statisticalMoments()
+void DOGM::statisticalMoments()
 {
-	//std::cout << "OccupancyGridMap::statisticalMoments" << std::endl;
+	//std::cout << "DOGM::statisticalMoments" << std::endl;
 
 	thrust::device_vector<float> vel_x(particle_count);
 	float* vel_x_array = thrust::raw_pointer_cast(vel_x.data());
@@ -316,9 +314,9 @@ void OccupancyGridMap::statisticalMoments()
 	CHECK_ERROR(cudaGetLastError());
 }
 
-void OccupancyGridMap::resampling()
+void DOGM::resampling()
 {
-	//std::cout << "OccupancyGridMap::resampling" << std::endl;
+	//std::cout << "DOGM::resampling" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 

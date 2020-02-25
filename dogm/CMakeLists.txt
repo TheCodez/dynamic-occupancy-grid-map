@@ -3,6 +3,8 @@ project(DOGM CXX CUDA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
+option(BUILD_TESTS "Build tests" ON)
+
 find_package(OpenGL REQUIRED)
 
 find_package(GLM)
@@ -58,7 +60,7 @@ set(HEADERS_FILES
 	include/kernel/update_persistent_particles.h
 	include/common.h
 	include/cuda_utils.h
-	include/occupancy_grid_map.h
+	include/dogm.h
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS_FILES})
@@ -78,7 +80,7 @@ set(SRC_FILES
 	src/kernel/resampling.cu
 	src/kernel/statistical_moments.cu
 	src/kernel/update_persistent_particles.cu
-	src/occupancy_grid_map.cu
+	src/dogm.cu
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})
@@ -117,3 +119,8 @@ target_link_libraries(demo
 	dogm
 	${OpenCV_LIBS}
 )
+
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

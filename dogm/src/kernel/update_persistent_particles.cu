@@ -80,6 +80,8 @@ __global__ void updatePersistentParticlesKernel2(GridCell* grid_cell_array, floa
 		float mu_A = calc_norm_assoc(m_occ_accum, rho_p);
 		float mu_UA = calc_norm_unassoc(grid_cell_array[i]);
 		set_normalization_components(grid_cell_array, i, mu_A, mu_UA);
+
+		//printf("mu_A: %f, mu_UA: %f\n", mu_A, mu_UA);
 	}
 }
 

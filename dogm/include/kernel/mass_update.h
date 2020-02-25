@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ SOFTWARE.
 */
 #pragma once
 
-#include "occupancy_grid_map.h"
+#include "dogm.h"
 #include <device_launch_parameters.h>
 
 __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, float* weight_array,

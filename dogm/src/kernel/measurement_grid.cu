@@ -142,7 +142,15 @@ __global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* meas_grid,
 		meas_grid[index].occ_mass = color.x;
 		meas_grid[index].free_mass = color.y;
 
-		meas_grid[index].likelihood = 1.0f;
-		meas_grid[index].p_A = 1.0f;
+		if (color.x == 0.0f && color.y == 0.0f)
+		{
+			meas_grid[index].likelihood = 0.0f;
+			meas_grid[index].p_A = 0.0f;
+		}
+		else 
+		{
+			meas_grid[index].likelihood = 1.0f;
+			meas_grid[index].p_A = 1.0f;
+		}
 	}
 }
