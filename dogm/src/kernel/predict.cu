@@ -32,8 +32,7 @@ SOFTWARE.
 __global__ void predictKernel(Particle* particle_array, int grid_size, double p_S, const glm::mat4x4 transition_matrix,
 	const glm::vec4 process_noise, int particle_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < particle_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
 		particle_array[i].weight = p_S * particle_array[i].weight;

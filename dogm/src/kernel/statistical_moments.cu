@@ -71,8 +71,7 @@ __device__ void store(GridCell* grid_cell_array, int j, double mean_x_vel, doubl
 __global__ void statisticalMomentsKernel1(Particle* particle_array, double* weight_array, double* vel_x_array, double* vel_y_array,
 	double* vel_x_squared_array, double* vel_y_squared_array, double* vel_xy_array, int particle_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < particle_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		double weight = weight_array[i];
 		double vel_x = particle_array[i].state[2];
@@ -90,8 +89,7 @@ __global__ void statisticalMomentsKernel1(Particle* particle_array, double* weig
 __global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, double* vel_x_array_accum, double* vel_y_array_accum,
 	double* vel_x_squared_array_accum, double* vel_y_squared_array_accum, double* vel_xy_array_accum, int cell_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < cell_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		double rho_p = grid_cell_array[i].pers_occ_mass;
 		//printf("rho p: %f\n", rho_p);

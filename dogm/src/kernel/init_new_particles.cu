@@ -120,8 +120,7 @@ void normalize_particle_orders(double* particle_orders_array_accum, int particle
 __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
 	double* weight_array, double* born_masses_array, Particle* birth_particle_array, double* particle_orders_array_accum, int cell_count)
 {
-	const int j = blockIdx.x * blockDim.x + threadIdx.x;
-	if (j < cell_count)
+	for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
 	{
 		int start_idx = calc_start_idx(particle_orders_array_accum, j);
 		int end_idx = calc_end_idx(particle_orders_array_accum, j);
@@ -152,9 +151,7 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 
 __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, int grid_size, int particle_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (i < particle_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		initialize_new_particle(birth_particle_array, i, grid_cell_array, grid_size);
 	}
@@ -162,9 +159,7 @@ __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell
 
 __global__ void copyBirthWeightKernel(Particle* birth_particle_array, double* birth_weight_array, int particle_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (i < particle_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		birth_weight_array[i] = birth_particle_array[i].weight;
 	}

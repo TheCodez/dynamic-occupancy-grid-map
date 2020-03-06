@@ -94,9 +94,7 @@ __device__ void normalize_to_pS(Particle* particle_array, double* weight_array, 
 __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, double* weight_array,
 	double* weight_array_accum, MeasurementCell* meas_cell_array, double* born_masses_array, double p_B, double p_S, int cell_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (i < cell_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		int start_idx = grid_cell_array[i].start_idx;
 		int end_idx = grid_cell_array[i].end_idx;

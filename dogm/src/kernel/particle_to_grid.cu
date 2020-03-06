@@ -41,8 +41,7 @@ __device__ bool is_last_particle(Particle* particle_array, int particle_count, i
 
 __global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_cell_array, double* weight_array, int particle_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < particle_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		int j = particle_array[i].grid_cell_idx;
 

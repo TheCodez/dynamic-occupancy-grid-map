@@ -31,9 +31,7 @@ SOFTWARE.
 
 __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int particle_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (i < particle_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		unsigned int seed = hash(i);
 		thrust::default_random_engine rng(seed);
@@ -55,9 +53,7 @@ __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int
 
 __global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* meas_cell_array, int grid_size, int cell_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (i < cell_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		const int x = i % grid_size;
 		const int y = i / grid_size;
@@ -76,9 +72,7 @@ __global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* 
 
 __global__ void reinitGridParticleIndices(GridCell* grid_cell_array, int cell_count)
 {
-	const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (i < cell_count)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		grid_cell_array[i].start_idx = -1;
 		grid_cell_array[i].end_idx = -1;
