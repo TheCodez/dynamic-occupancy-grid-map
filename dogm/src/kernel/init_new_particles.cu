@@ -43,32 +43,32 @@ __device__ void set_cell_idx_UA(Particle* birth_particle_array, int i, int grid_
 	birth_particle_array[i].associated = false;
 }
 
-__device__ int calc_start_idx(float* particle_orders_array_accum, int j)
+__device__ int calc_start_idx(double* particle_orders_array_accum, int j)
 {
 	return j > 0 ? static_cast<int>(particle_orders_array_accum[j - 1]) : 0;
 }
 
-__device__ int calc_end_idx(float* particle_orders_array_accum, int j)
+__device__ int calc_end_idx(double* particle_orders_array_accum, int j)
 {
 	return static_cast<int>(particle_orders_array_accum[j]) - 1;
 }
 
-__device__ int calc_num_assoc(int num_new_particles, float p_A)
+__device__ int calc_num_assoc(int num_new_particles, double p_A)
 {
 	return static_cast<int>(num_new_particles * p_A);
 }
 
-__device__ float calc_weight_assoc(int nu_A, float p_A, float born_mass)
+__device__ double calc_weight_assoc(int nu_A, double p_A, double born_mass)
 {
-	return nu_A > 0 ? (p_A * born_mass) / nu_A : 0.0f;
+	return nu_A > 0 ? (p_A * born_mass) / nu_A : 0.0;
 }
 
-__device__ float calc_weight_unassoc(int nu_UA, float p_A, float born_mass)
+__device__ double calc_weight_unassoc(int nu_UA, double p_A, double born_mass)
 {
-	return nu_UA > 0 ? ((1.0f - p_A) * born_mass) / nu_UA : 0.0f;
+	return nu_UA > 0 ? ((1.0 - p_A) * born_mass) / nu_UA : 0.0;
 }
 
-__device__ void store_weights(float w_A, float w_UA, GridCell* grid_cell_array, int j)
+__device__ void store_weights(double w_A, double w_UA, GridCell* grid_cell_array, int j)
 {
 	grid_cell_array[j].w_A = w_A;
 	grid_cell_array[j].w_UA = w_UA;
@@ -82,13 +82,13 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 	unsigned int seed = hash(i);
 	thrust::default_random_engine rng(seed);
 	thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-	thrust::normal_distribution<float> dist_vel(0.0f, 4.0f);
+	thrust::normal_distribution<double> dist_vel(0.0f, 4.0);
 
 	bool associated = birth_particle_array[i].associated;
 	if (associated)
 	{
-		float x = cell_idx % grid_size;
-		float y = cell_idx / grid_size;
+		double x = cell_idx % grid_size;
+		double y = cell_idx / grid_size;
 
 		birth_particle_array[i].weight = grid_cell.w_A;
 		birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
@@ -97,28 +97,28 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 	{
 		int index = dist_idx(rng);
 
-		float x = index % grid_size;
-		float y = index / grid_size;
+		double x = index % grid_size;
+		double y = index / grid_size;
 
 		birth_particle_array[i].weight = grid_cell.w_UA;
 		birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 	}
 }
 
-void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B)
+void normalize_particle_orders(double* particle_orders_array_accum, int particle_orders_count, int v_B)
 {
-	thrust::device_ptr<float> particle_orders(particle_orders_array_accum);
+	thrust::device_ptr<double> particle_orders_accum(particle_orders_array_accum);
 
 	float max = 1.0f;
 	cudaMemcpy(&max, &particle_orders_array_accum[particle_orders_count - 1], sizeof(float), cudaMemcpyDeviceToHost);
-	thrust::transform(particle_orders, particle_orders + particle_orders_count, particle_orders, GPU_LAMBDA(float x)
+	thrust::transform(particle_orders_accum, particle_orders_accum + particle_orders_count, particle_orders_accum, GPU_LAMBDA(double x)
 	{
 		return x * (v_B / max);
 	});
 }
 
 __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
-	float* weight_array, float* born_masses_array, Particle* birth_particle_array, float* particle_orders_array_accum, int cell_count)
+	double* weight_array, double* born_masses_array, Particle* birth_particle_array, double* particle_orders_array_accum, int cell_count)
 {
 	const int j = blockIdx.x * blockDim.x + threadIdx.x;
 	if (j < cell_count)
@@ -129,11 +129,11 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 		//printf("Start idx: %d, End idx: %d\n", start_idx, end_idx);
 
 		int num_new_particles = start_idx <= end_idx ? end_idx - start_idx + 1 : 0;
-		float p_A = meas_cell_array[j].p_A;
+		double p_A = meas_cell_array[j].p_A;
 		int nu_A = calc_num_assoc(num_new_particles, p_A);
 		int nu_UA = num_new_particles - nu_A;
-		float w_A = calc_weight_assoc(nu_A, p_A, born_masses_array[j]);
-		float w_UA = calc_weight_unassoc(nu_UA, p_A, born_masses_array[j]);
+		double w_A = calc_weight_assoc(nu_A, p_A, born_masses_array[j]);
+		double w_UA = calc_weight_unassoc(nu_UA, p_A, born_masses_array[j]);
 		store_weights(w_A, w_UA, grid_cell_array, j);
 
 		//printf("w_A: %f, w_UA: %f\n", w_A, w_UA);
@@ -160,7 +160,7 @@ __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell
 	}
 }
 
-__global__ void copyBirthWeightKernel(Particle* birth_particle_array, float* birth_weight_array, int particle_count)
+__global__ void copyBirthWeightKernel(Particle* birth_particle_array, double* birth_weight_array, int particle_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
 

@@ -30,23 +30,23 @@ SOFTWARE.
 
 #include <thrust/binary_search.h>
 
-void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<int>& rand_array,
+void calc_resampled_indeces(thrust::device_vector<double>& joint_weight_accum, thrust::device_vector<int>& rand_array,
 	thrust::device_vector<int>& indices)
 {
-	thrust::device_vector<float> norm_weight_accum(joint_weight_accum.size());
-	float max = joint_weight_accum.back();
+	thrust::device_vector<double> norm_weight_accum(joint_weight_accum.size());
+	double max = joint_weight_accum.back();
 	size_t size = joint_weight_accum.size();
-	thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(), norm_weight_accum.begin(), GPU_LAMBDA(float x)
+	thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(), norm_weight_accum.begin(), GPU_LAMBDA(double x)
 	{
 		return  x * (size / max);
 	});
 
-	float norm_max = norm_weight_accum.back();
+	double norm_max = norm_weight_accum.back();
 	int rand_max = rand_array.back();
 
 	if (norm_max != rand_max)
 	{
-		norm_weight_accum.back() = static_cast<float>(rand_max);
+		norm_weight_accum.back() = static_cast<double>(rand_max);
 	}
 
 	// multinomial sampling
@@ -66,7 +66,7 @@ __device__ Particle copy_particle(Particle* particle_array, int particle_count, 
 }
 
 __global__ void resamplingKernel(Particle* particle_array, Particle* particle_array_next, Particle* birth_particle_array,
-	int* idx_array_resampled, float joint_max, int particle_count)
+	int* idx_array_resampled, double joint_max, int particle_count)
 {
 	const int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < particle_count)

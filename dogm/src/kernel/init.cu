@@ -38,14 +38,14 @@ __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int
 		unsigned int seed = hash(i);
 		thrust::default_random_engine rng(seed);
 		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-		thrust::normal_distribution<float> dist_vel(0.0f, 12.0f);
+		thrust::normal_distribution<double> dist_vel(0.0f, 12.0f);
 
 		int index = dist_idx(rng);
 
-		float x = index % grid_size;
-		float y = index / grid_size;
+		double x = index % grid_size;
+		double y = index / grid_size;
 
-		particle_array[i].weight = 1.0f / particle_count;
+		particle_array[i].weight = 1.0 / static_cast<double>(particle_count);
 		particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 
 		//printf("w: %f, x: %f, y: %f, vx: %f, vy: %f\n", particle_array[i].weight, particle_array[i].state[0], particle_array[i].state[1],
@@ -64,10 +64,23 @@ __global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* 
 		grid_cell_array[i].pos = make_int2(x, y);
 		grid_cell_array[i].free_mass = 0.0f;
 		grid_cell_array[i].occ_mass = 0.0f;
+		//grid_cell_array[i].start_idx = -1;
+		//grid_cell_array[i].end_idx = -1;
 
 		meas_cell_array[i].occ_mass = 0.0f;
 		meas_cell_array[i].free_mass = 0.0f;
 		meas_cell_array[i].likelihood = 1.0f;
 		meas_cell_array[i].p_A = 1.0f;
+	}
+}
+
+__global__ void reinitGridParticleIndices(GridCell* grid_cell_array, int cell_count)
+{
+	const int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < cell_count)
+	{
+		grid_cell_array[i].start_idx = -1;
+		grid_cell_array[i].end_idx = -1;
 	}
 }

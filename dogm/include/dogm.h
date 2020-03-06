@@ -35,57 +35,57 @@ struct GridCell
 {
 	int start_idx;
 	int end_idx;
-	float new_born_occ_mass;
-	float pers_occ_mass;
-	float free_mass;
-	float occ_mass;
-	float mu_A;
-	float mu_UA;
+	double new_born_occ_mass;
+	double pers_occ_mass;
+	double free_mass;
+	double occ_mass;
+	double mu_A;
+	double mu_UA;
 
-	float w_A;
-	float w_UA;
+	double w_A;
+	double w_UA;
 
-	float mean_x_vel;
-	float mean_y_vel;
-	float var_x_vel;
-	float var_y_vel;
-	float covar_xy_vel;
+	double mean_x_vel;
+	double mean_y_vel;
+	double var_x_vel;
+	double var_y_vel;
+	double covar_xy_vel;
 
 	int2 pos;
 };
 
 struct MeasurementCell
 {
-	float free_mass;
-	float occ_mass;
-	float likelihood;
-	float p_A;
+	double free_mass;
+	double occ_mass;
+	double likelihood;
+	double p_A;
 };
 
 struct Particle
 {
 	int grid_cell_idx;
-	float weight;
+	double weight;
 	bool associated;
 	glm::vec4 state;
 };
 
 struct GridParams
 {
-	float size;
-	float resolution;
+	double size;
+	double resolution;
 	int particle_count;
 	int new_born_particle_count;
-	float persistence_prob;
-	float process_noise_position;
-	float process_noise_velocity;
-	float birth_prob;
+	double persistence_prob;
+	double process_noise_position;
+	double process_noise_velocity;
+	double birth_prob;
 };
 
 struct LaserSensorParams
 {
-	float max_range;
-	float fov;
+	double max_range;
+	double fov;
 };
 
 class DOGM
@@ -94,8 +94,8 @@ public:
 	DOGM(const GridParams& params, const LaserSensorParams& laser_params);
 	~DOGM();
 
-	void updateMeasurementGrid(float* measurements, int num_measurements);
-	void updateParticleFilter(float dt);
+	void updateMeasurementGrid(double* measurements, int num_measurements);
+	void updateParticleFilter(double dt);
 
 	int getGridSize() const { return grid_size; }
 
@@ -103,7 +103,7 @@ private:
 	void initialize();
 
 public:
-	void particlePrediction(float dt);
+	void particlePrediction(double dt);
 	void particleAssignment();
 	void gridCellOccupancyUpdate();
 	void updatePersistentParticles();
@@ -123,11 +123,12 @@ public:
 	Particle* particle_array_next;
 	Particle* birth_particle_array;
 
+	MeasurementCell* polar_meas_cell_array;
 	MeasurementCell* meas_cell_array;
 
-	float* weight_array;
-	float* birth_weight_array;
-	float* born_masses_array;
+	double* weight_array;
+	double* birth_weight_array;
+	double* born_masses_array;
 
 	int grid_size;
 

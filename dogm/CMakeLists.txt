@@ -110,7 +110,6 @@ target_link_libraries(dogm
 
 add_executable(demo
 	demo/main.cpp
-	demo/measurements.h
 )
 
 target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS})

@@ -31,15 +31,15 @@ SOFTWARE.
 __device__ float2 combine_masses(float2 prior, float2 meas)
 {
 	// Masses: mOcc, mFree
-	float occ = prior.x;
-	float free = prior.y;
+	double occ = prior.x;
+	double free = prior.y;
 
-	float meas_occ = meas.x;
-	float meas_free = meas.y;
+	double meas_occ = meas.x;
+	double meas_free = meas.y;
 
-	float unknown_pred = 1.0f - occ - free;
-	float meas_cell_unknown = 1.0f - meas_occ - meas_free;
-	float K = free * meas_occ + occ * meas_free;
+	double unknown_pred = 1.0f - occ - free;
+	double meas_cell_unknown = 1.0f - meas_occ - meas_free;
+	double K = free * meas_occ + occ * meas_free;
 
 	float2 res;
 	res.x = (occ * meas_cell_unknown + unknown_pred * meas_occ + occ * meas_occ) / (1.0f - K);
@@ -48,30 +48,30 @@ __device__ float2 combine_masses(float2 prior, float2 meas)
 	return res;
 }
 
-__device__ float pFree(int i, float p_min, float p_max, int max_range)
+__device__ double pFree(int i, double p_min, double p_max, int max_range)
 {
 	return p_min + i * (p_max - p_min) / max_range;
 }
 
-__device__ float pOcc(int r, float zk, int index)
+__device__ double pOcc(int r, double zk, int index)
 {
-	float alpha = 1.0f;
-	float delta = 2.2f;
+	double alpha = 1.0f;
+	double delta = 2.2f;
 
 	//return (alpha / (delta * sqrt(2.0f * PI))) * exp(-0.5f * (index - r) * (index - r) / (delta * delta));
 	return 0.8f * exp(-0.5f * (index - r) * (index - r) / (delta * delta));
 }
 
-__device__ float2 inverse_sensor_model(int i, float resolution, float zk, float r_max)
+__device__ float2 inverse_sensor_model(int i, double resolution, double zk, double r_max)
 {
 	// Masses: mOcc, mFree
 
-	const float free = pFree(i, 0.1, 1.0f, r_max);
+	const double free = pFree(i, 0.1, 1.0f, r_max);
 
 	if (isfinite(zk))
 	{
-		const int r = (int)(zk / resolution);
-		const float occ = pOcc(r, zk, i);
+		const int r = static_cast<int>(zk / resolution);
+		const double occ = pOcc(r, zk, i);
 
 		if (i <= r)
 		{
@@ -88,15 +88,15 @@ __device__ float2 inverse_sensor_model(int i, float resolution, float zk, float 
 	}
 }
 
-__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution)
+__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, double* measurements, int width, int height, double resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
 	const int range = blockIdx.y * blockDim.y + threadIdx.y;
 
 	if (theta < width && range < height)
 	{
-		const float epsilon = 0.00001f;
-		const float zk = measurements[theta];
+		const double epsilon = 0.00001f;
+		const double zk = measurements[theta];
 
 		float2 masses = inverse_sensor_model(range, resolution, zk, height);
 		masses.x = max(epsilon, min(1.0f - epsilon, masses.x));
@@ -106,15 +106,38 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* m
 	}
 }
 
-__global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution)
+__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, MeasurementCell* polar_meas_grid, double* measurements, int width, int height, double resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
 	const int range = blockIdx.y * blockDim.y + threadIdx.y;
 
 	if (theta < width && range < height)
 	{
-		const float epsilon = 0.00001f;
-		const float zk = measurements[theta];
+		const double epsilon = 0.00001f;
+		const double zk = measurements[theta];
+
+		float2 masses = inverse_sensor_model(range, resolution, zk, height);
+		masses.x = max(epsilon, min(1.0f - epsilon, masses.x));
+		masses.y = max(epsilon, min(1.0f - epsilon, masses.y));
+
+		surf2Dwrite(masses, polar, theta * sizeof(float2), range);
+
+		const int index = (height - range - 1) * width + theta;
+
+		polar_meas_grid[index].occ_mass = masses.x;
+		polar_meas_grid[index].free_mass = masses.y;
+	}
+}
+
+__global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, double* measurements, int width, int height, double resolution)
+{
+	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
+	const int range = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (theta < width && range < height)
+	{
+		const double epsilon = 0.00001f;
+		const double zk = measurements[theta];
 
 		float2 prior = surf2Dread<float2>(polar, theta * sizeof(float2), range);
 		float2 masses = inverse_sensor_model(range, resolution, zk, height);

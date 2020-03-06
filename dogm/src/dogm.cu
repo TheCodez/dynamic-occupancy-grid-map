@@ -62,9 +62,11 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
 
 	CHECK_ERROR(cudaMallocManaged((void**)&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
 
-	CHECK_ERROR(cudaMalloc(&weight_array, particle_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
-	CHECK_ERROR(cudaMalloc(&born_masses_array, grid_cell_count * sizeof(float)));
+	CHECK_ERROR(cudaMallocManaged((void**)&polar_meas_cell_array, 100 * grid_size * sizeof(MeasurementCell)));
+
+	CHECK_ERROR(cudaMalloc(&weight_array, particle_count * sizeof(double)));
+	CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(double)));
+	CHECK_ERROR(cudaMalloc(&born_masses_array, grid_cell_count * sizeof(double)));
 
 	initialize();
 }
@@ -75,6 +77,8 @@ DOGM::~DOGM()
 	CHECK_ERROR(cudaFree(particle_array));
 	CHECK_ERROR(cudaFree(particle_array_next));
 	CHECK_ERROR(cudaFree(meas_cell_array));
+
+	CHECK_ERROR(cudaFree(polar_meas_cell_array));
 
 	CHECK_ERROR(cudaFree(weight_array));
 	CHECK_ERROR(cudaFree(birth_weight_array));
@@ -92,7 +96,7 @@ void DOGM::initialize()
 	renderer = std::make_unique<Renderer>(grid_size, laser_params.fov, params.size, laser_params.max_range);
 }
 
-void DOGM::updateParticleFilter(float dt)
+void DOGM::updateParticleFilter(double dt)
 {
 	particlePrediction(dt);
 	particleAssignment();
@@ -107,13 +111,13 @@ void DOGM::updateParticleFilter(float dt)
 	CHECK_ERROR(cudaDeviceSynchronize());
 }
 
-void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
+void DOGM::updateMeasurementGrid(double* measurements, int num_measurements)
 {
 	//std::cout << "DOGM::updateMeasurementGrid" << std::endl;
 
-	float* d_measurements;
-	CHECK_ERROR(cudaMalloc(&d_measurements, num_measurements * sizeof(float)));
-	CHECK_ERROR(cudaMemcpy(d_measurements, measurements, num_measurements * sizeof(float), cudaMemcpyHostToDevice));
+	double* d_measurements;
+	CHECK_ERROR(cudaMalloc(&d_measurements, num_measurements * sizeof(double)));
+	CHECK_ERROR(cudaMemcpy(d_measurements, measurements, num_measurements * sizeof(double), cudaMemcpyHostToDevice));
 
 	const int polar_width = num_measurements;
 	const int polar_height = grid_size;
@@ -122,19 +126,19 @@ void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
 	dim3 grid_dim(divUp(polar_width, block_dim.x), divUp(polar_height, block_dim.y));
 	dim3 cart_grid_dim(divUp(grid_size, block_dim.x), divUp(grid_size, block_dim.y));
 
-	const float anisotropy_level = 16.0f;
-	Texture texture(polar_width, polar_height, anisotropy_level);
+	const double anisotropy_level = 16.0f;
+	Texture polar_texture(polar_width, polar_height, anisotropy_level);
 	cudaSurfaceObject_t polar_surface;
 	
 	// create polar texture
-	texture.beginCudaAccess(&polar_surface);
-	createPolarGridTextureKernel<<<grid_dim, block_dim>>>(polar_surface, d_measurements, polar_width, polar_height, params.resolution);
+	polar_texture.beginCudaAccess(&polar_surface);
+	createPolarGridTextureKernel2<<<grid_dim, block_dim>>>(polar_surface, polar_meas_cell_array, d_measurements, polar_width, polar_height, params.resolution);
 
 	CHECK_ERROR(cudaGetLastError());
-	texture.endCudaAccess(polar_surface);
+	polar_texture.endCudaAccess(polar_surface);
 	
 	// render cartesian image to texture using polar texture
-	renderer->renderToTexture(texture);
+	renderer->renderToTexture(polar_texture);
 	
 	Framebuffer* framebuffer = renderer->getFrameBuffer();
 	cudaSurfaceObject_t cartesian_surface;
@@ -150,7 +154,7 @@ void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
 	CHECK_ERROR(cudaDeviceSynchronize());
 }
 
-void DOGM::particlePrediction(float dt)
+void DOGM::particlePrediction(double dt)
 {
 	//std::cout << "DOGM::particlePrediction" << std::endl;
 
@@ -160,8 +164,8 @@ void DOGM::particlePrediction(float dt)
 								  0, 0, 0, 1);
 
 	thrust::default_random_engine rng;
-	thrust::normal_distribution<float> dist_pos(0.0f, params.process_noise_position);
-	thrust::normal_distribution<float> dist_vel(0.0f, params.process_noise_velocity);
+	thrust::normal_distribution<double> dist_pos(0.0f, params.process_noise_position);
+	thrust::normal_distribution<double> dist_vel(0.0f, params.process_noise_velocity);
 
 	glm::vec4 process_noise(dist_pos(rng), dist_pos(rng), dist_vel(rng), dist_vel(rng));
 
@@ -193,9 +197,9 @@ void DOGM::gridCellOccupancyUpdate()
 	//std::cout << "DOGM::gridCellOccupancyUpdate" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
-	thrust::device_vector<float> weights_accum(particle_count);
+	thrust::device_vector<double> weights_accum(particle_count);
 	accumulate(weight_array, weights_accum);
-	float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
+	double* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
 	gridCellPredictionUpdateKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, particle_array, weight_array,
 		weight_array_accum, meas_cell_array, born_masses_array, params.birth_prob, params.persistence_prob, grid_cell_count);
@@ -213,9 +217,9 @@ void DOGM::updatePersistentParticles()
 	CHECK_ERROR(cudaGetLastError());
 	CHECK_ERROR(cudaDeviceSynchronize());
 
-	thrust::device_vector<float> weights_accum(particle_count);
+	thrust::device_vector<double> weights_accum(particle_count);
 	accumulate(weight_array, weights_accum);
-	float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
+	double* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
 	updatePersistentParticlesKernel2<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array,
 		weight_array_accum, grid_cell_count);
@@ -234,9 +238,9 @@ void DOGM::initializeNewParticles()
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 
-	thrust::device_vector<float> particle_orders_accum(grid_cell_count);
+	thrust::device_vector<double> particle_orders_accum(grid_cell_count);
 	accumulate(born_masses_array, particle_orders_accum);
-	float* particle_orders_array_accum = thrust::raw_pointer_cast(particle_orders_accum.data());
+	double* particle_orders_array_accum = thrust::raw_pointer_cast(particle_orders_accum.data());
 
 	normalize_particle_orders(particle_orders_array_accum, grid_cell_count, params.new_born_particle_count);
 
@@ -267,20 +271,20 @@ void DOGM::statisticalMoments()
 {
 	//std::cout << "DOGM::statisticalMoments" << std::endl;
 
-	thrust::device_vector<float> vel_x(particle_count);
-	float* vel_x_array = thrust::raw_pointer_cast(vel_x.data());
+	thrust::device_vector<double> vel_x(particle_count);
+	double* vel_x_array = thrust::raw_pointer_cast(vel_x.data());
 
-	thrust::device_vector<float> vel_y(particle_count);
-	float* vel_y_array = thrust::raw_pointer_cast(vel_y.data());
+	thrust::device_vector<double> vel_y(particle_count);
+	double* vel_y_array = thrust::raw_pointer_cast(vel_y.data());
 
-	thrust::device_vector<float> vel_x_squared(particle_count);
-	float* vel_x_squared_array = thrust::raw_pointer_cast(vel_x_squared.data());
+	thrust::device_vector<double> vel_x_squared(particle_count);
+	double* vel_x_squared_array = thrust::raw_pointer_cast(vel_x_squared.data());
 
-	thrust::device_vector<float> vel_y_squared(particle_count);
-	float* vel_y_squared_array = thrust::raw_pointer_cast(vel_y_squared.data());
+	thrust::device_vector<double> vel_y_squared(particle_count);
+	double* vel_y_squared_array = thrust::raw_pointer_cast(vel_y_squared.data());
 
-	thrust::device_vector<float> vel_xy(particle_count);
-	float* vel_xy_array = thrust::raw_pointer_cast(vel_xy.data());
+	thrust::device_vector<double> vel_xy(particle_count);
+	double* vel_xy_array = thrust::raw_pointer_cast(vel_xy.data());
 
 	statisticalMomentsKernel1<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, weight_array,
 		vel_x_array, vel_y_array, vel_x_squared_array, vel_y_squared_array, vel_xy_array, particle_count);
@@ -288,25 +292,25 @@ void DOGM::statisticalMoments()
 	CHECK_ERROR(cudaGetLastError());
 	CHECK_ERROR(cudaDeviceSynchronize());
 
-	thrust::device_vector<float> vel_x_accum(particle_count);
+	thrust::device_vector<double> vel_x_accum(particle_count);
 	accumulate(vel_x_array, vel_x_accum);
-	float* vel_x_array_accum = thrust::raw_pointer_cast(vel_x_accum.data());
+	double* vel_x_array_accum = thrust::raw_pointer_cast(vel_x_accum.data());
 
-	thrust::device_vector<float> vel_y_accum(particle_count);
+	thrust::device_vector<double> vel_y_accum(particle_count);
 	accumulate(vel_y_array, vel_y_accum);
-	float* vel_y_array_accum = thrust::raw_pointer_cast(vel_y_accum.data());
+	double* vel_y_array_accum = thrust::raw_pointer_cast(vel_y_accum.data());
 
-	thrust::device_vector<float> vel_x_squared_accum(particle_count);
+	thrust::device_vector<double> vel_x_squared_accum(particle_count);
 	accumulate(vel_x_squared_array, vel_x_squared_accum);
-	float* vel_x_squared_array_accum = thrust::raw_pointer_cast(vel_x_squared_accum.data());
+	double* vel_x_squared_array_accum = thrust::raw_pointer_cast(vel_x_squared_accum.data());
 
-	thrust::device_vector<float> vel_y_squared_accum(particle_count);
+	thrust::device_vector<double> vel_y_squared_accum(particle_count);
 	accumulate(vel_y_squared_array, vel_y_squared_accum);
-	float* vel_y_squared_array_accum = thrust::raw_pointer_cast(vel_y_squared_accum.data());
+	double* vel_y_squared_array_accum = thrust::raw_pointer_cast(vel_y_squared_accum.data());
 
-	thrust::device_vector<float> vel_xy_accum(particle_count);
+	thrust::device_vector<double> vel_xy_accum(particle_count);
 	accumulate(vel_xy_array, vel_xy_accum);
-	float* vel_xy_array_accum = thrust::raw_pointer_cast(vel_xy_accum.data());
+	double* vel_xy_array_accum = thrust::raw_pointer_cast(vel_xy_accum.data());
 
 	statisticalMomentsKernel2<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, vel_x_array_accum,
 		vel_y_array_accum, vel_x_squared_array_accum, vel_y_squared_array_accum, vel_xy_array_accum, grid_cell_count);
@@ -333,21 +337,21 @@ void DOGM::resampling()
 	});
 	thrust::sort(rand_array.begin(), rand_array.end());
 
-	thrust::device_ptr<float> persistent_weights(weight_array);
-	thrust::device_ptr<float> new_born_weights(birth_weight_array);
+	thrust::device_ptr<double> persistent_weights(weight_array);
+	thrust::device_ptr<double> new_born_weights(birth_weight_array);
 
-	thrust::device_vector<float> joint_weight_array;
+	thrust::device_vector<double> joint_weight_array;
 	joint_weight_array.insert(joint_weight_array.end(), persistent_weights, persistent_weights + particle_count);
 	joint_weight_array.insert(joint_weight_array.end(), new_born_weights, new_born_weights + new_born_particle_count);
 
-	thrust::device_vector<float> joint_weight_accum(joint_weight_array.size());
+	thrust::device_vector<double> joint_weight_accum(joint_weight_array.size());
 	accumulate(joint_weight_array, joint_weight_accum);
 
 	thrust::device_vector<int> idx_resampled(particle_count);
 	calc_resampled_indeces(joint_weight_accum, rand_array, idx_resampled);
 	int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
-	float joint_max = joint_weight_accum.back();
+	double joint_max = joint_weight_accum.back();
 
 	resamplingKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, particle_array_next,
 		birth_particle_array, idx_array_resampled, joint_max, particle_count);
