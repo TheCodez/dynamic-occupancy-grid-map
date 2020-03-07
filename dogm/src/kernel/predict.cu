@@ -29,7 +29,7 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__global__ void predictKernel(Particle* particle_array, int grid_size, double p_S, const glm::mat4x4 transition_matrix,
+__global__ void predictKernel(Particle* particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
 	const glm::vec4 process_noise, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
@@ -37,15 +37,15 @@ __global__ void predictKernel(Particle* particle_array, int grid_size, double p_
 		particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
 		particle_array[i].weight = p_S * particle_array[i].weight;
 
-		double x = particle_array[i].state[0];
-		double y = particle_array[i].state[1];
+		float x = particle_array[i].state[0];
+		float y = particle_array[i].state[1];
 
 		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
 		{
 			unsigned int seed = hash(i);
 			thrust::default_random_engine rng(seed);
 			thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-			thrust::normal_distribution<double> dist_vel(0.0f, 12.0);
+			thrust::normal_distribution<float> dist_vel(0.0f, 12.0);
 
 			const int index = dist_idx(rng);
 

@@ -26,5 +26,5 @@ SOFTWARE.
 #include "dogm.h"
 #include <device_launch_parameters.h>
 
-__global__ void predictKernel(Particle* particle_array, int grid_size, double p_S, const glm::mat4x4 transition_matrix,
+__global__ void predictKernel(Particle* particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
 	const glm::vec4 process_noise, int particle_count);

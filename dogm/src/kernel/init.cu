@@ -36,14 +36,14 @@ __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int
 		unsigned int seed = hash(i);
 		thrust::default_random_engine rng(seed);
 		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-		thrust::normal_distribution<double> dist_vel(0.0f, 12.0f);
+		thrust::normal_distribution<float> dist_vel(0.0f, 12.0f);
 
 		int index = dist_idx(rng);
 
-		double x = index % grid_size;
-		double y = index / grid_size;
+		float x = index % grid_size;
+		float y = index / grid_size;
 
-		particle_array[i].weight = 1.0 / static_cast<double>(particle_count);
+		particle_array[i].weight = 1.0 / static_cast<float>(particle_count);
 		particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 
 		//printf("w: %f, x: %f, y: %f, vx: %f, vy: %f\n", particle_array[i].weight, particle_array[i].state[0], particle_array[i].state[1],

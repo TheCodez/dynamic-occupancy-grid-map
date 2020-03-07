@@ -74,13 +74,13 @@ struct Simulator
 		vehicles.push_back(vehicle);
 	}
 
-	std::vector<std::vector<double>> update(int steps, double dt)
+	std::vector<std::vector<float>> update(int steps, float dt)
 	{
-		std::vector<std::vector<double>> measurements;
+		std::vector<std::vector<float>> measurements;
 
 		for (int i = 0; i < steps; i++)
 		{
-			std::vector<double> measurement(num_measurements, INFINITY);
+			std::vector<float> measurement(num_measurements, INFINITY);
 
 			for (auto& vehicle : vehicles)
 			{
@@ -103,12 +103,12 @@ struct Simulator
 	std::vector<Vehicle> vehicles;
 };
 
-void hsv_to_rgb(int h, double s, double v, int output[3])
+void hsv_to_rgb(int h, float s, float v, int output[3])
 {
-	double c = s * v;
-	double x = c * (1 - abs(fmod(h / 60.0, 2) - 1));
-	double m = v - c;
-	double rs, gs, bs;
+	float c = s * v;
+	float x = c * (1 - abs(fmod(h / 60.0, 2) - 1));
+	float m = v - c;
+	float rs, gs, bs;
 
 	if (h >= 0 && h < 60) 
 	{
@@ -152,7 +152,7 @@ void hsv_to_rgb(int h, double s, double v, int output[3])
 	output[2] = static_cast<int>(bs + m) * 255;
 }
 
-double pignistic_transformation(double free_mass, double occ_mass)
+float pignistic_transformation(float free_mass, float occ_mass)
 {
 	return occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
 }
@@ -167,7 +167,7 @@ cv::Mat compute_measurement_grid_image(const DOGM& grid_map)
 			int index = y * grid_map.getGridSize() + x;
 
 			const MeasurementCell& cell = grid_map.meas_cell_array[index];
-			double occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
+			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
 			uchar temp = static_cast<uchar>(floor(occ * 255));
 			grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
 		}
@@ -257,7 +257,7 @@ cv::Mat compute_raw_polar_cart_measurement_grid_image(const DOGM& grid_map)
 	return grid_img_cart;
 }
 
-cv::Mat compute_dogm_image(const DOGM& grid_map, double occ_tresh = 0.7f, double m_tresh = 4.0f)
+cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
 {
 	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
@@ -267,7 +267,7 @@ cv::Mat compute_dogm_image(const DOGM& grid_map, double occ_tresh = 0.7f, double
 			int index = y * grid_map.getGridSize() + x;
 
 			const GridCell& cell = grid_map.grid_cell_array[index];
-			double occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
+			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
 			uchar temp = static_cast<uchar>(floor(occ * 255));
 
 			cv::Mat vel_img(2, 1, CV_32FC1);
@@ -284,7 +284,7 @@ cv::Mat compute_dogm_image(const DOGM& grid_map, double occ_tresh = 0.7f, double
 
 			if (occ >= occ_tresh && mdist.at<float>(0, 0) > m_tresh)
 			{
-				double angle = atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI);
+				float angle = atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI);
 
 				int color[3];
 				hsv_to_rgb(static_cast<int>(ceil(angle)), 1.0, 1.0, color);
@@ -308,8 +308,8 @@ cv::Mat compute_particles_image(const DOGM& grid_map)
 	for (int i = 0; i < grid_map.particle_count; i++)
 	{
 		const Particle& part = grid_map.particle_array[i];
-		double x = part.state[0];
-		double y = part.state[1];
+		float x = part.state[0];
+		float y = part.state[1];
 
 		if ((x >= 0 && x < grid_map.getGridSize()) && (y >= 0 && y < grid_map.getGridSize()))
 		{
@@ -344,8 +344,8 @@ int main(int argc, const char** argv)
 	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
 	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
-	double delta_time = 0.1f;
-	std::vector<std::vector<double>> sim_measurements = simulator.update(10, delta_time);
+	float delta_time = 0.1f;
+	std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
 
 	for (int i = 0; i < sim_measurements.size(); i++)
 	{

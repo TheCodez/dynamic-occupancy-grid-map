@@ -37,7 +37,7 @@ SOFTWARE.
 class Renderer
 {
 public:
-	Renderer(int grid_size, double fov, double grid_range, double max_range);
+	Renderer(int grid_size, float fov, float grid_range, float max_range);
 	~Renderer();
 
 	void renderToTexture(Texture& polar_texture);
@@ -45,7 +45,7 @@ public:
 	Framebuffer* getFrameBuffer() const { return framebuffer; }
 
 private:
-	void generateCircleSegmentVertices(std::vector<Vertex>& vertices, double fov, double radius, double cx, double cy);
+	void generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy);
 
 private:
 	int grid_size;

@@ -26,5 +26,5 @@ SOFTWARE.
 #include "dogm.h"
 #include <device_launch_parameters.h>
 
-__global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, double* weight_array,
-	double* weight_array_accum, MeasurementCell* meas_cell_array, double* born_masses_array, double p_B, double p_S, int cell_count);
+__global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, float* weight_array,
+	float* weight_array_accum, MeasurementCell* meas_cell_array, float* born_masses_array, float p_B, float p_S, int cell_count);
