@@ -99,20 +99,23 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Partic
 		int start_idx = grid_cell_array[i].start_idx;
 		int end_idx = grid_cell_array[i].end_idx;
 
-		float m_occ_pred = subtract(weight_array_accum, start_idx, end_idx);
-
-		if (m_occ_pred > p_S)
+		if (start_idx != -1)
 		{
-			m_occ_pred = p_S;
-			normalize_to_pS(particle_array, weight_array, p_S, start_idx, end_idx);
-		}
+			float m_occ_pred = subtract(weight_array_accum, start_idx, end_idx);
 
-		float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);
-		float m_occ_up = update_o(m_occ_pred, m_free_pred, meas_cell_array[i]);
-		float m_free_up = update_f(m_occ_pred, m_free_pred, meas_cell_array[i]);
-		float rho_b = separate_newborn_part(m_occ_pred, m_occ_up, p_B);
-		float rho_p = m_occ_up - rho_b;
-		born_masses_array[i] = rho_b;
-		store_values(rho_b, rho_p, m_free_up, m_occ_up, grid_cell_array, i);
+			if (m_occ_pred > p_S)
+			{
+				m_occ_pred = p_S;
+				normalize_to_pS(particle_array, weight_array, p_S, start_idx, end_idx);
+			}
+
+			float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);
+			float m_occ_up = update_o(m_occ_pred, m_free_pred, meas_cell_array[i]);
+			float m_free_up = update_f(m_occ_pred, m_free_pred, meas_cell_array[i]);
+			float rho_b = separate_newborn_part(m_occ_pred, m_occ_up, p_B);
+			float rho_p = m_occ_up - rho_b;
+			born_masses_array[i] = rho_b;
+			store_values(rho_b, rho_p, m_free_up, m_occ_up, grid_cell_array, i);
+		}
 	}
 }

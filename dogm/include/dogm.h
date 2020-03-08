@@ -29,6 +29,8 @@ SOFTWARE.
 #include <glm/mat4x4.hpp>
 #include <cuda_runtime.h>
 
+#include <vector>
+
 class Renderer;
 
 struct GridCell
@@ -93,6 +95,8 @@ class DOGM
 public:
 	DOGM(const GridParams& params, const LaserSensorParams& laser_params);
 	~DOGM();
+
+	void updateMeasurementGridFromArray(const std::vector<float2>& measurements);
 
 	void updateMeasurementGrid(float* measurements, int num_measurements);
 	void updateParticleFilter(float dt);

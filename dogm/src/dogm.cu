@@ -111,6 +111,20 @@ void DOGM::updateParticleFilter(float dt)
 	CHECK_ERROR(cudaDeviceSynchronize());
 }
 
+void DOGM::updateMeasurementGridFromArray(const std::vector<float2>& measurements)
+{
+	thrust::device_vector<float2> d_measurements(measurements);
+	float2* d_measurements_array = thrust::raw_pointer_cast(d_measurements.data());
+
+	dim3 block_dim(32, 32);
+	dim3 cart_grid_dim(divUp(grid_size, block_dim.x), divUp(grid_size, block_dim.y));
+
+	gridArrayToMeasurementGridKernel<<<cart_grid_dim, block_dim>>>(meas_cell_array, d_measurements_array, grid_size);
+
+	CHECK_ERROR(cudaGetLastError());
+	CHECK_ERROR(cudaDeviceSynchronize());
+}
+
 void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
 {
 	//std::cout << "DOGM::updateMeasurementGrid" << std::endl;
@@ -178,6 +192,8 @@ void DOGM::particlePrediction(float dt)
 void DOGM::particleAssignment()
 {
 	//std::cout << "DOGM::particleAssignment" << std::endl;
+
+	reinitGridParticleIndices<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, grid_cell_count);
 
 	CHECK_ERROR(cudaDeviceSynchronize());
 	thrust::device_ptr<Particle> particles(particle_array);

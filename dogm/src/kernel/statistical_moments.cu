@@ -97,13 +97,20 @@ __global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, float* vel_
 		int start_idx = grid_cell_array[i].start_idx;
 		int end_idx = grid_cell_array[i].end_idx;
 
-		float mean_x_vel = calc_mean(vel_x_array_accum, start_idx, end_idx, rho_p);
-		float mean_y_vel = calc_mean(vel_y_array_accum, start_idx, end_idx, rho_p);
-		float var_x_vel = calc_variance(vel_x_squared_array_accum, start_idx, end_idx, rho_p, mean_x_vel);
-		float var_y_vel = calc_variance(vel_y_squared_array_accum, start_idx, end_idx, rho_p, mean_y_vel);
-		float covar_xy_vel = calc_covariance(vel_xy_array_accum, start_idx, end_idx, rho_p, mean_x_vel, mean_y_vel);
-		//printf("x: %f, y: %f\n", mean_x_vel, mean_y_vel);
+		if (start_idx != -1)
+		{
+			float mean_x_vel = calc_mean(vel_x_array_accum, start_idx, end_idx, rho_p);
+			float mean_y_vel = calc_mean(vel_y_array_accum, start_idx, end_idx, rho_p);
+			float var_x_vel = calc_variance(vel_x_squared_array_accum, start_idx, end_idx, rho_p, mean_x_vel);
+			float var_y_vel = calc_variance(vel_y_squared_array_accum, start_idx, end_idx, rho_p, mean_y_vel);
+			float covar_xy_vel = calc_covariance(vel_xy_array_accum, start_idx, end_idx, rho_p, mean_x_vel, mean_y_vel);
+			//printf("x: %f, y: %f\n", mean_x_vel, mean_y_vel);
 
-		store(grid_cell_array, i, mean_x_vel, mean_y_vel, var_x_vel, var_y_vel, covar_xy_vel);
+			store(grid_cell_array, i, mean_x_vel, mean_y_vel, var_x_vel, var_y_vel, covar_xy_vel);
+		}
+		else
+		{
+			store(grid_cell_array, i, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+		}
 	}
 }

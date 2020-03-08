@@ -60,8 +60,8 @@ __global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* 
 		grid_cell_array[i].pos = make_int2(x, y);
 		grid_cell_array[i].free_mass = 0.0f;
 		grid_cell_array[i].occ_mass = 0.0f;
-		//grid_cell_array[i].start_idx = -1;
-		//grid_cell_array[i].end_idx = -1;
+		grid_cell_array[i].start_idx = -1;
+		grid_cell_array[i].end_idx = -1;
 
 		meas_cell_array[i].occ_mass = 0.0f;
 		meas_cell_array[i].free_mass = 0.0f;

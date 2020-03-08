@@ -169,3 +169,22 @@ __global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* meas_grid,
 		meas_grid[index].p_A = 1.0f;
 	}
 }
+
+__global__ void gridArrayToMeasurementGridKernel(MeasurementCell* meas_grid, float2* grid, int grid_size)
+{
+	const int x = blockIdx.x * blockDim.x + threadIdx.x;
+	const int y = blockIdx.y * blockDim.y + threadIdx.y;
+	const int index = grid_size * y + x;
+
+	if (x < grid_size && y < grid_size)
+	{
+		float2 masses = grid[index];
+
+		meas_grid[index].occ_mass = masses.x;
+		meas_grid[index].free_mass = masses.y;
+
+		meas_grid[index].likelihood = 1.0f;
+		meas_grid[index].p_A = 1.0f;
+	}
+}
+
