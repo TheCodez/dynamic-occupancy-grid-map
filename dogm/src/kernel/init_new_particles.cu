@@ -43,14 +43,19 @@ __device__ void set_cell_idx_UA(Particle* birth_particle_array, int i, int grid_
 	birth_particle_array[i].associated = false;
 }
 
-__device__ int calc_start_idx(float* particle_orders_array_accum, int j)
+__device__ int calc_start_idx(float* particle_orders_array_accum, int index)
 {
-	return j > 0 ? static_cast<int>(particle_orders_array_accum[j - 1]) : 0;
+	if (index == 0)
+	{
+		return 0;
+	}
+
+	return static_cast<int>(particle_orders_array_accum[index - 1]);
 }
 
-__device__ int calc_end_idx(float* particle_orders_array_accum, int j)
+__device__ int calc_end_idx(float* particle_orders_array_accum, int index)
 {
-	return static_cast<int>(particle_orders_array_accum[j]) - 1;
+	return static_cast<int>(particle_orders_array_accum[index]) - 1;
 }
 
 __device__ int calc_num_assoc(int num_new_particles, float p_A)
@@ -79,8 +84,8 @@ __device__ void initialize_new_particle(Particle* birth_particle_array, int i, G
 	int cell_idx = birth_particle_array[i].grid_cell_idx;
 	GridCell& grid_cell = grid_cell_array[cell_idx];
 
-	unsigned int seed = hash(i);
-	thrust::default_random_engine rng(seed);
+	thrust::default_random_engine rng;
+	rng.discard(i);
 	thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
 	thrust::normal_distribution<float> dist_vel(0.0f, 4.0);
 

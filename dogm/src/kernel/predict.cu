@@ -34,8 +34,8 @@ __global__ void predictKernel(Particle* particle_array, int grid_size, float p_S
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
-		unsigned int seed = hash(i);
-		thrust::default_random_engine rng(seed);
+		thrust::default_random_engine rng;
+		rng.discard(i);
 		thrust::normal_distribution<float> dist_noise_pos(0.0f, process_noise_position);
 		thrust::normal_distribution<float> dist_noise_vel(0.0f, process_noise_velocity);
 

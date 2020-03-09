@@ -173,9 +173,9 @@ void DOGM::particlePrediction(float dt)
 	//std::cout << "DOGM::particlePrediction" << std::endl;
 
 	glm::mat4x4 transition_matrix(1, 0, dt, 0, 
-								  0, 1, 0, dt, 
-								  0, 0, 1, 0, 
-								  0, 0, 0, 1);
+                                  0, 1, 0, dt, 
+                                  0, 0, 1, 0, 
+                                  0, 0, 0, 1);
 
 	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, params.persistence_prob, 
 		transition_matrix, params.process_noise_position, params.process_noise_velocity, particle_count);
@@ -339,8 +339,7 @@ void DOGM::resampling()
 	thrust::transform(thrust::make_counting_iterator(0), thrust::make_counting_iterator(particle_count), rand_array.begin(),
 		GPU_LAMBDA(int index)
 	{
-		//unsigned int seed = hash(index);
-		thrust::default_random_engine rand_eng;//(seed);
+		thrust::default_random_engine rand_eng;
 		thrust::uniform_int_distribution<int> dist(0, max);
 		rand_eng.discard(index);
 		return dist(rand_eng);
