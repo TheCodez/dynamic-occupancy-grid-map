@@ -177,14 +177,8 @@ void DOGM::particlePrediction(float dt)
 								  0, 0, 1, 0, 
 								  0, 0, 0, 1);
 
-	thrust::default_random_engine rng;
-	thrust::normal_distribution<float> dist_pos(0.0f, params.process_noise_position);
-	thrust::normal_distribution<float> dist_vel(0.0f, params.process_noise_velocity);
-
-	glm::vec4 process_noise(dist_pos(rng), dist_pos(rng), dist_vel(rng), dist_vel(rng));
-
 	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, params.persistence_prob, 
-		transition_matrix, process_noise, particle_count);
+		transition_matrix, params.process_noise_position, params.process_noise_velocity, particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
 }
@@ -258,7 +252,7 @@ void DOGM::initializeNewParticles()
 	accumulate(born_masses_array, particle_orders_accum);
 	float* particle_orders_array_accum = thrust::raw_pointer_cast(particle_orders_accum.data());
 
-	normalize_particle_orders(particle_orders_array_accum, grid_cell_count, params.new_born_particle_count);
+	normalize_particle_orders(particle_orders_array_accum, grid_cell_count, new_born_particle_count);
 
 	initNewParticlesKernel1<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_cell_array,
 		meas_cell_array, weight_array, born_masses_array, birth_particle_array, particle_orders_array_accum, grid_cell_count);

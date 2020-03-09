@@ -30,10 +30,17 @@ SOFTWARE.
 #include <device_launch_parameters.h>
 
 __global__ void predictKernel(Particle* particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
-	const glm::vec4 process_noise, int particle_count)
+	float process_noise_position, float process_noise_velocity, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
+		unsigned int seed = hash(i);
+		thrust::default_random_engine rng(seed);
+		thrust::normal_distribution<float> dist_noise_pos(0.0f, process_noise_position);
+		thrust::normal_distribution<float> dist_noise_vel(0.0f, process_noise_velocity);
+
+		glm::vec4 process_noise(dist_noise_pos(rng), dist_noise_pos(rng), dist_noise_vel(rng), dist_noise_vel(rng));
+
 		particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
 		particle_array[i].weight = p_S * particle_array[i].weight;
 
@@ -42,8 +49,6 @@ __global__ void predictKernel(Particle* particle_array, int grid_size, float p_S
 
 		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
 		{
-			unsigned int seed = hash(i);
-			thrust::default_random_engine rng(seed);
 			thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
 			thrust::normal_distribution<float> dist_vel(0.0f, 12.0);
 

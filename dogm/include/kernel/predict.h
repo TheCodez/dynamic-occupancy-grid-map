@@ -27,4 +27,4 @@ SOFTWARE.
 #include <device_launch_parameters.h>
 
 __global__ void predictKernel(Particle* particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
-	const glm::vec4 process_noise, int particle_count);
+	float process_noise_position, float process_noise_velocity, int particle_count);
