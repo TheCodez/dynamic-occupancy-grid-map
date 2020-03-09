@@ -24,6 +24,7 @@ SOFTWARE.
 #include "kernel/resampling.h"
 #include "common.h"
 #include "cuda_utils.h"
+#include "dogm_types.h"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>

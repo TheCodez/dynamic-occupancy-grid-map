@@ -23,8 +23,10 @@ SOFTWARE.
 */
 #pragma once
 
-#include "dogm.h"
 #include <device_launch_parameters.h>
+
+struct GridCell;
+struct Particle;
 
 __global__ void statisticalMomentsKernel1(Particle* particle_array, float* weight_array, float* vel_x_array, float* vel_y_array,
 	float* vel_x_squared_array, float* vel_y_squared_array, float* vel_xy_array, int particle_count);

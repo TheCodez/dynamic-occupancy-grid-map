@@ -61,6 +61,7 @@ set(HEADERS_FILES
 	include/common.h
 	include/cuda_utils.h
 	include/dogm.h
+	include/dogm_types.h
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS_FILES})

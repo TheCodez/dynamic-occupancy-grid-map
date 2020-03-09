@@ -24,6 +24,7 @@ SOFTWARE.
 #include "kernel/init.h"
 #include "common.h"
 #include "cuda_utils.h"
+#include "dogm_types.h"
 
 #include <thrust/random.h>
 #include <cuda_runtime.h>
@@ -55,9 +56,6 @@ __global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* 
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
-		const int x = i % grid_size;
-		const int y = i / grid_size;
-		grid_cell_array[i].pos = make_int2(x, y);
 		grid_cell_array[i].free_mass = 0.0f;
 		grid_cell_array[i].occ_mass = 0.0f;
 		grid_cell_array[i].start_idx = -1;

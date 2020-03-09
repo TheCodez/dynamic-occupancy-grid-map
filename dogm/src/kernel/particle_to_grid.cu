@@ -23,6 +23,7 @@ SOFTWARE.
 */
 #include "kernel/particle_to_grid.h"
 #include "cuda_utils.h"
+#include "dogm_types.h"
 
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>

@@ -23,10 +23,11 @@ SOFTWARE.
 */
 #pragma once
 
-#include "dogm.h"
 #include <device_launch_parameters.h>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
+
+struct Particle;
 
 void calc_resampled_indeces(thrust::device_vector<float>& weight_accum, thrust::device_vector<int>& rand_array,
 	thrust::device_vector<int>& indices);

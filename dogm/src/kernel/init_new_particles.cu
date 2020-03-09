@@ -24,6 +24,7 @@ SOFTWARE.
 #include "kernel/init_new_particles.h"
 #include "common.h"
 #include "cuda_utils.h"
+#include "dogm_types.h"
 
 #include <thrust/device_ptr.h>
 #include <thrust/random.h>

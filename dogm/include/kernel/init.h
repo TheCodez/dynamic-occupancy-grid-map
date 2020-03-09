@@ -26,6 +26,10 @@ SOFTWARE.
 #include "dogm.h"
 #include <device_launch_parameters.h>
 
+struct GridCell;
+struct MeasurementCell;
+struct Particle;
+
 __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int particle_count);
 
 __global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* meas_cell_array, int grid_size, int cell_count);

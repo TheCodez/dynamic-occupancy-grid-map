@@ -24,6 +24,7 @@ SOFTWARE.
 #include "kernel/predict.h"
 #include "cuda_utils.h"
 #include "common.h"
+#include "dogm_types.h"
 
 #include <thrust/random.h>
 #include <cuda_runtime.h>

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "dogm.h"
+#include "dogm_types.h"
 
 #include <glm/glm.hpp>
 
@@ -320,11 +321,44 @@ cv::Mat compute_particles_image(const DOGM& grid_map)
 	return particles_img;
 }
 
+std::vector<float2> load_measurement_from_image(const std::string& file_name)
+{
+	cv::Mat grid_img = cv::imread(file_name);
+
+	//cv::namedWindow("img", cv::WINDOW_NORMAL);
+	//cv::imshow("img", grid_img);
+	//cv::waitKey(0);
+
+	std::vector<float2> meas_grid(grid_img.cols * grid_img.rows);
+
+	for (int y = 0; y < grid_img.rows; y++)
+	{
+		for (int x = 0; x < grid_img.cols; x++)
+		{
+			int index = y * grid_img.cols + x;
+
+			cv::Vec3b color = grid_img.at<cv::Vec3b>(y, x);
+
+			meas_grid[index] = make_float2(color[0] / 255.0f, color[1] / 255.0f);
+		}
+	}
+
+	return meas_grid;
+}
+
 int main(int argc, const char** argv) 
 {
+	std::vector<std::vector<float2>> mg_meas;
+
+	for (int i = 0; i < 10; i++)
+	{
+		std::vector<float2> grid = load_measurement_from_image(cv::format("meas_grids/meas_grid%d.png", i));
+		mg_meas.push_back(grid);
+	}	
+
 	GridParams params;
-	params.size = 50;
-	params.resolution = 0.1f;
+	params.size = 128;
+	params.resolution = 1.0f;
 	params.particle_count = 2 * static_cast<int>(10e5);
 	params.new_born_particle_count = 2 * static_cast<int>(10e4);
 	params.persistence_prob = 0.99f;
@@ -338,19 +372,20 @@ int main(int argc, const char** argv)
 
 	DOGM grid_map(params, laser_params);
 
-	Simulator simulator(100);
-
-	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
-	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
-	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+//	Simulator simulator(100);
+//	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
+//	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
+//	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
 	float delta_time = 0.1f;
-	std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
+//	std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
 
-	for (int i = 0; i < sim_measurements.size(); i++)
+//	for (int i = 0; i < sim_measurements.size(); i++)
+	
+	for (int i = 0; i < mg_meas.size(); i++)
 	{
 		// Update measurement grid
-		grid_map.updateMeasurementGrid(sim_measurements[i].data(), sim_measurements[i].size());
+		grid_map.updateMeasurementGridFromArray(mg_meas[i]);
 
 		auto begin = chrono::high_resolution_clock::now();
 

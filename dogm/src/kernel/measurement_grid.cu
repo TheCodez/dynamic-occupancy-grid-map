@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "kernel/measurement_grid.h"
+#include "dogm_types.h"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>

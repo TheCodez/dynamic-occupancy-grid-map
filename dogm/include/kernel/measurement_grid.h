@@ -23,8 +23,9 @@ SOFTWARE.
 */
 #pragma once
 
-#include "dogm.h"
 #include <device_launch_parameters.h>
+
+struct MeasurementCell;
 
 __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution);
 

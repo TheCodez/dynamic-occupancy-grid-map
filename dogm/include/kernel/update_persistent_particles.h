@@ -23,8 +23,11 @@ SOFTWARE.
 */
 #pragma once
 
-#include "dogm.h"
 #include <device_launch_parameters.h>
+
+struct GridCell;
+struct MeasurementCell;
+struct Particle;
 
 __global__ void updatePersistentParticlesKernel1(Particle* particle_array, MeasurementCell* meas_cell_array, float* weight_array,
 	int particle_count);

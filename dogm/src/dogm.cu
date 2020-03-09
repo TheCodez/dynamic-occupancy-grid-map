@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "dogm.h"
+#include "dogm_types.h"
 #include "cuda_utils.h"
 #include "common.h"
 
