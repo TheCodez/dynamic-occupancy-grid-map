@@ -80,37 +80,6 @@ __device__ void store_weights(float w_A, float w_UA, GridCell* grid_cell_array, 
 	grid_cell_array[j].w_UA = w_UA;
 }
 
-__device__ void initialize_new_particle(Particle* birth_particle_array, int i, GridCell* grid_cell_array, int grid_size)
-{
-	int cell_idx = birth_particle_array[i].grid_cell_idx;
-	GridCell& grid_cell = grid_cell_array[cell_idx];
-
-	thrust::default_random_engine rng;
-	rng.discard(i);
-	thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-	thrust::normal_distribution<float> dist_vel(0.0f, 4.0);
-
-	bool associated = birth_particle_array[i].associated;
-	if (associated)
-	{
-		float x = cell_idx % grid_size;
-		float y = cell_idx / grid_size;
-
-		birth_particle_array[i].weight = grid_cell.w_A;
-		birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
-	}
-	else
-	{
-		int index = dist_idx(rng);
-
-		float x = index % grid_size;
-		float y = index / grid_size;
-
-		birth_particle_array[i].weight = grid_cell.w_UA;
-		birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
-	}
-}
-
 void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B)
 {
 	thrust::device_ptr<float> particle_orders_accum(particle_orders_array_accum);
@@ -159,7 +128,33 @@ __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
-		initialize_new_particle(birth_particle_array, i, grid_cell_array, grid_size);
+		int cell_idx = birth_particle_array[i].grid_cell_idx;
+		GridCell& grid_cell = grid_cell_array[cell_idx];
+
+		thrust::default_random_engine rng;
+		rng.discard(i);
+		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
+		thrust::normal_distribution<float> dist_vel(0.0f, 4.0);
+
+		bool associated = birth_particle_array[i].associated;
+		if (associated)
+		{
+			float x = cell_idx % grid_size;
+			float y = cell_idx / grid_size;
+
+			birth_particle_array[i].weight = grid_cell.w_A;
+			birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
+		}
+		else
+		{
+			int index = dist_idx(rng);
+
+			float x = index % grid_size;
+			float y = index / grid_size;
+
+			birth_particle_array[i].weight = grid_cell.w_UA;
+			birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
+		}
 	}
 }
 
