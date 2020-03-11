@@ -178,6 +178,10 @@ void DOGM::particlePrediction(float dt)
                                   0, 0, 1, 0, 
                                   0, 0, 0, 1);
 
+
+	// FIXME: glm uses column major, we need row major
+	transition_matrix = glm::transpose(transition_matrix);
+
 	predictKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, params.persistence_prob, 
 		transition_matrix, params.process_noise_position, params.process_noise_velocity, particle_count);
 
