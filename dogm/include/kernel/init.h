@@ -32,6 +32,8 @@ struct Particle;
 
 __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int particle_count);
 
+__global__ void initBirthParticlesKernel(Particle* birth_particle_array, int grid_size, int particle_count);
+
 __global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* meas_cell_array, int grid_size, int cell_count);
 
 __global__ void reinitGridParticleIndices(GridCell* grid_cell_array, int cell_count);

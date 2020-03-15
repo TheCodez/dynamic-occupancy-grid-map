@@ -34,8 +34,9 @@ __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
-		thrust::default_random_engine rng;
-		rng.discard(i);
+		int seed = hash(i);
+		thrust::default_random_engine rng(seed);
+		//rng.discard(i);
 		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
 		thrust::normal_distribution<float> dist_vel(0.0f, 12.0f);
 
@@ -49,6 +50,28 @@ __global__ void initParticlesKernel(Particle* particle_array, int grid_size, int
 
 		//printf("w: %f, x: %f, y: %f, vx: %f, vy: %f\n", particle_array[i].weight, particle_array[i].state[0], particle_array[i].state[1],
 		//	particle_array[i].state[2], particle_array[i].state[3]);
+	}
+}
+
+__global__ void initBirthParticlesKernel(Particle* birth_particle_array, int grid_size, int particle_count)
+{
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
+	{
+		int seed = hash(i);
+		thrust::default_random_engine rng(seed);
+		//rng.discard(i);
+		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
+		thrust::normal_distribution<float> dist_vel(0.0f, 4.0f);
+
+		int index = dist_idx(rng);
+
+		float x = index % grid_size;
+		float y = index / grid_size;
+
+		birth_particle_array[i].grid_cell_idx = index;
+		birth_particle_array[i].weight = 0.0;
+		birth_particle_array[i].associated = false;
+		birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 	}
 }
 

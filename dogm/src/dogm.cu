@@ -44,6 +44,8 @@ SOFTWARE.
 #include <thrust/random.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
+#include <thrust/extrema.h>
+
 #include <cuda_runtime.h>
 
 int DOGM::BLOCK_SIZE = 256;
@@ -89,6 +91,9 @@ DOGM::~DOGM()
 void DOGM::initialize()
 {
 	initParticlesKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size, particle_count);
+
+	initBirthParticlesKernel<<<divUp(new_born_particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(birth_particle_array, grid_size,
+		new_born_particle_count);
 
 	initGridCellsKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, meas_cell_array, grid_size, grid_cell_count);
 
@@ -194,7 +199,9 @@ void DOGM::particleAssignment()
 
 	reinitGridParticleIndices<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, grid_cell_count);
 
+	CHECK_ERROR(cudaGetLastError());
 	CHECK_ERROR(cudaDeviceSynchronize());
+
 	thrust::device_ptr<Particle> particles(particle_array);
 	thrust::sort(particles, particles + particle_count, GPU_LAMBDA(Particle x, Particle y)
 	{
@@ -251,6 +258,10 @@ void DOGM::initializeNewParticles()
 {
 	//std::cout << "DOGM::initializeNewParticles" << std::endl;
 
+	initBirthParticlesKernel<<<divUp(new_born_particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(birth_particle_array, grid_size,
+		new_born_particle_count);
+
+	CHECK_ERROR(cudaGetLastError());
 	CHECK_ERROR(cudaDeviceSynchronize());
 
 	thrust::device_vector<float> particle_orders_accum(grid_cell_count);
@@ -280,6 +291,14 @@ void DOGM::initializeNewParticles()
 		new_born_particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
+
+	thrust::device_ptr<float> weight(weight_array);
+	float res_max = *thrust::max_element(weight, weight + particle_count);
+	printf("Persistent max: %f\n", res_max);
+
+	thrust::device_ptr<float> birth_weight(birth_weight_array);
+	float res2_max = *thrust::max_element(birth_weight, birth_weight + new_born_particle_count);
+	printf("New born max: %f\n", res2_max);
 }
 
 void DOGM::statisticalMoments()
@@ -344,10 +363,11 @@ void DOGM::resampling()
 	thrust::transform(thrust::make_counting_iterator(0), thrust::make_counting_iterator(particle_count), rand_array.begin(),
 		GPU_LAMBDA(int index)
 	{
-		thrust::default_random_engine rand_eng;
+		//int seed = hash(index);
+		thrust::default_random_engine rng;// (seed);
 		thrust::uniform_int_distribution<int> dist(0, max);
-		rand_eng.discard(index);
-		return dist(rand_eng);
+		rng.discard(index);
+		return dist(rng);
 	});
 	thrust::sort(rand_array.begin(), rand_array.end());
 
@@ -362,10 +382,12 @@ void DOGM::resampling()
 	accumulate(joint_weight_array, joint_weight_accum);
 
 	thrust::device_vector<int> idx_resampled(particle_count);
-	calc_resampled_indeces(joint_weight_accum, rand_array, idx_resampled);
+	calc_resampled_indices(joint_weight_accum, rand_array, idx_resampled);
 	int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
 	float joint_max = joint_weight_accum.back();
+
+	printf("joint_max: %f\n", joint_max);
 
 	resamplingKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, particle_array_next,
 		birth_particle_array, idx_array_resampled, joint_max, particle_count);

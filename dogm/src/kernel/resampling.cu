@@ -31,7 +31,7 @@ SOFTWARE.
 
 #include <thrust/binary_search.h>
 
-void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<int>& rand_array,
+void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<int>& rand_array,
 	thrust::device_vector<int>& indices)
 {
 	thrust::device_vector<float> norm_weight_accum(joint_weight_accum.size());
@@ -44,6 +44,8 @@ void calc_resampled_indeces(thrust::device_vector<float>& joint_weight_accum, th
 
 	float norm_max = norm_weight_accum.back();
 	int rand_max = rand_array.back();
+
+	printf("Norm: %f, Rand: %d\n", norm_max, rand_max);
 
 	if (norm_max != rand_max)
 	{
