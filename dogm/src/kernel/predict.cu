@@ -30,13 +30,14 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__global__ void predictKernel(Particle* particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
-	float process_noise_position, float process_noise_velocity, int particle_count)
+__global__ void predictKernel(KernelArray<Particle> particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
+	float process_noise_position, float process_noise_velocity)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_array.size(); i += blockDim.x * gridDim.x)
 	{
-		thrust::default_random_engine rng;
-		rng.discard(i);
+		int seed = hash(i);
+		thrust::default_random_engine rng(seed);
+		//rng.discard(i);
 		thrust::normal_distribution<float> dist_noise_pos(0.0f, process_noise_position);
 		thrust::normal_distribution<float> dist_noise_vel(0.0f, process_noise_velocity);
 

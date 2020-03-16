@@ -24,16 +24,17 @@ SOFTWARE.
 #pragma once
 
 #include "dogm.h"
+#include "cuda_utils.h"
 #include <device_launch_parameters.h>
 
 struct GridCell;
 struct MeasurementCell;
 struct Particle;
 
-__global__ void initParticlesKernel(Particle* particle_array, int grid_size, int particle_count);
+__global__ void initParticlesKernel(KernelArray<Particle> particle_array, int grid_size);
 
-__global__ void initBirthParticlesKernel(Particle* birth_particle_array, int grid_size, int particle_count);
+__global__ void initBirthParticlesKernel(KernelArray<Particle> birth_particle_array, int grid_size);
 
-__global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* meas_cell_array, int grid_size, int cell_count);
+__global__ void initGridCellsKernel(KernelArray<GridCell> grid_cell_array, KernelArray<MeasurementCell> meas_cell_array, int grid_size);
 
-__global__ void reinitGridParticleIndices(GridCell* grid_cell_array, int cell_count);
+__global__ void reinitGridParticleIndices(KernelArray<GridCell> grid_cell_array);

@@ -23,11 +23,13 @@ SOFTWARE.
 */
 #pragma once
 
+#include "cuda_utils.h"
 #include <device_launch_parameters.h>
 
 struct GridCell;
 struct MeasurementCell;
 struct Particle;
 
-__global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, float* weight_array,
-	float* weight_array_accum, MeasurementCell* meas_cell_array, float* born_masses_array, float p_B, float p_S, int cell_count);
+__global__ void gridCellPredictionUpdateKernel(KernelArray<GridCell> grid_cell_array, KernelArray<Particle> particle_array,
+	KernelArray<float> weight_array, KernelArray<float> weight_array_accum, KernelArray<MeasurementCell> meas_cell_array,
+	KernelArray<float> born_masses_array, float p_B, float p_S);

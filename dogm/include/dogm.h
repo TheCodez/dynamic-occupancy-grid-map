@@ -29,6 +29,8 @@ SOFTWARE.
 #include <glm/mat4x4.hpp>
 #include <cuda_runtime.h>
 
+#include <thrust/device_vector.h>
+
 #include <vector>
 
 class Renderer;
@@ -86,17 +88,17 @@ public:
 
 	std::unique_ptr<Renderer> renderer;
 
-	GridCell* grid_cell_array;
-	Particle* particle_array;
-	Particle* particle_array_next;
-	Particle* birth_particle_array;
+	thrust::device_vector<GridCell> grid_cell_array;
+	thrust::device_vector<Particle> particle_array;
+	thrust::device_vector<Particle> particle_array_next;
+	thrust::device_vector<Particle> birth_particle_array;
 
-	MeasurementCell* polar_meas_cell_array;
-	MeasurementCell* meas_cell_array;
+	thrust::device_vector<MeasurementCell> polar_meas_cell_array;
+	thrust::device_vector<MeasurementCell> meas_cell_array;
 
-	float* weight_array;
-	float* birth_weight_array;
-	float* born_masses_array;
+	thrust::device_vector<float> weight_array;
+	thrust::device_vector<float> birth_weight_array;
+	thrust::device_vector<float> born_masses_array;
 
 	int grid_size;
 

@@ -153,7 +153,7 @@ __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, float* mea
 	}
 }
 
-__global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* meas_grid, cudaSurfaceObject_t cart, int grid_size)
+__global__ void cartesianGridToMeasurementGridKernel(KernelArray<MeasurementCell> meas_grid, cudaSurfaceObject_t cart, int grid_size)
 {
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -171,7 +171,7 @@ __global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* meas_grid,
 	}
 }
 
-__global__ void gridArrayToMeasurementGridKernel(MeasurementCell* meas_grid, float2* grid, int grid_size)
+__global__ void gridArrayToMeasurementGridKernel(KernelArray<MeasurementCell> meas_grid, float2* grid, int grid_size)
 {
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;

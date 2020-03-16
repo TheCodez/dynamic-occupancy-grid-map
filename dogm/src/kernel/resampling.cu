@@ -56,24 +56,24 @@ void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, th
 	thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(), indices.begin());
 }
 
-__device__ Particle copy_particle(Particle* particle_array, int particle_count, Particle* birth_particle_array, int idx)
+__device__ Particle copy_particle(KernelArray<Particle> particle_array, KernelArray<Particle> birth_particle_array, int idx)
 {
-	if (idx < particle_count)
+	if (idx < particle_array.size())
 	{
 		return particle_array[idx];
 	}
 	else
 	{
-		return birth_particle_array[idx - particle_count];
+		return birth_particle_array[idx - particle_array.size()];
 	}
 }
 
-__global__ void resamplingKernel(Particle* particle_array, Particle* particle_array_next, Particle* birth_particle_array,
-	int* idx_array_resampled, float joint_max, int particle_count)
+__global__ void resamplingKernel(KernelArray<Particle> particle_array, KernelArray<Particle> particle_array_next,
+	KernelArray<Particle> birth_particle_array, KernelArray<int> idx_array_resampled, float joint_max)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_array.size(); i += blockDim.x * gridDim.x)
 	{
-		particle_array_next[i] = copy_particle(particle_array, particle_count, birth_particle_array, idx_array_resampled[i]);
-		particle_array_next[i].weight = joint_max / particle_count;
+		particle_array_next[i] = copy_particle(particle_array, birth_particle_array, idx_array_resampled[i]);
+		particle_array_next[i].weight = joint_max / particle_array.size();
 	}
 }

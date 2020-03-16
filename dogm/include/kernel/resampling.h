@@ -23,6 +23,7 @@ SOFTWARE.
 */
 #pragma once
 
+#include "cuda_utils.h"
 #include <device_launch_parameters.h>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -32,5 +33,5 @@ struct Particle;
 void calc_resampled_indices(thrust::device_vector<float>& weight_accum, thrust::device_vector<int>& rand_array,
 	thrust::device_vector<int>& indices);
 
-__global__ void resamplingKernel(Particle* particle_array, Particle* particle_array_next, Particle* birth_particle_array,
-	int* idx_array_resampled, float joint_max, int particle_count);
+__global__ void resamplingKernel(KernelArray<Particle> particle_array, KernelArray<Particle> particle_array_next, 
+	KernelArray<Particle> birth_particle_array, KernelArray<int> idx_array_resampled, float joint_max);

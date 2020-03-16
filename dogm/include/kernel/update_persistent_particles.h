@@ -23,16 +23,17 @@ SOFTWARE.
 */
 #pragma once
 
+#include "cuda_utils.h"
 #include <device_launch_parameters.h>
 
 struct GridCell;
 struct MeasurementCell;
 struct Particle;
 
-__global__ void updatePersistentParticlesKernel1(Particle* particle_array, MeasurementCell* meas_cell_array, float* weight_array,
-	int particle_count);
+__global__ void updatePersistentParticlesKernel1(KernelArray<Particle> particle_array, KernelArray<MeasurementCell> meas_cell_array,
+	KernelArray<float> weight_array);
 
-__global__ void updatePersistentParticlesKernel2(GridCell* grid_cell_array, float* weight_array_accum, int cell_count);
+__global__ void updatePersistentParticlesKernel2(KernelArray<GridCell> grid_cell_array, KernelArray<float> weight_array_accum);
 
-__global__ void updatePersistentParticlesKernel3(Particle* particle_array, MeasurementCell* meas_cell_array, 
-	GridCell* grid_cell_array, float* weight_array, int particle_count);
+__global__ void updatePersistentParticlesKernel3(KernelArray<Particle> particle_array, KernelArray<MeasurementCell> meas_cell_array,
+	KernelArray<GridCell> grid_cell_array, KernelArray<float> weight_array);

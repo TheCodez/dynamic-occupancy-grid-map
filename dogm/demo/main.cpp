@@ -160,6 +160,7 @@ float pignistic_transformation(float free_mass, float occ_mass)
 
 cv::Mat compute_measurement_grid_image(const DOGM& grid_map)
 {
+	thrust::host_vector<MeasurementCell> meas_cell_array = grid_map.meas_cell_array;
 	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
@@ -167,7 +168,7 @@ cv::Mat compute_measurement_grid_image(const DOGM& grid_map)
 		{
 			int index = y * grid_map.getGridSize() + x;
 
-			const MeasurementCell& cell = grid_map.meas_cell_array[index];
+			const MeasurementCell& cell = meas_cell_array[index];
 			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
 			uchar temp = static_cast<uchar>(floor(occ * 255));
 			grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
@@ -179,13 +180,14 @@ cv::Mat compute_measurement_grid_image(const DOGM& grid_map)
 
 cv::Mat compute_raw_measurement_grid_image(const DOGM& grid_map)
 {
+	thrust::host_vector<MeasurementCell> meas_cell_array = grid_map.meas_cell_array;
 	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
 		for (int x = 0; x < grid_map.getGridSize(); x++)
 		{
 			int index = y * grid_map.getGridSize() + x;
-			const MeasurementCell& cell = grid_map.meas_cell_array[index];
+			const MeasurementCell& cell = meas_cell_array[index];
 			int red = cell.occ_mass * 255;
 			int green = cell.free_mass * 255;
 			int blue = 255 - red - green;
@@ -199,13 +201,14 @@ cv::Mat compute_raw_measurement_grid_image(const DOGM& grid_map)
 
 cv::Mat compute_raw_polar_measurement_grid_image(const DOGM& grid_map)
 {
+	thrust::host_vector<MeasurementCell> polar_meas_cell_array = grid_map.polar_meas_cell_array;
 	cv::Mat grid_img(grid_map.getGridSize(), 100, CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
 		for (int x = 0; x < 100; x++)
 		{
 			int index = y * 100 + x;
-			const MeasurementCell& cell = grid_map.polar_meas_cell_array[index];
+			const MeasurementCell& cell = polar_meas_cell_array[index];
 			int red = cell.occ_mass * 255;
 			int green = cell.free_mass * 255;
 			int blue = 255 - red - green;
@@ -217,49 +220,9 @@ cv::Mat compute_raw_polar_measurement_grid_image(const DOGM& grid_map)
 	return grid_img;
 }
 
-cv::Mat compute_raw_polar_cart_measurement_grid_image(const DOGM& grid_map)
-{
-	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
-	for (int y = 0; y < grid_map.getGridSize(); y++)
-	{
-		for (int x = 0; x < 100; x++)
-		{
-			int index = y * 100 + x;
-			const MeasurementCell& cell = grid_map.polar_meas_cell_array[index];
-			int red = cell.occ_mass * 255;
-			int green = cell.free_mass * 255;
-			int blue = 255 - red - green;
-
-			grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(blue, green, red);
-		}
-	}
-
-	cv::Mat grid_img_cart(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
-	for (int y = 0; y < grid_map.getGridSize(); y++)
-	{
-		for (int x = 0; x < grid_map.getGridSize(); x++)
-		{
-			int new_x = x -grid_map.getGridSize() / 2;
-			int new_y = y -grid_map.getGridSize() / 2;
-
-			int r_pol_x = sqrt(new_x * new_x + new_y * new_y);
-			int angle_pol_y = (atan2(new_y, new_x) + 3.14) / (3.14 / (180.0 / 4));
-
-			if (r_pol_x >= 0 && r_pol_x < 100)
-			{
-				if (angle_pol_y >= 0 && angle_pol_y < grid_map.getGridSize())
-				{
-					grid_img_cart.at<cv::Vec3b>(y, x) = grid_img.at<cv::Vec3b>(angle_pol_y, r_pol_x);
-				}
-			}
-		}
-	}
-
-	return grid_img_cart;
-}
-
 cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
 {
+	thrust::host_vector<GridCell> grid_cell_array = grid_map.grid_cell_array;
 	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
@@ -267,7 +230,7 @@ cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m
 		{
 			int index = y * grid_map.getGridSize() + x;
 
-			const GridCell& cell = grid_map.grid_cell_array[index];
+			const GridCell& cell = grid_cell_array[index];
 			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
 			uchar temp = static_cast<uchar>(floor(occ * 255));
 
@@ -305,10 +268,11 @@ cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m
 
 cv::Mat compute_particles_image(const DOGM& grid_map)
 {
+	thrust::host_vector<Particle> particle_array = grid_map.particle_array;
 	cv::Mat particles_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
 	for (int i = 0; i < grid_map.particle_count; i++)
 	{
-		const Particle& part = grid_map.particle_array[i];
+		const Particle& part = particle_array[i];
 		float x = part.state[0];
 		float y = part.state[1];
 
@@ -356,6 +320,8 @@ int main(int argc, const char** argv)
 		mg_meas.push_back(grid);
 	}	
 
+#if 1
+
 	GridParams params;
 	params.size = 128;
 	params.resolution = 1.0f;
@@ -372,21 +338,40 @@ int main(int argc, const char** argv)
 
 	DOGM grid_map(params, laser_params);
 
-//	Simulator simulator(100);
-//	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
-//	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
-//	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
-
 	float delta_time = 0.1f;
-//	std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
-
-//	for (int i = 0; i < sim_measurements.size(); i++)
-	
 	for (int i = 0; i < mg_meas.size(); i++)
 	{
 		// Update measurement grid
 		grid_map.updateMeasurementGridFromArray(mg_meas[i]);
+#else
+	GridParams params;
+	params.size = 50.0f;
+	params.resolution = 0.1f;
+	params.particle_count = 2 * static_cast<int>(10e5);
+	params.new_born_particle_count = 2 * static_cast<int>(10e4);
+	params.persistence_prob = 0.99f;
+	params.process_noise_position = 0.02f;
+	params.process_noise_velocity = 0.8f;
+	params.birth_prob = 0.02f;
 
+	LaserSensorParams laser_params;
+	laser_params.fov = 120.0f;
+	laser_params.max_range = 50.0f;
+
+	DOGM grid_map(params, laser_params);
+
+	Simulator simulator(100);
+	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
+	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
+	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+
+	float delta_time = 0.1f;
+	std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
+
+	for (int i = 0; i < sim_measurements.size(); i++)
+	{
+		grid_map.updateMeasurementGrid(sim_measurements[i].data(), sim_measurements[i].size());
+#endif
 		auto begin = chrono::high_resolution_clock::now();
 
 		// Run Particle filter
@@ -395,8 +380,8 @@ int main(int argc, const char** argv)
 		auto end = chrono::high_resolution_clock::now();
 		auto dur = end - begin;
 		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-		std::cout << "Iteration took: " << ms << " ms" << std::endl;
-		std::cout << "Saving result" << std::endl;
+		std::cout << "### Iteration took: " << ms << " ms" << std::endl;
+		std::cout << "### Saving result" << std::endl;
 		std::cout << "#####################" << std::endl;
 
 		cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
@@ -404,11 +389,6 @@ int main(int argc, const char** argv)
 
 		cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
 		cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
-
-#if 1
-		cv::Mat raw_polar_meas_grid_img = compute_raw_polar_cart_measurement_grid_image(grid_map);			
-		cv::imwrite(cv::format("raw_polar_grid_iter-%d.png", i + 1), raw_polar_meas_grid_img);
-#endif
 
 		cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
 		cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);
