@@ -77,11 +77,17 @@ DOGM::~DOGM()
 
 void DOGM::initialize()
 {
-	initParticlesKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(particle_array, grid_size);
+	cudaStream_t particles_stream, birth_particles_stream, grid_stream;
+	cudaStreamCreate(&particles_stream);
+	cudaStreamCreate(&birth_particles_stream);
+	cudaStreamCreate(&grid_stream);
 
-	initBirthParticlesKernel<<<divUp(new_born_particle_count, BLOCK_SIZE), BLOCK_SIZE>>>(birth_particle_array, grid_size);
+	initParticlesKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE, 0, particles_stream>>>(particle_array, grid_size);
 
-	initGridCellsKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(grid_cell_array, meas_cell_array, grid_size);
+	initBirthParticlesKernel<<<divUp(new_born_particle_count, BLOCK_SIZE), BLOCK_SIZE, 0, birth_particles_stream>>>(birth_particle_array,
+		grid_size);
+
+	initGridCellsKernel<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE, 0, grid_stream>>>(grid_cell_array, meas_cell_array, grid_size);
 
 	CHECK_ERROR(cudaGetLastError());
 	
@@ -138,7 +144,7 @@ void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
 	
 	// create polar texture
 	polar_texture.beginCudaAccess(&polar_surface);
-	createPolarGridTextureKernel2<<<grid_dim, block_dim>>>(polar_surface, polar_meas_cell_array.data().get(), d_measurements, polar_width, polar_height, params.resolution);
+	createPolarGridTextureKernel2<<<grid_dim, block_dim>>>(polar_surface, polar_meas_cell_array, d_measurements, polar_width, polar_height, params.resolution);
 
 	CHECK_ERROR(cudaGetLastError());
 	polar_texture.endCudaAccess(polar_surface);

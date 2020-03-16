@@ -30,7 +30,7 @@ struct MeasurementCell;
 
 __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution);
 
-__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, MeasurementCell* polar_meas_grid, float* measurements, int width, int height, float resolution);
+__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, KernelArray<MeasurementCell> polar_meas_grid, float* measurements, int width, int height, float resolution);
 
 __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution);
 

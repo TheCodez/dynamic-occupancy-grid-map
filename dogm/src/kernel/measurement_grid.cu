@@ -107,7 +107,7 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* m
 	}
 }
 
-__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, MeasurementCell* polar_meas_grid, float* measurements, int width, int height, float resolution)
+__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, KernelArray<MeasurementCell> polar_meas_grid, float* measurements, int width, int height, float resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
 	const int range = blockIdx.y * blockDim.y + threadIdx.y;

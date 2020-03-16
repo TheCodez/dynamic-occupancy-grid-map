@@ -104,7 +104,7 @@ __global__ void gridCellPredictionUpdateKernel(KernelArray<GridCell> grid_cell_a
 
 		if (start_idx != -1)
 		{
-			float m_occ_pred = subtract(weight_array_accum.get(), start_idx, end_idx);
+			float m_occ_pred = subtract(weight_array_accum, start_idx, end_idx);
 
 			if (m_occ_pred > p_S)
 			{
