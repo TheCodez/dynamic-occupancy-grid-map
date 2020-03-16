@@ -23,8 +23,7 @@ SOFTWARE.
 */
 #pragma once
 
-#include <thrust/device_vector.h>
-#include <cuda_runtime.h>
+#include "cuda_runtime.h"
 #include <stdio.h>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
@@ -45,24 +44,3 @@ static inline int divUp(int total, int grain)
 {
 	return (total + grain - 1) / grain;
 }
-
-template <typename T>
-class KernelArray
-{
-public:
-	KernelArray(thrust::device_vector<T>& vector)
-	{
-		data = thrust::raw_pointer_cast(vector.data());
-		length = static_cast<int>(vector.size());
-	}
-
-	__device__ __host__ T* get() const { return data; }
-	__device__ __host__ int size() const { return length; }
-
-	__device__ __host__ T& operator [] (int index) { return data[index]; }
-	__device__ __host__ T operator [] (int index) const { return data[index]; }
-
-private:
-	T* data;
-	int length;
-};

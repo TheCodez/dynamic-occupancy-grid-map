@@ -29,7 +29,7 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__device__ float calc_mean(KernelArray<float> vel_array_accum, int start_idx, int end_idx, float rho_p)
+__device__ float calc_mean(float* vel_array_accum, int start_idx, int end_idx, float rho_p)
 {
 	if (rho_p > 0.0f)
 	{
@@ -39,7 +39,7 @@ __device__ float calc_mean(KernelArray<float> vel_array_accum, int start_idx, in
 	return 0.0f;
 }
 
-__device__ float calc_variance(KernelArray<float> vel_squared_array_accum, int start_idx, int end_idx, float rho_p, float mean_vel)
+__device__ float calc_variance(float* vel_squared_array_accum, int start_idx, int end_idx, float rho_p, float mean_vel)
 {
 	if (rho_p > 0.0f)
 	{
@@ -49,7 +49,7 @@ __device__ float calc_variance(KernelArray<float> vel_squared_array_accum, int s
 	return 0.0f;
 }
 
-__device__ float calc_covariance(KernelArray<float> vel_xy_array_accum, int start_idx, int end_idx, float rho_p, float mean_x_vel, float mean_y_vel)
+__device__ float calc_covariance(float* vel_xy_array_accum, int start_idx, int end_idx, float rho_p, float mean_x_vel, float mean_y_vel)
 {
 	if (rho_p > 0.0f)
 	{
@@ -59,7 +59,7 @@ __device__ float calc_covariance(KernelArray<float> vel_xy_array_accum, int star
 	return 0.0f;
 }
 
-__device__ void store(KernelArray<GridCell> grid_cell_array, int j, float mean_x_vel, float mean_y_vel, float var_x_vel, float var_y_vel,
+__device__ void store(GridCell* grid_cell_array, int j, float mean_x_vel, float mean_y_vel, float var_x_vel, float var_y_vel,
 	float covar_xy_vel)
 {
 	grid_cell_array[j].mean_x_vel = mean_x_vel;
@@ -69,11 +69,10 @@ __device__ void store(KernelArray<GridCell> grid_cell_array, int j, float mean_x
 	grid_cell_array[j].covar_xy_vel = covar_xy_vel;
 }
 
-__global__ void statisticalMomentsKernel1(KernelArray<Particle> particle_array, KernelArray<float> weight_array,
-	KernelArray<float> vel_x_array, KernelArray<float> vel_y_array, KernelArray<float> vel_x_squared_array,
-	KernelArray<float> vel_y_squared_array, KernelArray<float> vel_xy_array)
+__global__ void statisticalMomentsKernel1(Particle* particle_array, float* weight_array, float* vel_x_array, float* vel_y_array,
+	float* vel_x_squared_array, float* vel_y_squared_array, float* vel_xy_array, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		float weight = weight_array[i];
 		float vel_x = particle_array[i].state[2];
@@ -88,11 +87,10 @@ __global__ void statisticalMomentsKernel1(KernelArray<Particle> particle_array, 
 	}
 }
 
-__global__ void statisticalMomentsKernel2(KernelArray<GridCell> grid_cell_array, KernelArray<float> vel_x_array_accum,
-	KernelArray<float> vel_y_array_accum, KernelArray<float> vel_x_squared_array_accum, KernelArray<float> vel_y_squared_array_accum,
-	KernelArray<float> vel_xy_array_accum)
+__global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, float* vel_x_array_accum, float* vel_y_array_accum,
+	float* vel_x_squared_array_accum, float* vel_y_squared_array_accum, float* vel_xy_array_accum, int cell_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < grid_cell_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		float rho_p = grid_cell_array[i].pers_occ_mass;
 		//printf("rho p: %f\n", rho_p);

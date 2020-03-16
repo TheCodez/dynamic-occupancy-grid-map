@@ -39,20 +39,19 @@ __device__ float calc_norm_unassoc(const GridCell& grid_cell)
 	return grid_cell.occ_mass > 0.0 ? grid_cell.pers_occ_mass / grid_cell.occ_mass : 0.0;
 }
 
-__device__ void set_normalization_components(KernelArray<GridCell> grid_cell_array, int i, float mu_A, float mu_UA)
+__device__ void set_normalization_components(GridCell* grid_cell_array, int i, float mu_A, float mu_UA)
 {
 	grid_cell_array[i].mu_A = mu_A;
 	grid_cell_array[i].mu_UA = mu_UA;
 }
 
-__device__ float update_unnorm(KernelArray<Particle> particle_array, int i, KernelArray<MeasurementCell> meas_cell_array)
+__device__ float update_unnorm(Particle* particle_array, int i, MeasurementCell* meas_cell_array)
 {
 	Particle& particle = particle_array[i];
 	return meas_cell_array[particle.grid_cell_idx].likelihood * particle.weight;
 }
 
-__device__ float normalize(Particle& particle, KernelArray<GridCell> grid_cell_array, KernelArray<MeasurementCell> meas_cell_array,
-	float weight)
+__device__ float normalize(Particle& particle, GridCell* grid_cell_array, MeasurementCell* meas_cell_array, float weight)
 {
 	GridCell& cell = grid_cell_array[particle.grid_cell_idx];
 	MeasurementCell& meas_cell = meas_cell_array[particle.grid_cell_idx];
@@ -60,18 +59,18 @@ __device__ float normalize(Particle& particle, KernelArray<GridCell> grid_cell_a
 	return meas_cell.p_A * cell.mu_A * weight + (1.0 - meas_cell.p_A) * cell.mu_UA * particle.weight;
 }
 
-__global__ void updatePersistentParticlesKernel1(KernelArray<Particle> particle_array, KernelArray<MeasurementCell> meas_cell_array,
-	KernelArray<float> weight_array)
+__global__ void updatePersistentParticlesKernel1(Particle* particle_array, MeasurementCell* meas_cell_array, float* weight_array,
+	int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		weight_array[i] = update_unnorm(particle_array, i, meas_cell_array);
 	}
 }
 
-__global__ void updatePersistentParticlesKernel2(KernelArray<GridCell> grid_cell_array, KernelArray<float> weight_array_accum)
+__global__ void updatePersistentParticlesKernel2(GridCell* grid_cell_array, float* weight_array_accum, int cell_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < grid_cell_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		int start_idx = grid_cell_array[i].start_idx;
 		int end_idx = grid_cell_array[i].end_idx;
@@ -88,10 +87,10 @@ __global__ void updatePersistentParticlesKernel2(KernelArray<GridCell> grid_cell
 	}
 }
 
-__global__ void updatePersistentParticlesKernel3(KernelArray<Particle> particle_array, KernelArray<MeasurementCell> meas_cell_array,
-	KernelArray<GridCell> grid_cell_array, KernelArray<float> weight_array)
+__global__ void updatePersistentParticlesKernel3(Particle* particle_array, MeasurementCell* meas_cell_array, GridCell* grid_cell_array,
+	float* weight_array, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		weight_array[i] = normalize(particle_array[i], grid_cell_array, meas_cell_array, weight_array[i]);
 	}

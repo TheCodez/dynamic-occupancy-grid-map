@@ -24,19 +24,17 @@ SOFTWARE.
 #pragma once
 
 #include "dogm.h"
-#include "cuda_utils.h"
 #include <device_launch_parameters.h>
 
 struct GridCell;
 struct MeasurementCell;
 struct Particle;
 
-void normalize_particle_orders(thrust::device_vector<float>& particle_orders_array_accum, int particle_orders_count, int v_B);
+void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B);
 
-__global__ void initNewParticlesKernel1(KernelArray<Particle> particle_array, KernelArray<GridCell> grid_cell_array,
-	KernelArray<MeasurementCell> meas_cell_array, KernelArray<float> weight_array, KernelArray<float> born_masses_array,
-	KernelArray<Particle> birth_particle_array, KernelArray<float> particle_orders_array_accum);
+__global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
+	float* weight_array, float* born_masses_array, Particle* birth_particle_array, float* particle_orders_array_accum, int cell_count);
 
-__global__ void initNewParticlesKernel2(KernelArray<Particle> birth_particle_array, KernelArray<GridCell> grid_cell_array, int grid_size);
+__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, int grid_size, int particle_count);
 
-__global__ void copyBirthWeightKernel(KernelArray<Particle> birth_particle_array, KernelArray<float> birth_weight_array);
+__global__ void copyBirthWeightKernel(Particle* birth_particle_array, float* birth_weight_array, int particle_count);

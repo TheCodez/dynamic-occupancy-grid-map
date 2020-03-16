@@ -160,7 +160,6 @@ float pignistic_transformation(float free_mass, float occ_mass)
 
 cv::Mat compute_measurement_grid_image(const DOGM& grid_map)
 {
-	thrust::host_vector<MeasurementCell> meas_cell_array = grid_map.meas_cell_array;
 	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
@@ -168,7 +167,7 @@ cv::Mat compute_measurement_grid_image(const DOGM& grid_map)
 		{
 			int index = y * grid_map.getGridSize() + x;
 
-			const MeasurementCell& cell = meas_cell_array[index];
+			const MeasurementCell& cell = grid_map.meas_cell_array[index];
 			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
 			uchar temp = static_cast<uchar>(floor(occ * 255));
 			grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
@@ -180,14 +179,13 @@ cv::Mat compute_measurement_grid_image(const DOGM& grid_map)
 
 cv::Mat compute_raw_measurement_grid_image(const DOGM& grid_map)
 {
-	thrust::host_vector<MeasurementCell> meas_cell_array = grid_map.meas_cell_array;
 	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
 		for (int x = 0; x < grid_map.getGridSize(); x++)
 		{
 			int index = y * grid_map.getGridSize() + x;
-			const MeasurementCell& cell = meas_cell_array[index];
+			const MeasurementCell& cell = grid_map.meas_cell_array[index];
 			int red = cell.occ_mass * 255;
 			int green = cell.free_mass * 255;
 			int blue = 255 - red - green;
@@ -201,14 +199,13 @@ cv::Mat compute_raw_measurement_grid_image(const DOGM& grid_map)
 
 cv::Mat compute_raw_polar_measurement_grid_image(const DOGM& grid_map)
 {
-	thrust::host_vector<MeasurementCell> polar_meas_cell_array = grid_map.polar_meas_cell_array;
 	cv::Mat grid_img(grid_map.getGridSize(), 100, CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
 		for (int x = 0; x < 100; x++)
 		{
 			int index = y * 100 + x;
-			const MeasurementCell& cell = polar_meas_cell_array[index];
+			const MeasurementCell& cell = grid_map.polar_meas_cell_array[index];
 			int red = cell.occ_mass * 255;
 			int green = cell.free_mass * 255;
 			int blue = 255 - red - green;
@@ -222,7 +219,6 @@ cv::Mat compute_raw_polar_measurement_grid_image(const DOGM& grid_map)
 
 cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
 {
-	thrust::host_vector<GridCell> grid_cell_array = grid_map.grid_cell_array;
 	cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
 	for (int y = 0; y < grid_map.getGridSize(); y++)
 	{
@@ -230,7 +226,7 @@ cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m
 		{
 			int index = y * grid_map.getGridSize() + x;
 
-			const GridCell& cell = grid_cell_array[index];
+			const GridCell& cell = grid_map.grid_cell_array[index];
 			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
 			uchar temp = static_cast<uchar>(floor(occ * 255));
 
@@ -268,11 +264,10 @@ cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m
 
 cv::Mat compute_particles_image(const DOGM& grid_map)
 {
-	thrust::host_vector<Particle> particle_array = grid_map.particle_array;
 	cv::Mat particles_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
 	for (int i = 0; i < grid_map.particle_count; i++)
 	{
-		const Particle& part = particle_array[i];
+		const Particle& part = grid_map.particle_array[i];
 		float x = part.state[0];
 		float y = part.state[1];
 

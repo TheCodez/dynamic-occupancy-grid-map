@@ -107,7 +107,7 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* m
 	}
 }
 
-__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, KernelArray<MeasurementCell> polar_meas_grid, float* measurements, int width, int height, float resolution)
+__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, MeasurementCell* polar_meas_grid, float* measurements, int width, int height, float resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
 	const int range = blockIdx.y * blockDim.y + threadIdx.y;
@@ -153,7 +153,7 @@ __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, float* mea
 	}
 }
 
-__global__ void cartesianGridToMeasurementGridKernel(KernelArray<MeasurementCell> meas_grid, cudaSurfaceObject_t cart, int grid_size)
+__global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* meas_grid, cudaSurfaceObject_t cart, int grid_size)
 {
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -171,7 +171,7 @@ __global__ void cartesianGridToMeasurementGridKernel(KernelArray<MeasurementCell
 	}
 }
 
-__global__ void gridArrayToMeasurementGridKernel(KernelArray<MeasurementCell> meas_grid, float2* grid, int grid_size)
+__global__ void gridArrayToMeasurementGridKernel(MeasurementCell* meas_grid, float2* grid, int grid_size)
 {
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;

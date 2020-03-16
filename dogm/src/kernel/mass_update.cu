@@ -39,7 +39,6 @@ __device__ float predict_free_mass(GridCell& grid_cell, float m_occ_pred, float 
 	float sum = m_free_pred + m_occ_pred;
 	if (sum > 1.0)
 	{
-		printf("Sum of masses exceeded 1\n");
 		float diff = sum - 1.0;
 		m_free_pred -= diff;
 	}
@@ -70,7 +69,7 @@ __device__ float separate_newborn_part(float m_occ_pred, float m_occ_up, float p
 	return (m_occ_up * p_B * (1.0 - m_occ_pred)) / (m_occ_pred + p_B * (1.0 - m_occ_pred));
 }
 
-__device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_occ_up, KernelArray<GridCell> grid_cell_array, int i)
+__device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_occ_up, GridCell* grid_cell_array, int i)
 {
 	grid_cell_array[i].pers_occ_mass = rho_p;
 	grid_cell_array[i].new_born_occ_mass = rho_b;
@@ -78,7 +77,7 @@ __device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_
 	grid_cell_array[i].occ_mass = m_occ_up;
 }
 
-__device__ void normalize_to_pS(KernelArray<Particle> particle_array, KernelArray<float> weight_array, float p_S, int start_idx, int end_idx)
+__device__ void normalize_to_pS(Particle* particle_array, float* weight_array, float p_S, int start_idx, int end_idx)
 {
 	float sum = 0.0f;
 	for (int i = start_idx; i < end_idx + 1; i++)
@@ -93,11 +92,10 @@ __device__ void normalize_to_pS(KernelArray<Particle> particle_array, KernelArra
 	}
 }
 
-__global__ void gridCellPredictionUpdateKernel(KernelArray<GridCell> grid_cell_array, KernelArray<Particle> particle_array,
-	KernelArray<float> weight_array, KernelArray<float> weight_array_accum, KernelArray<MeasurementCell> meas_cell_array,
-	KernelArray<float> born_masses_array, float p_B, float p_S)
+__global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, float* weight_array,
+	float* weight_array_accum, MeasurementCell* meas_cell_array, float* born_masses_array, float p_B, float p_S, int cell_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < grid_cell_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		int start_idx = grid_cell_array[i].start_idx;
 		int end_idx = grid_cell_array[i].end_idx;
@@ -108,7 +106,6 @@ __global__ void gridCellPredictionUpdateKernel(KernelArray<GridCell> grid_cell_a
 
 			if (m_occ_pred > p_S)
 			{
-				printf("Mass exceeds p_S, mass is: %f\n", m_occ_pred);
 				m_occ_pred = p_S;
 				normalize_to_pS(particle_array, weight_array, p_S, start_idx, end_idx);
 			}
@@ -120,17 +117,6 @@ __global__ void gridCellPredictionUpdateKernel(KernelArray<GridCell> grid_cell_a
 			float rho_p = m_occ_up - rho_b;
 			born_masses_array[i] = rho_b;
 			store_values(rho_b, rho_p, m_free_up, m_occ_up, grid_cell_array, i);
-		}
-		else
-		{
-			/*
-			float m_occ = grid_cell_array[i].occ_mass;
-			float m_free = grid_cell_array[i].free_mass;
-			float m_occ_up = update_o(m_occ, m_free, meas_cell_array[i]);
-			float m_free_up = update_f(m_occ, m_free, meas_cell_array[i]);
-			born_masses_array[i] = 0.0;
-			store_values(0.0, m_occ_up, m_free_up, m_occ_up, grid_cell_array, i);
-			*/
 		}
 	}
 }

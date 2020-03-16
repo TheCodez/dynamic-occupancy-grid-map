@@ -47,18 +47,6 @@ static __device__ __host__ T subtract(T* accum_array, int start_idx, int end_idx
 	{
 		return accum_array[end_idx];
 	}
-
-	return accum_array[end_idx] - accum_array[start_idx - 1];
-}
-
-template <typename T>
-static __device__ __host__ T subtract(class KernelArray<T> accum_array, int start_idx, int end_idx)
-{
-	if (start_idx == 0)
-	{
-		return accum_array[end_idx];
-	}
-
 	return accum_array[end_idx] - accum_array[start_idx - 1];
 }
 

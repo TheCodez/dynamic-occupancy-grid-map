@@ -30,9 +30,9 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__global__ void initParticlesKernel(KernelArray<Particle> particle_array, int grid_size)
+__global__ void initParticlesKernel(Particle* particle_array, int grid_size, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		int seed = hash(i);
 		thrust::default_random_engine rng(seed);
@@ -45,7 +45,7 @@ __global__ void initParticlesKernel(KernelArray<Particle> particle_array, int gr
 		float x = index % grid_size;
 		float y = index / grid_size;
 
-		particle_array[i].weight = 1.0 / particle_array.size();
+		particle_array[i].weight = 1.0 / particle_count;
 		particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
 
 		//printf("w: %f, x: %f, y: %f, vx: %f, vy: %f\n", particle_array[i].weight, particle_array[i].state[0], particle_array[i].state[1],
@@ -53,9 +53,9 @@ __global__ void initParticlesKernel(KernelArray<Particle> particle_array, int gr
 	}
 }
 
-__global__ void initBirthParticlesKernel(KernelArray<Particle> birth_particle_array, int grid_size)
+__global__ void initBirthParticlesKernel(Particle* birth_particle_array, int grid_size, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < birth_particle_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		int seed = hash(i);
 		thrust::default_random_engine rng(seed);
@@ -75,9 +75,9 @@ __global__ void initBirthParticlesKernel(KernelArray<Particle> birth_particle_ar
 	}
 }
 
-__global__ void initGridCellsKernel(KernelArray<GridCell> grid_cell_array, KernelArray<MeasurementCell> meas_cell_array, int grid_size)
+__global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* meas_cell_array, int grid_size, int cell_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < grid_cell_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		grid_cell_array[i].free_mass = 0.0f;
 		grid_cell_array[i].occ_mass = 0.0f;
@@ -91,9 +91,9 @@ __global__ void initGridCellsKernel(KernelArray<GridCell> grid_cell_array, Kerne
 	}
 }
 
-__global__ void reinitGridParticleIndices(KernelArray<GridCell> grid_cell_array)
+__global__ void reinitGridParticleIndices(GridCell* grid_cell_array, int cell_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < grid_cell_array.size(); i += blockDim.x * gridDim.x)
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
 		grid_cell_array[i].start_idx = -1;
 		grid_cell_array[i].end_idx = -1;
