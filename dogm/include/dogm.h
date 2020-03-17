@@ -103,6 +103,4 @@ public:
 	int grid_cell_count;
 	int particle_count;
 	int new_born_particle_count;
-
-	static int BLOCK_SIZE;
 };

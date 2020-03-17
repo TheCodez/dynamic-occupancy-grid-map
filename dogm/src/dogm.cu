@@ -48,7 +48,7 @@ SOFTWARE.
 
 #include <cuda_runtime.h>
 
-int DOGM::BLOCK_SIZE = 256;
+constexpr int BLOCK_SIZE = 256;
 
 DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
 	: params(params),
@@ -91,9 +91,9 @@ DOGM::~DOGM()
 void DOGM::initialize()
 {
 	cudaStream_t particles_stream, birth_particles_stream, grid_stream;
-	cudaStreamCreate(&particles_stream);
-	cudaStreamCreate(&birth_particles_stream);
-	cudaStreamCreate(&grid_stream);
+	CHECK_ERROR(cudaStreamCreate(&particles_stream));
+	CHECK_ERROR(cudaStreamCreate(&birth_particles_stream));
+	CHECK_ERROR(cudaStreamCreate(&grid_stream));
 
 	initParticlesKernel<<<divUp(particle_count, BLOCK_SIZE), BLOCK_SIZE, 0, particles_stream>>>(particle_array, grid_size, particle_count);
 
@@ -106,6 +106,10 @@ void DOGM::initialize()
 	CHECK_ERROR(cudaGetLastError());
 	
 	renderer = std::make_unique<Renderer>(grid_size, laser_params.fov, params.size, laser_params.max_range);
+
+	CHECK_ERROR(cudaStreamDestroy(particles_stream));
+	CHECK_ERROR(cudaStreamDestroy(birth_particles_stream));
+	CHECK_ERROR(cudaStreamDestroy(grid_stream));
 }
 
 void DOGM::updateParticleFilter(float dt)
@@ -369,8 +373,7 @@ void DOGM::resampling()
 	thrust::transform(thrust::make_counting_iterator(0), thrust::make_counting_iterator(particle_count), rand_array.begin(),
 		GPU_LAMBDA(int index)
 	{
-		//int seed = hash(index);
-		thrust::default_random_engine rng;// (seed);
+		thrust::default_random_engine rng;
 		thrust::uniform_int_distribution<int> dist(0, max);
 		rng.discard(index);
 		return dist(rng);
