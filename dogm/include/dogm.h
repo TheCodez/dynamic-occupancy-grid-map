@@ -103,4 +103,9 @@ public:
 	int grid_cell_count;
 	int particle_count;
 	int new_born_particle_count;
+
+	dim3 block_dim;
+	dim3 particles_grid;
+	dim3 birth_particles_grid;
+	dim3 gridmap_grid;
 };
