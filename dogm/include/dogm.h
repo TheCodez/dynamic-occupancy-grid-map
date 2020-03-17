@@ -107,5 +107,5 @@ public:
 	dim3 block_dim;
 	dim3 particles_grid;
 	dim3 birth_particles_grid;
-	dim3 gridmap_grid;
+	dim3 grid_map_grid;
 };
