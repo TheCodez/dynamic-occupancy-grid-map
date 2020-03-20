@@ -1,14 +1,17 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  ![alt text](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
 
-# Disclaimer!
+# DISCLAIMER
 
-This repository is still WIP and is not in a workable stage. The only thing working is the measurement grid calculation.
-Contributions are kindly appreciated and really needed at this stage :)
+This repository is still WIP and in a pretty rough state. Contributions are kindly appreciated :)
 
 
 # [WIP] A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
 
 Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application](https://arxiv.org/abs/1605.02406)
+
+<p align="center">
+  <img src="./docs/videos/dogm.gif">
+</p>
 
 ## Requirements
 
