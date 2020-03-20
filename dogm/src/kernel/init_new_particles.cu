@@ -125,7 +125,7 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 }
 
 __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, curandState* global_state, 
-	int grid_size, int particle_count)
+	float velocity, int grid_size, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
@@ -134,8 +134,8 @@ __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell
 		int cell_idx = birth_particle_array[i].grid_cell_idx;
 		GridCell& grid_cell = grid_cell_array[cell_idx];
 
-		float vel_x = curand_normal(&local_state, 0.0f, 12.0f);
-		float vel_y = curand_normal(&local_state, 0.0f, 12.0f);
+		float vel_x = curand_normal(&local_state, 0.0f, velocity);
+		float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
 		bool associated = birth_particle_array[i].associated;
 		if (associated)

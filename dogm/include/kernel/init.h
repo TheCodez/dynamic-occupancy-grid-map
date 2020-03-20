@@ -33,9 +33,10 @@ struct Particle;
 
 __global__ void setupRandomStatesKernel(curandState* states, unsigned long long seed, int count);
 
-__global__ void initParticlesKernel(Particle* particle_array, curandState* global_state, int grid_size, int particle_count);
+__global__ void initParticlesKernel(Particle* particle_array, curandState* global_state, float velocity, int grid_size, int particle_count);
 
-__global__ void initBirthParticlesKernel(Particle* birth_particle_array, curandState* global_state, int grid_size, int particle_count);
+__global__ void initBirthParticlesKernel(Particle* birth_particle_array, curandState* global_state, float velocity, int grid_size,
+	int particle_count);
 
 __global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* meas_cell_array, int grid_size, int cell_count);
 

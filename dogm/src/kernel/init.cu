@@ -38,7 +38,7 @@ __global__ void setupRandomStatesKernel(curandState* states, unsigned long long 
 	}
 }
 
-__global__ void initParticlesKernel(Particle* particle_array, curandState* global_state, int grid_size, int particle_count)
+__global__ void initParticlesKernel(Particle* particle_array, curandState* global_state, float velocity, int grid_size, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
@@ -46,8 +46,8 @@ __global__ void initParticlesKernel(Particle* particle_array, curandState* globa
 
 		float x = curand_uniform(&local_state, 0.0f, grid_size);
 		float y = curand_uniform(&local_state, 0.0f, grid_size);
-		float vel_x = curand_normal(&local_state, 0.0f, 12.0f);
-		float vel_y = curand_normal(&local_state, 0.0f, 12.0f);
+		float vel_x = curand_normal(&local_state, 0.0f, velocity);
+		float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
 		particle_array[i].weight = 1.0 / particle_count;
 		particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
@@ -59,7 +59,8 @@ __global__ void initParticlesKernel(Particle* particle_array, curandState* globa
 	}
 }
 
-__global__ void initBirthParticlesKernel(Particle* birth_particle_array, curandState* global_state, int grid_size, int particle_count)
+__global__ void initBirthParticlesKernel(Particle* birth_particle_array, curandState* global_state, float velocity, int grid_size,
+	int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
@@ -67,8 +68,8 @@ __global__ void initBirthParticlesKernel(Particle* birth_particle_array, curandS
 
 		float x = curand_uniform(&local_state, 0.0f, grid_size);
 		float y = curand_uniform(&local_state, 0.0f, grid_size);
-		float vel_x = curand_normal(&local_state, 0.0f, 12.0f);
-		float vel_y = curand_normal(&local_state, 0.0f, 12.0f);
+		float vel_x = curand_normal(&local_state, 0.0f, velocity);
+		float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
 		birth_particle_array[i].weight = 0.0;
 		birth_particle_array[i].associated = false;

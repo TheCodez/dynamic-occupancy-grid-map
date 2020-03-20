@@ -30,7 +30,7 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__global__ void predictKernel(Particle* particle_array, curandState* global_state, int grid_size, float p_S, 
+__global__ void predictKernel(Particle* particle_array, curandState* global_state, float velocity, int grid_size, float p_S,
 	const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
@@ -53,8 +53,8 @@ __global__ void predictKernel(Particle* particle_array, curandState* global_stat
 		{
 			float x = curand_uniform(&local_state, 0.0f, grid_size);
 			float y = curand_uniform(&local_state, 0.0f, grid_size);
-			float vel_x = curand_normal(&local_state, 0.0f, 12.0f);
-			float vel_y = curand_normal(&local_state, 0.0f, 12.0f);
+			float vel_x = curand_normal(&local_state, 0.0f, velocity);
+			float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
 			particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 		}

@@ -326,6 +326,8 @@ int main(int argc, const char** argv)
 	params.process_noise_position = 0.02f;
 	params.process_noise_velocity = 0.8f;
 	params.birth_prob = 0.02f;
+	params.velocity_persistent = 12.0f;
+	params.velocity_birth = 12.0f;
 
 	LaserSensorParams laser_params;
 	laser_params.fov = 120.0f;
@@ -348,6 +350,8 @@ int main(int argc, const char** argv)
 	params.process_noise_position = 0.02f;
 	params.process_noise_velocity = 0.8f;
 	params.birth_prob = 0.02f;
+	params.velocity_persistent = 12.0f;
+	params.velocity_birth = 12.0f;
 
 	LaserSensorParams laser_params;
 	laser_params.fov = 120.0f;

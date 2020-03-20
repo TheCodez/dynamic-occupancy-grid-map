@@ -29,5 +29,5 @@ SOFTWARE.
 
 struct Particle;
 
-__global__ void predictKernel(Particle* particle_array, curandState* global_state, int grid_size, float p_S, 
+__global__ void predictKernel(Particle* particle_array, curandState* global_state, float velocity, int grid_size, float p_S, 
 	const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count);

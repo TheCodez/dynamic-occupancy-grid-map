@@ -47,6 +47,8 @@ struct GridParams
 	float process_noise_position;
 	float process_noise_velocity;
 	float birth_prob;
+	float velocity_persistent;
+	float velocity_birth;
 };
 
 struct LaserSensorParams
