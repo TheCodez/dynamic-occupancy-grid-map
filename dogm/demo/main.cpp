@@ -242,14 +242,14 @@ cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m
 
 			cv::Mat mdist = vel_img.t() * covar_img.inv() * vel_img;
 
-			if (occ >= occ_tresh && mdist.at<float>(0, 0) > m_tresh)
+			if (occ >= occ_tresh && mdist.at<float>(0, 0) >= m_tresh)
 			{
-				float angle = atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI);
+				float angle = fmodf((atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI)) + 360, 360);
 
 				int color[3];
-				hsv_to_rgb(static_cast<int>(ceil(angle)), 1.0, 1.0, color);
+				hsv_to_rgb(static_cast<int>(roundf(angle)), 1.0, 1.0, color);
 
-				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(color[2], color[1], color[0]);
+				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(color[0], color[1], color[2]);
 
 			}
 			else
