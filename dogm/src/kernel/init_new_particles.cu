@@ -27,7 +27,6 @@ SOFTWARE.
 #include "dogm_types.h"
 
 #include <thrust/device_ptr.h>
-#include <thrust/random.h>
 #include <thrust/transform.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
