@@ -29,8 +29,6 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include <thrust/execution_policy.h>
-
 __device__ float predict_free_mass(GridCell& grid_cell, float m_occ_pred, float alpha = 0.9)
 {
 	float m_free_pred = min(alpha * grid_cell.free_mass, 1.0 - m_occ_pred);
@@ -117,6 +115,15 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Partic
 			float rho_p = m_occ_up - rho_b;
 			born_masses_array[i] = rho_b;
 			store_values(rho_b, rho_p, m_free_up, m_occ_up, grid_cell_array, i);
+		}
+		else
+		{
+			float m_occ = grid_cell_array[i].occ_mass;
+			float m_free = grid_cell_array[i].free_mass;
+			float m_occ_up = update_o(m_occ, m_free, meas_cell_array[i]);
+			float m_free_up = update_f(m_occ, m_free, meas_cell_array[i]);
+			born_masses_array[i] = 0.0f;
+			store_values(0.0f, m_occ_up, m_free_up, m_occ_up, grid_cell_array, i);
 		}
 	}
 }
