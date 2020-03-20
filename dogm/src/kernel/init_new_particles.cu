@@ -124,17 +124,18 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 	}
 }
 
-__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, int grid_size, int particle_count)
+__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, curandState* global_state, 
+	int grid_size, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
+		curandState local_state = global_state[i];
+
 		int cell_idx = birth_particle_array[i].grid_cell_idx;
 		GridCell& grid_cell = grid_cell_array[cell_idx];
 
-		thrust::default_random_engine rng;
-		rng.discard(i);
-		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-		thrust::normal_distribution<float> dist_vel(0.0f, 4.0);
+		float vel_x = curand_normal(&local_state, 0.0f, 12.0f);
+		float vel_y = curand_normal(&local_state, 0.0f, 12.0f);
 
 		bool associated = birth_particle_array[i].associated;
 		if (associated)
@@ -143,18 +144,18 @@ __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell
 			float y = cell_idx / grid_size;
 
 			birth_particle_array[i].weight = grid_cell.w_A;
-			birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
+			birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 		}
 		else
 		{
-			int index = dist_idx(rng);
-
-			float x = index % grid_size;
-			float y = index / grid_size;
+			float x = curand_uniform(&local_state, 0.0f, grid_size);
+			float y = curand_uniform(&local_state, 0.0f, grid_size);
 
 			birth_particle_array[i].weight = grid_cell.w_UA;
-			birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
+			birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 		}
+
+		global_state[i] = local_state;
 	}
 }
 

@@ -28,6 +28,7 @@ SOFTWARE.
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
 
 #include <vector>
 
@@ -97,6 +98,8 @@ public:
 	float* weight_array;
 	float* birth_weight_array;
 	float* born_masses_array;
+
+	curandState* rng_states;
 
 	int grid_size;
 

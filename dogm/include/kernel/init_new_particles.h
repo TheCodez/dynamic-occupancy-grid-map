@@ -24,6 +24,7 @@ SOFTWARE.
 #pragma once
 
 #include "dogm.h"
+#include <curand_kernel.h>
 #include <device_launch_parameters.h>
 
 struct GridCell;
@@ -35,6 +36,7 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
 __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
 	float* weight_array, float* born_masses_array, Particle* birth_particle_array, float* particle_orders_array_accum, int cell_count);
 
-__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, int grid_size, int particle_count);
+__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, curandState* global_state, 
+	int grid_size, int particle_count);
 
 __global__ void copyBirthWeightKernel(Particle* birth_particle_array, float* birth_weight_array, int particle_count);

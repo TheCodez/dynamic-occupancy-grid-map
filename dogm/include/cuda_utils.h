@@ -23,16 +23,15 @@ SOFTWARE.
 */
 #pragma once
 
-#include "cuda_runtime.h"
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
 #include <stdio.h>
-
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
 #define GPU_LAMBDA [=] __host__ __device__
 
 #define CHECK_ERROR(ans) { checkError((ans), __FILE__, __LINE__); }
 
-static __host__ void checkError(cudaError_t code, const char* file, int line)
+inline void checkError(cudaError_t code, const char* file, int line)
 {
 	if (code != cudaSuccess)
 	{
@@ -40,7 +39,17 @@ static __host__ void checkError(cudaError_t code, const char* file, int line)
 	}
 }
 
-static inline int divUp(int total, int grain)
+inline int divUp(int total, int grain)
 {
 	return (total + grain - 1) / grain;
+}
+
+inline __device__ float curand_uniform(curandState* state, float min, float max)
+{
+	return curand_uniform(state) * (max - min) + min;
+}
+
+inline __device__ float curand_normal(curandState* state, float mean, float stddev)
+{
+	return curand_normal(state) * stddev + mean;
 }

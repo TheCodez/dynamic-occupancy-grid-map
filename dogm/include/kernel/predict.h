@@ -25,8 +25,9 @@ SOFTWARE.
 
 #include <glm/glm.hpp>
 #include <device_launch_parameters.h>
+#include <curand_kernel.h>
 
 struct Particle;
 
-__global__ void predictKernel(Particle* particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
-	float process_noise_position, float process_noise_velocity, int particle_count);
+__global__ void predictKernel(Particle* particle_array, curandState* global_state, int grid_size, float p_S, 
+	const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count);

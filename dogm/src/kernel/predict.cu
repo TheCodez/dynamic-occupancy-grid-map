@@ -30,17 +30,18 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__global__ void predictKernel(Particle* particle_array, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
-	float process_noise_position, float process_noise_velocity, int particle_count)
+__global__ void predictKernel(Particle* particle_array, curandState* global_state, int grid_size, float p_S, 
+	const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
-		thrust::default_random_engine rng;
-		rng.discard(i);
-		thrust::normal_distribution<float> dist_noise_pos(0.0f, process_noise_position);
-		thrust::normal_distribution<float> dist_noise_vel(0.0f, process_noise_velocity);
+		curandState local_state = global_state[i];
 
-		glm::vec4 process_noise(dist_noise_pos(rng), dist_noise_pos(rng), dist_noise_vel(rng), dist_noise_vel(rng));
+		float noise_pos_x = curand_normal(&local_state, 0.0f, process_noise_position);
+		float noise_pos_y = curand_normal(&local_state, 0.0f, process_noise_position);
+		float noise_vel_x = curand_normal(&local_state, 0.0f, process_noise_velocity);
+		float noise_vel_y = curand_normal(&local_state, 0.0f, process_noise_velocity);
+		glm::vec4 process_noise(noise_pos_x, noise_pos_y, noise_vel_x, noise_vel_y);
 
 		particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
 		particle_array[i].weight = p_S * particle_array[i].weight;
@@ -50,15 +51,12 @@ __global__ void predictKernel(Particle* particle_array, int grid_size, float p_S
 
 		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
 		{
-			thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-			thrust::normal_distribution<float> dist_vel(0.0f, 12.0);
+			float x = curand_uniform(&local_state, 0.0f, grid_size);
+			float y = curand_uniform(&local_state, 0.0f, grid_size);
+			float vel_x = curand_normal(&local_state, 0.0f, 12.0f);
+			float vel_y = curand_normal(&local_state, 0.0f, 12.0f);
 
-			const int index = dist_idx(rng);
-
-			x = index % grid_size;
-			y = index / grid_size;
-
-			particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
+			particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 		}
 
 		int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
@@ -66,5 +64,7 @@ __global__ void predictKernel(Particle* particle_array, int grid_size, float p_S
 		particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
 
 		//printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
+
+		global_state[i] = local_state;
 	}
 }

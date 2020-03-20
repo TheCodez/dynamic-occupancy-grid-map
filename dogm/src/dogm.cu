@@ -75,6 +75,10 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
 	CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
 	CHECK_ERROR(cudaMalloc(&born_masses_array, grid_cell_count * sizeof(float)));
 
+	CHECK_ERROR(cudaMalloc(&rng_states, particle_count * sizeof(curandState)));
+
+	renderer = std::make_unique<Renderer>(grid_size, laser_params.fov, params.size, laser_params.max_range);
+
 	initialize();
 }
 
@@ -90,29 +94,29 @@ DOGM::~DOGM()
 	CHECK_ERROR(cudaFree(weight_array));
 	CHECK_ERROR(cudaFree(birth_weight_array));
 	CHECK_ERROR(cudaFree(born_masses_array));
+
+	CHECK_ERROR(cudaFree(rng_states));
 }
 
 void DOGM::initialize()
 {
-	cudaStream_t particles_stream, birth_particles_stream, grid_stream;
+	cudaStream_t particles_stream, grid_stream;
 	CHECK_ERROR(cudaStreamCreate(&particles_stream));
-	CHECK_ERROR(cudaStreamCreate(&birth_particles_stream));
 	CHECK_ERROR(cudaStreamCreate(&grid_stream));
 
-	initParticlesKernel<<<particles_grid, block_dim, 0, particles_stream>>>(particle_array, grid_size, particle_count);
+	setupRandomStatesKernel<<<particles_grid, block_dim>>>(rng_states, 123456, particle_count);
+	
+	CHECK_ERROR(cudaGetLastError());
+	CHECK_ERROR(cudaDeviceSynchronize());
 
-	initBirthParticlesKernel<<<birth_particles_grid, block_dim, 0, birth_particles_stream>>>(birth_particle_array,
-		grid_size, new_born_particle_count);
+	initParticlesKernel<<<particles_grid, block_dim, 0, particles_stream>>>(particle_array, rng_states, grid_size, particle_count);
 
 	initGridCellsKernel<<<grid_map_grid, block_dim, 0, grid_stream>>>(grid_cell_array, meas_cell_array, grid_size,
 		grid_cell_count);
 
 	CHECK_ERROR(cudaGetLastError());
 	
-	renderer = std::make_unique<Renderer>(grid_size, laser_params.fov, params.size, laser_params.max_range);
-
 	CHECK_ERROR(cudaStreamDestroy(particles_stream));
-	CHECK_ERROR(cudaStreamDestroy(birth_particles_stream));
 	CHECK_ERROR(cudaStreamDestroy(grid_stream));
 }
 
@@ -201,7 +205,7 @@ void DOGM::particlePrediction(float dt)
 	// FIXME: glm uses column major, we need row major
 	transition_matrix = glm::transpose(transition_matrix);
 
-	predictKernel<<<particles_grid, block_dim>>>(particle_array, grid_size, params.persistence_prob, 
+	predictKernel<<<particles_grid, block_dim>>>(particle_array, rng_states, grid_size, params.persistence_prob,
 		transition_matrix, params.process_noise_position, params.process_noise_velocity, particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
@@ -233,6 +237,7 @@ void DOGM::gridCellOccupancyUpdate()
 	//std::cout << "DOGM::gridCellOccupancyUpdate" << std::endl;
 
 	CHECK_ERROR(cudaDeviceSynchronize());
+
 	thrust::device_vector<float> weights_accum(particle_count);
 	accumulate(weight_array, weights_accum);
 	float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
@@ -272,7 +277,7 @@ void DOGM::initializeNewParticles()
 {
 	//std::cout << "DOGM::initializeNewParticles" << std::endl;
 
-	initBirthParticlesKernel<<<birth_particles_grid, block_dim>>>(birth_particle_array, grid_size,
+	initBirthParticlesKernel<<<birth_particles_grid, block_dim>>>(birth_particle_array, rng_states, grid_size,
 		new_born_particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
@@ -290,7 +295,7 @@ void DOGM::initializeNewParticles()
 	CHECK_ERROR(cudaGetLastError());
 
 	initNewParticlesKernel2<<<birth_particles_grid, block_dim>>>(birth_particle_array,
-		grid_cell_array, grid_size, new_born_particle_count);
+		grid_cell_array, rng_states, grid_size, new_born_particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
 
@@ -373,12 +378,12 @@ void DOGM::resampling()
 	CHECK_ERROR(cudaDeviceSynchronize());
 
 	const int max = particle_count + new_born_particle_count;
-	thrust::device_vector<int> rand_array(particle_count);
+	thrust::device_vector<float> rand_array(particle_count);
 	thrust::transform(thrust::make_counting_iterator(0), thrust::make_counting_iterator(particle_count), rand_array.begin(),
 		GPU_LAMBDA(int index)
 	{
 		thrust::default_random_engine rng;
-		thrust::uniform_int_distribution<int> dist(0, max);
+		thrust::uniform_real_distribution<float> dist(0, max);
 		rng.discard(index);
 		return dist(rng);
 	});

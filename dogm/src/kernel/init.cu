@@ -30,48 +30,51 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__global__ void initParticlesKernel(Particle* particle_array, int grid_size, int particle_count)
+__global__ void setupRandomStatesKernel(curandState* states, unsigned long long seed, int count)
+{
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < count; i += blockDim.x * gridDim.x)
+	{
+		curand_init(seed, i, 0, &states[i]);
+	}
+}
+
+__global__ void initParticlesKernel(Particle* particle_array, curandState* global_state, int grid_size, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
-		int seed = hash(i);
-		thrust::default_random_engine rng(seed);
-		//rng.discard(i);
-		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-		thrust::normal_distribution<float> dist_vel(0.0f, 12.0f);
+		curandState local_state = global_state[i];
 
-		int index = dist_idx(rng);
-
-		float x = index % grid_size;
-		float y = index / grid_size;
+		float x = curand_uniform(&local_state, 0.0f, grid_size);
+		float y = curand_uniform(&local_state, 0.0f, grid_size);
+		float vel_x = curand_normal(&local_state, 0.0f, 12.0f);
+		float vel_y = curand_normal(&local_state, 0.0f, 12.0f);
 
 		particle_array[i].weight = 1.0 / particle_count;
-		particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
+		particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
+
+		global_state[i] = local_state;
 
 		//printf("w: %f, x: %f, y: %f, vx: %f, vy: %f\n", particle_array[i].weight, particle_array[i].state[0], particle_array[i].state[1],
 		//	particle_array[i].state[2], particle_array[i].state[3]);
 	}
 }
 
-__global__ void initBirthParticlesKernel(Particle* birth_particle_array, int grid_size, int particle_count)
+__global__ void initBirthParticlesKernel(Particle* birth_particle_array, curandState* global_state, int grid_size, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
-		int seed = hash(i);
-		thrust::default_random_engine rng(seed);
-		//rng.discard(i);
-		thrust::uniform_int_distribution<int> dist_idx(0, grid_size * grid_size);
-		thrust::normal_distribution<float> dist_vel(0.0f, 4.0f);
+		curandState local_state = global_state[i];
 
-		int index = dist_idx(rng);
+		float x = curand_uniform(&local_state, 0.0f, grid_size);
+		float y = curand_uniform(&local_state, 0.0f, grid_size);
+		float vel_x = curand_normal(&local_state, 0.0f, 12.0f);
+		float vel_y = curand_normal(&local_state, 0.0f, 12.0f);
 
-		float x = index % grid_size;
-		float y = index / grid_size;
-
-		birth_particle_array[i].grid_cell_idx = index;
 		birth_particle_array[i].weight = 0.0;
 		birth_particle_array[i].associated = false;
-		birth_particle_array[i].state = glm::vec4(x, y, dist_vel(rng), dist_vel(rng));
+		birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
+
+		global_state[i] = local_state;
 	}
 }
 
