@@ -56,7 +56,7 @@ inline __device__ __host__ T clamp(T a, T lower, T upper)
 	return max(min(a, upper), lower);
 }
 
-inline __host__ __device__ inline unsigned int hash(unsigned int a)
+inline __host__ __device__ unsigned int hash(unsigned int a)
 {
 	a = (a + 0x7ed55d16) + (a << 12);
 	a = (a ^ 0xc761c23c) ^ (a >> 19);
