@@ -380,14 +380,13 @@ void DOGM::resampling()
 
 	const int max = particle_count + new_born_particle_count;
 	thrust::device_vector<float> rand_array(particle_count);
-	thrust::transform(thrust::make_counting_iterator(0), thrust::make_counting_iterator(particle_count), rand_array.begin(),
-		GPU_LAMBDA(int index)
-	{
-		thrust::default_random_engine rng;
-		thrust::uniform_real_distribution<float> dist(0, max);
-		rng.discard(index);
-		return dist(rng);
-	});
+	float* rand_ptr = thrust::raw_pointer_cast(rand_array.data());
+
+	resamplingGenerateRandomNumbersKernel<<<particles_grid, block_dim>>>(rand_ptr, rng_states, max, particle_count);
+
+	CHECK_ERROR(cudaGetLastError());
+	CHECK_ERROR(cudaDeviceSynchronize());
+
 	thrust::sort(rand_array.begin(), rand_array.end());
 
 	thrust::device_ptr<float> persistent_weights(weight_array);

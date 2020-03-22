@@ -28,8 +28,19 @@ SOFTWARE.
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-
 #include <thrust/binary_search.h>
+
+__global__ void resamplingGenerateRandomNumbersKernel(float* rand_array, curandState* global_state, float max, int particle_count)
+{
+	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
+	{
+		curandState local_state = global_state[i];
+		
+		rand_array[i] = curand_uniform(&local_state, 0.0f, max);
+
+		global_state[i] = local_state;
+	}
+}
 
 void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<float>& rand_array,
 	thrust::device_vector<int>& indices)

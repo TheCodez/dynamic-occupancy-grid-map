@@ -27,7 +27,11 @@ SOFTWARE.
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 
+#include <curand_kernel.h>
+
 struct Particle;
+
+__global__ void resamplingGenerateRandomNumbersKernel(float* rand_array, curandState* global_state, float max, int particle_count);
 
 void calc_resampled_indices(thrust::device_vector<float>& weight_accum, thrust::device_vector<float>& rand_array,
 	thrust::device_vector<int>& indices);
