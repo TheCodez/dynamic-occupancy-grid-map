@@ -2,7 +2,7 @@
 
 # DISCLAIMER
 
-This repository is still WIP and in a pretty rough state. Contributions are kindly appreciated :)
+This repository is still WIP and in a pretty early stage. Contributions are kindly appreciated :)
 
 
 # [WIP] A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
