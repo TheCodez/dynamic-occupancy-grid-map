@@ -37,6 +37,7 @@ __device__ float predict_free_mass(GridCell& grid_cell, float m_occ_pred, float 
 	float sum = m_free_pred + m_occ_pred;
 	if (sum > 1.0)
 	{
+		//printf("Sum of masses exceeds 1. Limiting free mass.\n");
 		float diff = sum - 1.0;
 		m_free_pred -= diff;
 	}
@@ -104,6 +105,7 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Partic
 
 			if (m_occ_pred > p_S)
 			{
+				//printf("Predicted mass greater pS. Mass is: %f\n", m_occ_pred);
 				m_occ_pred = p_S;
 				normalize_to_pS(particle_array, weight_array, p_S, start_idx, end_idx);
 			}
@@ -119,7 +121,7 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Partic
 		else
 		{
 			float m_occ = grid_cell_array[i].occ_mass;
-			float m_free = grid_cell_array[i].free_mass;
+			float m_free = predict_free_mass(grid_cell_array[i], m_occ);
 			float m_occ_up = update_o(m_occ, m_free, meas_cell_array[i]);
 			float m_free_up = update_f(m_occ, m_free, meas_cell_array[i]);
 			born_masses_array[i] = 0.0f;
