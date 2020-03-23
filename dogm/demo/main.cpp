@@ -104,53 +104,63 @@ struct Simulator
 	std::vector<Vehicle> vehicles;
 };
 
-void hsv_to_rgb(int h, float s, float v, int output[3])
+void hsv_to_rgb(float hue, float saturation, float value, int& R, int& G, int& B)
 {
-	float c = s * v;
-	float x = c * (1 - abs(fmod(h / 60.0, 2) - 1));
-	float m = v - c;
-	float rs, gs, bs;
+	float r, g, b = 0.0f;
 
-	if (h >= 0 && h < 60) 
+	if (saturation == 0.0f)
 	{
-		rs = c;
-		gs = x;
-		bs = 0;
+		r = g = b = value;
 	}
-	else if (h >= 60 && h < 120)
+	else
 	{
-		rs = x;
-		gs = c;
-		bs = 0;
-	}
-	else if (h >= 120 && h < 180)
-	{
-		rs = 0;
-		gs = c;
-		bs = x;
-	}
-	else if (h >= 180 && h < 240)
-	{
-		rs = 0;
-		gs = x;
-		bs = c;
-	}
-	else if (h >= 240 && h < 300)
-	{
-		rs = x;
-		gs = 0;
-		bs = c;
-	}
-	else 
-	{
-		rs = c;
-		gs = 0;
-		bs = x;
+		int i = static_cast<int>(hue * 6.0f);
+		float f = (hue * 6.0f) - i;
+		float p = value * (1.0f - saturation);
+		float q = value * (1.0f - saturation * f);
+		float t = value * (1.0f - saturation * (1.0f - f));
+		int res = i % 6;
+
+		switch (res)
+		{
+		case 0:
+			r = value;
+			g = t;
+			b = p;
+			break;
+		case 1:
+			r = q;
+			g = value;
+			b = p;
+			break;
+		case 2:
+			r = p;
+			g = value;
+			b = t;
+			break;
+		case 3:
+			r = p;
+			g = q;
+			b = value;
+			break;
+		case 4:
+			r = t;
+			g = p;
+			b = value;
+			break;
+		case 5:
+			r = value;
+			g = p;
+			b = q;
+			break;
+		default:
+			r = g = b = value;
+		}
 	}
 
-	output[0] = static_cast<int>(rs + m) * 255;
-	output[1] = static_cast<int>(gs + m) * 255;
-	output[2] = static_cast<int>(bs + m) * 255;
+	R = static_cast<int>(r * 255.0f);
+	G = static_cast<int>(g * 255.0f);
+	B = static_cast<int>(b * 255.0f);
 }
 
 float pignistic_transformation(float free_mass, float occ_mass)
@@ -240,17 +250,15 @@ cv::Mat compute_dogm_image(const DOGM& grid_map, float occ_tresh = 0.7f, float m
 			covar_img.at<float>(0, 1) = cell.covar_xy_vel;
 			covar_img.at<float>(1, 1) = cell.var_y_vel;
 
-			cv::Mat mdist = vel_img.t() * covar_img.inv() * vel_img;
+			cv::Mat mdist = vel_img.t() * covar_img.t().inv() * vel_img;
 
 			if (occ >= occ_tresh && mdist.at<float>(0, 0) >= m_tresh)
 			{
 				float angle = fmodf((atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI)) + 360, 360);
 
-				int color[3];
-				hsv_to_rgb(static_cast<int>(roundf(angle)), 1.0, 1.0, color);
-
-				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(color[0], color[1], color[2]);
-
+				int r, g, b;
+				hsv_to_rgb(angle / 360.0f, 1.0f, 1.0f, r, g, b);
+				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(r, g, b);
 			}
 			else
 			{
@@ -315,16 +323,15 @@ int main(int argc, const char** argv)
 		mg_meas.push_back(grid);
 	}	
 
-#if 1
-
+#if 0
 	GridParams params;
 	params.size = 128;
 	params.resolution = 1.0f;
 	params.particle_count = 2 * static_cast<int>(10e5);
 	params.new_born_particle_count = 2 * static_cast<int>(10e4);
 	params.persistence_prob = 0.99f;
-	params.process_noise_position = 0.02f;
-	params.process_noise_velocity = 0.8f;
+	params.process_noise_position = 0.06f;
+	params.process_noise_velocity = 2.4f;
 	params.birth_prob = 0.02f;
 	params.velocity_persistent = 12.0f;
 	params.velocity_birth = 12.0f;
@@ -343,15 +350,15 @@ int main(int argc, const char** argv)
 #else
 	GridParams params;
 	params.size = 50.0f;
-	params.resolution = 0.1f;
-	params.particle_count = 2 * static_cast<int>(10e5);
-	params.new_born_particle_count = 2 * static_cast<int>(10e4);
+	params.resolution = 0.2f;
+	params.particle_count = 3 * static_cast<int>(10e5);
+	params.new_born_particle_count = 3 * static_cast<int>(10e4);
 	params.persistence_prob = 0.99f;
 	params.process_noise_position = 0.02f;
 	params.process_noise_velocity = 0.8f;
 	params.birth_prob = 0.02f;
-	params.velocity_persistent = 12.0f;
-	params.velocity_birth = 12.0f;
+	params.velocity_persistent = 30.0f;
+	params.velocity_birth = 30.0f;
 
 	LaserSensorParams laser_params;
 	laser_params.fov = 120.0f;
@@ -361,8 +368,11 @@ int main(int argc, const char** argv)
 
 	Simulator simulator(100);
 	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
-	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
-	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+//	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
+//	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+
+	simulator.addVehicle(Vehicle(6, glm::vec2(40, 30), glm::vec2(20, 5)));
+	simulator.addVehicle(Vehicle(5, glm::vec2(80, 24), glm::vec2(-15, -5)));
 
 	float delta_time = 0.1f;
 	std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
