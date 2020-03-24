@@ -69,6 +69,12 @@ public:
 	void updateParticleFilter(float dt);
 
 	int getGridSize() const { return grid_size; }
+	float getResolution() const { return params.resolution; }
+
+	float getPositionX() const { return 0.0f; }
+	float getPositionY() const { return 0.0f; }
+
+	int getIteration() const { return iteration; }
 
 private:
 	void initialize();
@@ -113,4 +119,6 @@ public:
 	dim3 particles_grid;
 	dim3 birth_particles_grid;
 	dim3 grid_map_grid;
+
+	int iteration;
 };

@@ -134,6 +134,8 @@ void DOGM::updateParticleFilter(float dt)
 	CHECK_ERROR(cudaMemcpy(particle_array, particle_array_next, particle_count * sizeof(Particle), cudaMemcpyDeviceToDevice));
 
 	CHECK_ERROR(cudaDeviceSynchronize());
+
+	iteration++;
 }
 
 void DOGM::updateMeasurementGridFromArray(const std::vector<float2>& measurements)
