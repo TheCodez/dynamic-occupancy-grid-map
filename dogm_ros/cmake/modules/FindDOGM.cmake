@@ -13,13 +13,18 @@ FIND_LIBRARY(DOGM_LIBRARIES
   PATHS 
   "/usr/local/lib/dogm"
   "/usr/lib/dogm"
+#  "/usr/local/lib/"
+#  "/usr/lib/"
   )
 
 #Find dogm header
 FIND_PATH(DOGM_INCLUDE_DIRS
+  NAMES dogm.h dogm_types.h
   PATHS
   "/usr/local/include/dogm"
   "/usr/include/dogm"
+#  "/usr/local/include/"
+#  "/usr/include/"
 )
 
 SET(DOGM_FOUND "NO")
