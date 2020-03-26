@@ -24,6 +24,8 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicO
   message.info.pose.orientation.y = 0.0;
   message.info.pose.orientation.z = 0.0;
   message.info.pose.orientation.w = 1.0;
+
+  message.data.clear();
   message.data.resize(dogm.getGridSize() * dogm.getGridSize());
 
   #pragma omp parallel for
@@ -60,6 +62,7 @@ void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::
   message.info.origin.orientation.z = 0.0;
   message.info.origin.orientation.w = 1.0;
 
+  message.data.clear();
   message.data.resize(dogm.getGridSize() * dogm.getGridSize());
 
   #pragma omp parallel for
