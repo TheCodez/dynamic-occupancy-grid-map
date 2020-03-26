@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(dogm_ros)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules/")
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-#  dogm
   dogm_msgs
   sensor_msgs
   nav_msgs
@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   visualization_msgs
 )
+
+find_package(DOGM REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -45,6 +47,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${DOGM_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -54,6 +57,7 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${DOGM_LIBRARIES}
 )
 
 add_dependencies(${PROJECT_NAME}
