@@ -48,6 +48,9 @@ SOFTWARE.
 
 #include <cuda_runtime.h>
 
+namespace dogm
+{
+
 constexpr int BLOCK_SIZE = 256;
 
 DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
@@ -414,3 +417,5 @@ void DOGM::resampling()
 
 	CHECK_ERROR(cudaGetLastError());
 }
+
+} /* namespace dogm */

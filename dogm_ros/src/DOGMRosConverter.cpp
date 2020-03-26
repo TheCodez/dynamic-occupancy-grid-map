@@ -11,7 +11,7 @@ DOGMRosConverter::~DOGMRosConverter()
 {
 }
 
-void DOGMRosConverter::toDOGMMessage(const DOGM& dogm, dogm_msgs::DynamicOccupancyGrid& message)
+void DOGMRosConverter::toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicOccupancyGrid& message)
 {
   message.header.stamp = ros::Time::now();
   message.info.resolution = dogm.getResolution();
@@ -29,7 +29,7 @@ void DOGMRosConverter::toDOGMMessage(const DOGM& dogm, dogm_msgs::DynamicOccupan
   #pragma omp parallel for
   for (int i = 0; i < message.data.size(); i++)
   {
-    GridCell& cell = dogm.grid_cell_array[i];
+    dogm::GridCell& cell = dogm.grid_cell_array[i];
 
     message.data[i].free_mass = cell.free_mass;
     message.data[i].occ_mass = cell.occ_mass;
@@ -42,7 +42,7 @@ void DOGMRosConverter::toDOGMMessage(const DOGM& dogm, dogm_msgs::DynamicOccupan
   }
 }
 
-void DOGMRosConverter::toOccupancyGridMessage(const DOGM& dogm, nav_msgs::OccupancyGrid& message)
+void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::OccupancyGrid& message)
 {
   message.header.stamp = ros::Time::now();
   message.info.map_load_time = message.header.stamp;
@@ -65,18 +65,18 @@ void DOGMRosConverter::toOccupancyGridMessage(const DOGM& dogm, nav_msgs::Occupa
   #pragma omp parallel for
   for (int i = 0; i < message.data.size(); i++)
   {
-    GridCell& cell = dogm.grid_cell_array[i];
+    dogm::GridCell& cell = dogm.grid_cell_array[i];
     float free_mass = cell.free_mass;
     float occ_mass = cell.occ_mass;
-
-    // Unknown
-    if (free_mass == 0.0f && occ_mass == 0.0f)
-    {
+    
+	float prob = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
+	
+	if (prob == 0.5f)
+	{
         message.data[i] = -1;
     }
     else
-    {
-        float prob = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
+    {      
         message.data[i] = static_cast<int>(prob * 100.0f);
     } 
   }

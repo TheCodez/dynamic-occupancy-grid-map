@@ -18,9 +18,9 @@ public:
 
   virtual ~DOGMRosConverter();
 
-  static void toDOGMMessage(const DOGM& dogm, dogm_msgs::DynamicOccupancyGrid& message);
+  static void toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicOccupancyGrid& message);
 
-  static void toOccupancyGridMessage(const DOGM& dogm, nav_msgs::OccupancyGrid& message);
+  static void toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::OccupancyGrid& message);
 };
 
 } /* namespace dogm */

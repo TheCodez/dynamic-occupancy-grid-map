@@ -25,6 +25,9 @@ SOFTWARE.
 
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 struct GridCell;
 struct MeasurementCell;
 struct Particle;
@@ -36,3 +39,5 @@ __global__ void updatePersistentParticlesKernel2(GridCell* grid_cell_array, floa
 
 __global__ void updatePersistentParticlesKernel3(Particle* particle_array, MeasurementCell* meas_cell_array, 
 	GridCell* grid_cell_array, float* weight_array, int particle_count);
+
+} /* namespace dogm */

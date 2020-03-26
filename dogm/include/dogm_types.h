@@ -2,6 +2,9 @@
 
 #include <glm/vec4.hpp>
 
+namespace dogm
+{
+
 struct GridCell
 {
 	int start_idx;
@@ -38,3 +41,5 @@ struct Particle
 	bool associated;
 	glm::vec4 state;
 };
+
+} /* namespace dogm */

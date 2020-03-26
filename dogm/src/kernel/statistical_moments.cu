@@ -29,6 +29,9 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 __device__ float calc_mean(float* vel_array_accum, int start_idx, int end_idx, float rho_p)
 {
 	if (rho_p > 0.0f)
@@ -115,3 +118,5 @@ __global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, float* vel_
 		}
 	}
 }
+
+} /* namespace dogm */

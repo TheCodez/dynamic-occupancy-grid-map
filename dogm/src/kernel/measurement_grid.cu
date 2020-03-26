@@ -29,6 +29,9 @@ SOFTWARE.
 
 #define PI 3.14159265358979323846f
 
+namespace dogm
+{
+
 __device__ float2 combine_masses(float2 prior, float2 meas)
 {
 	// Masses: mOcc, mFree
@@ -189,3 +192,4 @@ __global__ void gridArrayToMeasurementGridKernel(MeasurementCell* meas_grid, flo
 	}
 }
 
+} /* namespace dogm */

@@ -30,6 +30,9 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 __device__ bool is_first_particle(Particle* particle_array, int i)
 {
 	return i == 0 || particle_array[i].grid_cell_idx != particle_array[i - 1].grid_cell_idx;
@@ -59,3 +62,5 @@ __global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_ce
 		weight_array[i] = particle_array[i].weight;
 	}
 }
+
+} /* namespace dogm */

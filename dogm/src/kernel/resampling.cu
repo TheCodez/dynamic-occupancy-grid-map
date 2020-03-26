@@ -30,6 +30,9 @@ SOFTWARE.
 #include <device_launch_parameters.h>
 #include <thrust/binary_search.h>
 
+namespace dogm
+{
+
 __global__ void resamplingGenerateRandomNumbersKernel(float* rand_array, curandState* global_state, float max, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
@@ -88,3 +91,5 @@ __global__ void resamplingKernel(Particle* particle_array, Particle* particle_ar
 		particle_array_next[i].weight = joint_max / particle_count;
 	}
 }
+
+} /* namespace dogm */

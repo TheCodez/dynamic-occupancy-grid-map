@@ -33,6 +33,10 @@ SOFTWARE.
 #include <vector>
 
 class Renderer;
+
+namespace dogm
+{
+
 struct GridCell;
 struct MeasurementCell;
 struct Particle;
@@ -122,3 +126,5 @@ public:
 
 	int iteration;
 };
+
+} /* namespace dogm */

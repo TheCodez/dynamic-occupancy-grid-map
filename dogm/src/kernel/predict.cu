@@ -29,6 +29,9 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 __global__ void predictKernel(Particle* particle_array, curandState* global_state, float velocity, int grid_size, float p_S,
 	const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count)
 {
@@ -67,3 +70,5 @@ __global__ void predictKernel(Particle* particle_array, curandState* global_stat
 		global_state[i] = local_state;
 	}
 }
+
+} /* namespace dogm */

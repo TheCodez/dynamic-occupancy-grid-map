@@ -29,6 +29,9 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 __device__ float calc_norm_assoc(float occ_accum, float rho_p)
 {
 	return occ_accum > 0.0 ? rho_p / occ_accum : 0.0;
@@ -95,3 +98,5 @@ __global__ void updatePersistentParticlesKernel3(Particle* particle_array, Measu
 		weight_array[i] = normalize(particle_array[i], grid_cell_array, meas_cell_array, weight_array[i]);
 	}
 }
+
+} /* namespace dogm */

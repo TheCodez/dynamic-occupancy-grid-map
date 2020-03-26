@@ -31,6 +31,9 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 __device__ void set_cell_idx_A(Particle* birth_particle_array, int i, int grid_cell_idx)
 {
 	birth_particle_array[i].grid_cell_idx = grid_cell_idx;
@@ -165,3 +168,5 @@ __global__ void copyBirthWeightKernel(Particle* birth_particle_array, float* bir
 		birth_weight_array[i] = birth_particle_array[i].weight;
 	}
 }
+
+} /* namespace dogm */

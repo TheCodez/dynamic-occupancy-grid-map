@@ -29,6 +29,9 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 __global__ void setupRandomStatesKernel(curandState* states, unsigned long long seed, int count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < count; i += blockDim.x * gridDim.x)
@@ -48,7 +51,7 @@ __global__ void initParticlesKernel(Particle* particle_array, curandState* globa
 		float vel_x = curand_normal(&local_state, 0.0f, velocity);
 		float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
-		particle_array[i].weight = 1.0 / particle_count;
+		particle_array[i].weight = 1.0f / particle_count;
 		particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 
 		global_state[i] = local_state;
@@ -102,3 +105,5 @@ __global__ void reinitGridParticleIndices(GridCell* grid_cell_array, int cell_co
 		grid_cell_array[i].end_idx = -1;
 	}
 }
+
+} /* namespace dogm */

@@ -29,6 +29,9 @@ SOFTWARE.
 
 #include <curand_kernel.h>
 
+namespace dogm
+{
+
 struct Particle;
 
 __global__ void resamplingGenerateRandomNumbersKernel(float* rand_array, curandState* global_state, float max, int particle_count);
@@ -38,3 +41,5 @@ void calc_resampled_indices(thrust::device_vector<float>& weight_accum, thrust::
 
 __global__ void resamplingKernel(Particle* particle_array, Particle* particle_array_next, Particle* birth_particle_array,
 	int* idx_array_resampled, float joint_max, int particle_count);
+
+} /* namespace dogm */

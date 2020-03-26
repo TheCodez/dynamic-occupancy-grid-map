@@ -27,6 +27,9 @@ SOFTWARE.
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 struct GridCell;
 struct MeasurementCell;
 struct Particle;
@@ -40,3 +43,5 @@ __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell
 	float velocity, int grid_size, int particle_count);
 
 __global__ void copyBirthWeightKernel(Particle* birth_particle_array, float* birth_weight_array, int particle_count);
+
+} /* namespace dogm */

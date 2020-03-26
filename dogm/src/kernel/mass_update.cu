@@ -29,6 +29,9 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+namespace dogm
+{
+
 __device__ float predict_free_mass(GridCell& grid_cell, float m_occ_pred, float alpha = 0.9)
 {
 	float m_free_pred = min(alpha * grid_cell.free_mass, 1.0 - m_occ_pred);
@@ -116,6 +119,9 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Partic
 			float rho_b = separate_newborn_part(m_occ_pred, m_occ_up, p_B);
 			float rho_p = m_occ_up - rho_b;
 			born_masses_array[i] = rho_b;
+
+			//printf("Rho B: %f\n", rho_b);
+
 			store_values(rho_b, rho_p, m_free_up, m_occ_up, grid_cell_array, i);
 		}
 		else
@@ -129,3 +135,5 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Partic
 		}
 	}
 }
+
+} /* namespace dogm */
