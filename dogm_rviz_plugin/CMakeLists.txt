@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(dogm_rviz_plugin)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
@@ -43,8 +43,8 @@ link_directories(${catkin_LIBRARY_DIRS})
 ## This setting causes Qt's "MOC" generation to happen automatically.
 set(CMAKE_AUTOMOC ON)
 
-set(INCLUDE_FILES_QT
-  include/dogm_rviz_plugin/DOGMDisplay.hpp
+set(INCLUDE_FILES
+  include/dogm_rviz_plugin/dogm_display.h
 )
 
 ## This plugin includes Qt widgets, so we must include Qt.
@@ -55,7 +55,7 @@ if(rviz_QT_VERSION VERSION_LESS "5")
   ## pull in all required include dirs, define QT_LIBRARIES, etc.
   include(${QT_USE_FILE})
   qt4_wrap_cpp(MOC_FILES
-    ${INCLUDE_FILES_QT}
+    ${INCLUDE_FILES}
   )
 else()
   message(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
@@ -63,7 +63,7 @@ else()
   ## make target_link_libraries(${QT_LIBRARIES}) pull in all required dependencies
   set(QT_LIBRARIES Qt5::Widgets)
   QT5_WRAP_CPP(MOC_FILES
-    ${INCLUDE_FILES_QT}
+    ${INCLUDE_FILES}
   )
 endif()
 
@@ -73,7 +73,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 ## The list of source files.
 ## The generated MOC files are included automatically as headers.
 set(SOURCE_FILES
-  src/DOGMDisplay.cpp
+  src/dogm_display.cpp
 )
 
 ## An rviz plugin is just a shared library, so here we declare the
@@ -115,8 +115,3 @@ install(
   DIRECTORY icons
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons
 )
-
-#install(
-#  DIRECTORY doc
-#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-#)

@@ -28,7 +28,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include "dogm_rviz_plugin/DOGMDisplay.hpp"
+#include "dogm_rviz_plugin/dogm_display.h"
 
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
@@ -64,8 +64,8 @@ DOGMDisplay::DOGMDisplay()
   alpha_property_ = new rviz::FloatProperty("Alpha", 1.0,
                                             "Amount of transparency to apply to the map.",
                                             this, SLOT( updateAlpha()));
-  alpha_property_->setMin(0);
-  alpha_property_->setMax(1);
+  alpha_property_->setMin(0.0f);
+  alpha_property_->setMax(1.0f);
 
   draw_under_property_ = new rviz::BoolProperty("Draw Behind", false,
                                                 "Rendering option, controls whether or not the map is always"
@@ -93,12 +93,13 @@ DOGMDisplay::DOGMDisplay()
   occ_property_ = new rviz::FloatProperty("Occupancy threshold", 1.0,
                                           "Occupancy amount at which object is considered dynamic.",
                                           this);
-  occ_property_->setMin(0);
-  occ_property_->setMax(1);
+  occ_property_->setMin(0.0f);
+  occ_property_->setMax(1.0f);
 
   mahalanobis_property_ = new rviz::FloatProperty("Mahalanobis distance", 1.0,
                                                   "Mahalanobis distance at which object is considered dynamic.",
                                                   this);
+  mahalanobis_property_->setMin(0.0f);
 }
 
 DOGMDisplay::~DOGMDisplay()
@@ -208,66 +209,66 @@ void DOGMDisplay::clear()
 
 float pignisticTransformation(float free_mass, float occ_mass)
 {
-	return occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
+    return occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
 }
 
 void hsvToRGB(float hue, float saturation, float value, int& R, int& G, int& B)
 {
-	float r, g, b = 0.0f;
+    float r, g, b = 0.0f;
 
-	if (saturation == 0.0f)
-	{
-		r = g = b = value;
-	}
-	else
-	{
-		int i = static_cast<int>(hue * 6.0f);
-		float f = (hue * 6.0f) - i;
-		float p = value * (1.0f - saturation);
-		float q = value * (1.0f - saturation * f);
-		float t = value * (1.0f - saturation * (1.0f - f));
-		int res = i % 6;
+    if (saturation == 0.0f)
+    {
+        r = g = b = value;
+    }
+    else
+    {
+        int i = static_cast<int>(hue * 6.0f);
+        float f = (hue * 6.0f) - i;
+        float p = value * (1.0f - saturation);
+        float q = value * (1.0f - saturation * f);
+        float t = value * (1.0f - saturation * (1.0f - f));
+        int res = i % 6;
 
-		switch (res)
-		{
-		case 0:
-			r = value;
-			g = t;
-			b = p;
-			break;
-		case 1:
-			r = q;
-			g = value;
-			b = p;
-			break;
-		case 2:
-			r = p;
-			g = value;
-			b = t;
-			break;
-		case 3:
-			r = p;
-			g = q;
-			b = value;
-			break;
-		case 4:
-			r = t;
-			g = p;
-			b = value;
-			break;
-		case 5:
-			r = value;
-			g = p;
-			b = q;
-			break;
-		default:
-			r = g = b = value;
-		}
-	}
+        switch (res)
+        {
+        case 0:
+            r = value;
+            g = t;
+            b = p;
+            break;
+        case 1:
+            r = q;
+            g = value;
+            b = p;
+            break;
+        case 2:
+            r = p;
+            g = value;
+            b = t;
+            break;
+        case 3:
+            r = p;
+            g = q;
+            b = value;
+            break;
+        case 4:
+            r = t;
+            g = p;
+            b = value;
+            break;
+        case 5:
+            r = value;
+            g = p;
+            b = q;
+            break;
+        default:
+            r = g = b = value;
+        }
+    }
 
-	R = static_cast<int>(r * 255.0f);
-	G = static_cast<int>(g * 255.0f);
-	B = static_cast<int>(b * 255.0f);
+    R = static_cast<int>(r * 255.0f);
+    G = static_cast<int>(g * 255.0f);
+    B = static_cast<int>(b * 255.0f);
 }
 
 void DOGMDisplay::processMessage(const dogm_msgs::DynamicOccupancyGrid::ConstPtr& msg)
@@ -356,7 +357,7 @@ void DOGMDisplay::processMessage(const dogm_msgs::DynamicOccupancyGrid::ConstPtr
       float angle = fmodf((atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / Ogre::Math::PI)) + 360, 360);
 
       int r, g, b;
-			hsvToRGB(angle / 360.0f, 1.0f, 1.0f, r, g, b);
+      hsvToRGB(angle / 360.0f, 1.0f, 1.0f, r, g, b);
 
       *pixels_ptr++ = r; // red
       *pixels_ptr++ = g; // green
