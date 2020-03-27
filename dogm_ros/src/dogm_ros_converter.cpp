@@ -1,4 +1,4 @@
-#include "dogm_ros/DOGMRosConverter.h"
+#include "dogm_ros/dogm_ros_converter.h"
 
 namespace dogm
 {
@@ -72,10 +72,10 @@ void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::
     float free_mass = cell.free_mass;
     float occ_mass = cell.occ_mass;
     
-	float prob = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
-	
-	if (prob == 0.5f)
-	{
+    float prob = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
+
+    if (prob == 0.5f)
+    {
         message.data[i] = -1;
     }
     else

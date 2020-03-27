@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(dogm_ros)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
@@ -11,8 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   nav_msgs
   std_msgs
-  geometry_msgs
-  visualization_msgs
 )
 
 find_package(DOGM REQUIRED)
@@ -52,7 +50,7 @@ include_directories(
 
 ## Declare a cpp library
 add_library(${PROJECT_NAME}
-  src/DOGMRosConverter.cpp
+  src/dogm_ros_converter.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
