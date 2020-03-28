@@ -50,7 +50,8 @@ include_directories(
 
 ## Declare a cpp library
 add_library(${PROJECT_NAME}
-  src/dogm_ros_converter.cpp
+  src/dogm_ros/dogm_ros_converter.cpp
+  src/dogm_ros/dogm_node.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -61,6 +62,17 @@ target_link_libraries(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME}
   ${catkin_EXPORTED_TARGETS}
 )
+
+message( ${DOGM_INCLUDE_DIRS} )
+message( ${DOGM_LIBRARIES} )
+
+add_library(${PROJECT_NAME}_nodelet src/dogm_ros_nodelet.cpp)
+target_link_libraries(${PROJECT_NAME}_nodelet ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
+
+## Declare a C++ executable
+add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp)
+add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
 
 #############
 ## Install ##

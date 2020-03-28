@@ -2,4 +2,4 @@
 
 #include <dogm/dogm.h>
 #include <dogm/dogm_types.h>
-#include <grid_map_ros/DOGMRosConverter.hpp>
+#include <dogm_ros/dogm_ros_converter.h>
