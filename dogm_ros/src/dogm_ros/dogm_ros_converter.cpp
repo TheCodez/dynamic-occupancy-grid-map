@@ -1,6 +1,6 @@
 #include "dogm_ros/dogm_ros_converter.h"
 
-namespace dogm
+namespace dogm_ros
 {
 
 DOGMRosConverter::DOGMRosConverter()
@@ -85,4 +85,4 @@ void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::
   }
 }
 
-} /* namespace dogm */
+} /* namespace dogm_ros */

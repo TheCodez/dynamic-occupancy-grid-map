@@ -7,7 +7,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/OccupancyGrid.h>
 
-namespace dogm 
+namespace dogm_ros
 {
 
 class DOGMRosConverter
@@ -23,4 +23,4 @@ public:
   static void toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::OccupancyGrid& message);
 };
 
-} /* namespace dogm */
+} /* namespace dogm_ros */

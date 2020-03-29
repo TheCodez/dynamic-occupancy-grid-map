@@ -50,6 +50,8 @@ DOGMRos::DOGMRos(ros::NodeHandle nh, ros::NodeHandle private_nh)
 	private_nh_.param("particles/process_noise_position", params_.process_noise_position, 0.02f);
 	private_nh_.param("particles/process_noise_velocity", params_.process_noise_velocity, 0.8f);
 	private_nh_.param("particles/birth_probability", params_.birth_prob, 0.02f);
+	private_nh_.param("particles/velocity_persistent", params_.velocity_persistent, 12.0f);
+	private_nh_.param("particles/velocity_birth", params_.velocity_birth, 12.0f);
 
 	private_nh_.param("laser/fov", laser_params_.fov, 120.0f);
 	private_nh_.param("laser/max_range", laser_params_.max_range, 50.0f);
@@ -80,7 +82,7 @@ void DOGMRos::process(const sensor_msgs::LaserScan::ConstPtr& scan)
 	}
 	
 	dogm_msgs::DynamicOccupancyGrid message;
-    dogm::DOGMRosConverter::toDOGMMessage(*grid_map_, message);
+    dogm_ros::DOGMRosConverter::toDOGMMessage(*grid_map_, message);
     
 	publisher_.publish(message);
 	
