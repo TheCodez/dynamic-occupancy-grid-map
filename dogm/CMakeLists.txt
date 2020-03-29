@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(DOGM CXX CUDA)
+project(DOGM LANGUAGES CXX CUDA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
@@ -37,7 +37,7 @@ endif()
 
 include_directories(
 	include
-	${CUDA_INCLUDE_DIRS}
+	${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 	${GLFW3_INCLUDE_DIR}
 	${GLEW_INCLUDE_DIRS}
 	${GLM_INCLUDE_DIR}
