@@ -53,16 +53,16 @@ __global__ void predictKernel(Particle* particle_array, curandState* global_stat
 
 		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
 		{
-			float x = curand_uniform(&local_state, 0.0f, grid_size);
-			float y = curand_uniform(&local_state, 0.0f, grid_size);
+			x = curand_uniform(&local_state, 0.0f, grid_size);
+			y = curand_uniform(&local_state, 0.0f, grid_size);
 			float vel_x = curand_normal(&local_state, 0.0f, velocity);
 			float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
 			particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 		}
 
-		int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
-		int pos_y = clamp(static_cast<int>(y), 0, grid_size - 1);
+		int pos_x = clamp(static_cast<int>(roundf(x)), 0, grid_size - 1);
+		int pos_y = clamp(static_cast<int>(roundf(y)), 0, grid_size - 1);
 		particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
 
 		//printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
