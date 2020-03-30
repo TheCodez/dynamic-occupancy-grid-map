@@ -14,9 +14,10 @@ Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps 
   <img src="./docs/videos/dogm2_new.gif">
 </p>
 
-## Requirements
+## Requirements and Setup
+You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this project. You can find the setup instructions for Ubuntu 18.04 LTS and Windows 10 below.
 
-- An operating system that supports the below libraries. Tested on Ubuntu 18.04 LTS.
+### Ubuntu 18.04
 - OpenCV: recommended to compile from source following the [official instructions](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html).
 - OpenGL (from [stackoverflow](https://stackoverflow.com/a/1988688/7260972)):
     ```console
@@ -40,6 +41,8 @@ Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps 
   - Check that your system GPU driver is still working by executing `nvidia-smi`
   - To verify that your CUDA installation is working, consider compiling and running one of the examples from /usr/local/cuda/samples. In particular ones that use OpenGL+CUDA, e.g. `samples/2_Graphics/Mandelbrot`.
 
+### Windows 10
+TODO
 
 ## How to build and run
 
