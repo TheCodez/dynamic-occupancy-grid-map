@@ -120,7 +120,3 @@ target_link_libraries(demo
 	${OpenCV_LIBS}
 )
 
-if (BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
