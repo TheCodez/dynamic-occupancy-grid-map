@@ -42,9 +42,11 @@ Renderer::Renderer(int grid_size, float fov, float grid_range, float max_range)
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	float range = 2.0f * (max_range / grid_range);
-
 	std::vector<Vertex> vertices;
+	
+	// center vehicle in the middle
+	//float range = 2.0f * (max_range / grid_range);
+	//generateCircleSegmentVertices(vertices, fov, range, 0.0f, 0.0f);
 	generateCircleSegmentVertices(vertices, fov, 2.0f, 0.0f, -1.0f);
 
 	polygon = new Polygon(vertices.data(), vertices.size());
