@@ -3,4 +3,4 @@
 
 ## Contributors:
 * [cbachhuber](https://github.com/cbachhuber)
-	* Fix cmakelists #11
+	* Fix cmakelists https://github.com/TheCodez/dynamic-occupancy-grid-map/pull/11
