@@ -29,7 +29,7 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__device__ float calc_mean(float* __restrict__ vel_array_accum, int start_idx, int end_idx, float rho_p)
+__device__ float calc_mean(const float* __restrict__ vel_array_accum, int start_idx, int end_idx, float rho_p)
 {
 	if (rho_p > 0.0f)
 	{
@@ -39,7 +39,7 @@ __device__ float calc_mean(float* __restrict__ vel_array_accum, int start_idx, i
 	return 0.0f;
 }
 
-__device__ float calc_variance(float* __restrict__ vel_squared_array_accum, int start_idx, int end_idx, float rho_p, float mean_vel)
+__device__ float calc_variance(const float* __restrict__ vel_squared_array_accum, int start_idx, int end_idx, float rho_p, float mean_vel)
 {
 	if (rho_p > 0.0f)
 	{
@@ -49,7 +49,7 @@ __device__ float calc_variance(float* __restrict__ vel_squared_array_accum, int 
 	return 0.0f;
 }
 
-__device__ float calc_covariance(float* __restrict__ vel_xy_array_accum, int start_idx, int end_idx, float rho_p,
+__device__ float calc_covariance(const float* __restrict__ vel_xy_array_accum, int start_idx, int end_idx, float rho_p,
 	float mean_x_vel, float mean_y_vel)
 {
 	if (rho_p > 0.0f)
@@ -70,7 +70,7 @@ __device__ void store(GridCell* __restrict__ grid_cell_array, int j, float mean_
 	grid_cell_array[j].covar_xy_vel = covar_xy_vel;
 }
 
-__global__ void statisticalMomentsKernel1(Particle* __restrict__ particle_array, float* __restrict__ weight_array, 
+__global__ void statisticalMomentsKernel1(const Particle* __restrict__ particle_array, const float* __restrict__ weight_array,
 	float* __restrict__ vel_x_array, float* __restrict__ vel_y_array, float* __restrict__ vel_x_squared_array, 
 	float* __restrict__ vel_y_squared_array, float* __restrict__ vel_xy_array, int particle_count)
 {
@@ -89,9 +89,9 @@ __global__ void statisticalMomentsKernel1(Particle* __restrict__ particle_array,
 	}
 }
 
-__global__ void statisticalMomentsKernel2(GridCell* __restrict__ grid_cell_array, float* __restrict__ vel_x_array_accum,
-	float* __restrict__ vel_y_array_accum, float* __restrict__ vel_x_squared_array_accum, float* __restrict__ vel_y_squared_array_accum,
-	float* __restrict__ vel_xy_array_accum, int cell_count)
+__global__ void statisticalMomentsKernel2(GridCell* __restrict__ grid_cell_array, const float* __restrict__ vel_x_array_accum,
+	const float* __restrict__ vel_y_array_accum, const float* __restrict__ vel_x_squared_array_accum, 
+	const float* __restrict__ vel_y_squared_array_accum, const float* __restrict__ vel_xy_array_accum, int cell_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{

@@ -43,7 +43,7 @@ __device__ void set_cell_idx_UA(Particle* __restrict__ birth_particle_array, int
 	birth_particle_array[i].associated = false;
 }
 
-__device__ int calc_start_idx(float* __restrict__ particle_orders_array_accum, int index)
+__device__ int calc_start_idx(const float* __restrict__ particle_orders_array_accum, int index)
 {
 	if (index == 0)
 	{
@@ -53,7 +53,7 @@ __device__ int calc_start_idx(float* __restrict__ particle_orders_array_accum, i
 	return static_cast<int>(particle_orders_array_accum[index - 1]);
 }
 
-__device__ int calc_end_idx(float* __restrict__ particle_orders_array_accum, int index)
+__device__ int calc_end_idx(const float* __restrict__ particle_orders_array_accum, int index)
 {
 	return static_cast<int>(particle_orders_array_accum[index]) - 1;
 }
@@ -91,9 +91,9 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
 	});
 }
 
-__global__ void initNewParticlesKernel1(Particle* __restrict__ particle_array, GridCell* __restrict__ grid_cell_array,
-	MeasurementCell* __restrict__ meas_cell_array, float* __restrict__ weight_array, float* __restrict__ born_masses_array,
-	Particle* __restrict__ birth_particle_array, float* __restrict__ particle_orders_array_accum, int cell_count)
+__global__ void initNewParticlesKernel1(Particle* __restrict__ particle_array, GridCell* __restrict__ grid_cell_array, 
+	const MeasurementCell *__restrict__ meas_cell_array, const float *__restrict__ weight_array, const float *__restrict__ born_masses_array,
+	Particle* __restrict__ birth_particle_array, const float *__restrict__ particle_orders_array_accum, int cell_count)
 {
 	for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
 	{
@@ -124,7 +124,7 @@ __global__ void initNewParticlesKernel1(Particle* __restrict__ particle_array, G
 	}
 }
 
-__global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_array, GridCell* __restrict__ grid_cell_array,
+__global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_array, const GridCell* __restrict__ grid_cell_array,
 	curandState* __restrict__ global_state, float velocity, int grid_size, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
@@ -132,7 +132,7 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
 		curandState local_state = global_state[i];
 
 		int cell_idx = birth_particle_array[i].grid_cell_idx;
-		GridCell& grid_cell = grid_cell_array[cell_idx];
+		const GridCell& grid_cell = grid_cell_array[cell_idx];
 
 		float vel_x = curand_normal(&local_state, 0.0f, velocity);
 		float vel_y = curand_normal(&local_state, 0.0f, velocity);
@@ -159,7 +159,8 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
 	}
 }
 
-__global__ void copyBirthWeightKernel(Particle* __restrict__ birth_particle_array, float* __restrict__ birth_weight_array, int particle_count)
+__global__ void copyBirthWeightKernel(const Particle* __restrict__ birth_particle_array, float* __restrict__ birth_weight_array,
+	int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{

@@ -68,8 +68,8 @@ void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, th
 	thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(), indices.begin());
 }
 
-__device__ Particle copy_particle(Particle* __restrict__ particle_array, int particle_count, Particle* __restrict__ birth_particle_array,
-	int idx)
+__device__ Particle copy_particle(const Particle* __restrict__ particle_array, int particle_count, 
+	const Particle* __restrict__ birth_particle_array, int idx)
 {
 	if (idx < particle_count)
 	{
@@ -81,8 +81,8 @@ __device__ Particle copy_particle(Particle* __restrict__ particle_array, int par
 	}
 }
 
-__global__ void resamplingKernel(Particle* __restrict__ particle_array, Particle* __restrict__ particle_array_next,
-	Particle* __restrict__ birth_particle_array, int* __restrict__ idx_array_resampled, float new_weight, int particle_count)
+__global__ void resamplingKernel(const Particle* __restrict__ particle_array, Particle* __restrict__ particle_array_next,
+	const Particle* __restrict__ birth_particle_array, const int* __restrict__ idx_array_resampled, float new_weight, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{

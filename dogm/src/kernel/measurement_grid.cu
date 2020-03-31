@@ -89,7 +89,7 @@ __device__ float2 inverse_sensor_model(int i, float resolution, float zk, float 
 	}
 }
 
-__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* __restrict__ measurements, int width, int height,
+__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements, int width, int height,
 	float resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
@@ -109,7 +109,7 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* _
 }
 
 __global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, MeasurementCell* __restrict__ polar_meas_grid, 
-	float* __restrict__ measurements, int width, int height, float resolution)
+	const float* __restrict__ measurements, int width, int height, float resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
 	const int range = blockIdx.y * blockDim.y + threadIdx.y;
@@ -132,7 +132,7 @@ __global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, Measure
 	}
 }
 
-__global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, float* __restrict__ measurements, int width, int height,
+__global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements, int width, int height,
 	float resolution)
 {
 	const int theta = blockIdx.x * blockDim.x + threadIdx.x;
@@ -174,7 +174,7 @@ __global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* __restrict
 	}
 }
 
-__global__ void gridArrayToMeasurementGridKernel(MeasurementCell* __restrict__ meas_grid, float2* __restrict__ grid, int grid_size)
+__global__ void gridArrayToMeasurementGridKernel(MeasurementCell* __restrict__ meas_grid, const float2* __restrict__ grid, int grid_size)
 {
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;

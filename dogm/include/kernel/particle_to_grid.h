@@ -28,5 +28,5 @@ SOFTWARE.
 struct GridCell;
 struct Particle;
 
-__global__ void particleToGridKernel(Particle* __restrict__ particle_array, GridCell* __restrict__ grid_cell_array, 
+__global__ void particleToGridKernel(const Particle* __restrict__ particle_array, GridCell* __restrict__ grid_cell_array,
 	float* __restrict__ weight_array, int particle_count);
