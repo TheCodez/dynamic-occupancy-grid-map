@@ -50,8 +50,8 @@ __global__ void predictKernel(Particle* __restrict__ particle_array, curandState
 
 		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
 		{
-			x = curand_uniform(&local_state, 0.0f, grid_size);
-			y = curand_uniform(&local_state, 0.0f, grid_size);
+			x = curand_uniform(&local_state, 0.0f, grid_size - 1);
+			y = curand_uniform(&local_state, 0.0f, grid_size - 1);
 			float vel_x = curand_normal(&local_state, 0.0f, velocity);
 			float vel_y = curand_normal(&local_state, 0.0f, velocity);
 

@@ -44,8 +44,8 @@ __global__ void initParticlesKernel(Particle* __restrict__ particle_array, curan
 	{
 		curandState local_state = global_state[i];
 
-		float x = curand_uniform(&local_state, 0.0f, grid_size);
-		float y = curand_uniform(&local_state, 0.0f, grid_size);
+		float x = curand_uniform(&local_state, 0.0f, grid_size - 1);
+		float y = curand_uniform(&local_state, 0.0f, grid_size - 1);
 		float vel_x = curand_normal(&local_state, 0.0f, velocity);
 		float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
@@ -66,8 +66,8 @@ __global__ void initBirthParticlesKernel(Particle* __restrict__ birth_particle_a
 	{
 		curandState local_state = global_state[i];
 
-		float x = curand_uniform(&local_state, 0.0f, grid_size);
-		float y = curand_uniform(&local_state, 0.0f, grid_size);
+		float x = curand_uniform(&local_state, 0.0f, grid_size - 1);
+		float y = curand_uniform(&local_state, 0.0f, grid_size - 1);
 		float vel_x = curand_normal(&local_state, 0.0f, velocity);
 		float vel_y = curand_normal(&local_state, 0.0f, velocity);
 

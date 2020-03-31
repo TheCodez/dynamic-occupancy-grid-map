@@ -148,8 +148,8 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
 		}
 		else
 		{
-			float x = curand_uniform(&local_state, 0.0f, grid_size);
-			float y = curand_uniform(&local_state, 0.0f, grid_size);
+			float x = curand_uniform(&local_state, 0.0f, grid_size - 1);
+			float y = curand_uniform(&local_state, 0.0f, grid_size - 1);
 
 			birth_particle_array[i].weight = grid_cell.w_UA;
 			birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
