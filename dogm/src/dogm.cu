@@ -57,10 +57,7 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
 	  particle_count(params.particle_count),
 	  grid_cell_count(grid_size * grid_size),
 	  new_born_particle_count(params.new_born_particle_count),
-	  block_dim(BLOCK_SIZE),
-	  particles_grid(divUp(particle_count, block_dim.x)),
-	  birth_particles_grid(divUp(new_born_particle_count, block_dim.x)),
-	  grid_map_grid(divUp(grid_cell_count, block_dim.x))
+	  block_dim(BLOCK_SIZE)
 {
 	CHECK_ERROR(cudaMallocManaged((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
 	CHECK_ERROR(cudaMallocManaged((void**)&particle_array, particle_count * sizeof(Particle)));
@@ -78,6 +75,16 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
 	CHECK_ERROR(cudaMalloc(&rng_states, particle_count * sizeof(curandState)));
 
 	renderer = std::make_unique<Renderer>(grid_size, laser_params.fov, params.size, laser_params.max_range);
+
+	int device;
+	CHECK_ERROR(cudaGetDevice(&device));
+
+	cudaDeviceProp device_prop;
+	CHECK_ERROR(cudaGetDeviceProperties(&device_prop, device));
+
+	int blocks_per_sm = device_prop.maxThreadsPerMultiProcessor / block_dim.x;
+	dim3 dim(device_prop.multiProcessorCount * blocks_per_sm);
+	particles_grid = birth_particles_grid = grid_map_grid = dim;
 
 	initialize();
 }
