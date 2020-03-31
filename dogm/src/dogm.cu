@@ -404,11 +404,12 @@ void DOGM::resampling()
 	int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
 	float joint_max = joint_weight_accum.back();
+	float new_weight = joint_max / particle_count;
 
 	printf("joint_max: %f\n", joint_max);
 
 	resamplingKernel<<<particles_grid, block_dim>>>(particle_array, particle_array_next,
-		birth_particle_array, idx_array_resampled, joint_max, particle_count);
+		birth_particle_array, idx_array_resampled, new_weight, particle_count);
 
 	CHECK_ERROR(cudaGetLastError());
 }

@@ -80,11 +80,11 @@ __device__ Particle copy_particle(Particle* particle_array, int particle_count, 
 }
 
 __global__ void resamplingKernel(Particle* particle_array, Particle* particle_array_next, Particle* birth_particle_array,
-	int* idx_array_resampled, float joint_max, int particle_count)
+	int* idx_array_resampled, float new_weight, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		particle_array_next[i] = copy_particle(particle_array, particle_count, birth_particle_array, idx_array_resampled[i]);
-		particle_array_next[i].weight = joint_max / particle_count;
+		particle_array_next[i].weight = new_weight;
 	}
 }
