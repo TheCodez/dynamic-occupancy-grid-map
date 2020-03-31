@@ -29,5 +29,6 @@ struct GridCell;
 struct MeasurementCell;
 struct Particle;
 
-__global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, float* weight_array,
-	float* weight_array_accum, MeasurementCell* meas_cell_array, float* born_masses_array, float p_B, float p_S, int cell_count);
+__global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_array, Particle* __restrict__ particle_array,
+	float* __restrict__ weight_array, float* __restrict__ weight_array_accum, MeasurementCell* __restrict__ meas_cell_array,
+	float* __restrict__ born_masses_array, float p_B, float p_S, int cell_count);

@@ -31,19 +31,19 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__device__ void set_cell_idx_A(Particle* birth_particle_array, int i, int grid_cell_idx)
+__device__ void set_cell_idx_A(Particle* __restrict__ birth_particle_array, int i, int grid_cell_idx)
 {
 	birth_particle_array[i].grid_cell_idx = grid_cell_idx;
 	birth_particle_array[i].associated = true;
 }
 
-__device__ void set_cell_idx_UA(Particle* birth_particle_array, int i, int grid_cell_idx)
+__device__ void set_cell_idx_UA(Particle* __restrict__ birth_particle_array, int i, int grid_cell_idx)
 {
 	birth_particle_array[i].grid_cell_idx = grid_cell_idx;
 	birth_particle_array[i].associated = false;
 }
 
-__device__ int calc_start_idx(float* particle_orders_array_accum, int index)
+__device__ int calc_start_idx(float* __restrict__ particle_orders_array_accum, int index)
 {
 	if (index == 0)
 	{
@@ -53,7 +53,7 @@ __device__ int calc_start_idx(float* particle_orders_array_accum, int index)
 	return static_cast<int>(particle_orders_array_accum[index - 1]);
 }
 
-__device__ int calc_end_idx(float* particle_orders_array_accum, int index)
+__device__ int calc_end_idx(float* __restrict__ particle_orders_array_accum, int index)
 {
 	return static_cast<int>(particle_orders_array_accum[index]) - 1;
 }
@@ -73,7 +73,7 @@ __device__ float calc_weight_unassoc(int nu_UA, float p_A, float born_mass)
 	return nu_UA > 0 ? ((1.0 - p_A) * born_mass) / nu_UA : 0.0;
 }
 
-__device__ void store_weights(float w_A, float w_UA, GridCell* grid_cell_array, int j)
+__device__ void store_weights(float w_A, float w_UA, GridCell* __restrict__ grid_cell_array, int j)
 {
 	grid_cell_array[j].w_A = w_A;
 	grid_cell_array[j].w_UA = w_UA;
@@ -91,8 +91,9 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
 	});
 }
 
-__global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
-	float* weight_array, float* born_masses_array, Particle* birth_particle_array, float* particle_orders_array_accum, int cell_count)
+__global__ void initNewParticlesKernel1(Particle* __restrict__ particle_array, GridCell* __restrict__ grid_cell_array,
+	MeasurementCell* __restrict__ meas_cell_array, float* __restrict__ weight_array, float* __restrict__ born_masses_array,
+	Particle* __restrict__ birth_particle_array, float* __restrict__ particle_orders_array_accum, int cell_count)
 {
 	for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
 	{
@@ -123,8 +124,8 @@ __global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid
 	}
 }
 
-__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, curandState* global_state, 
-	float velocity, int grid_size, int particle_count)
+__global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_array, GridCell* __restrict__ grid_cell_array,
+	curandState* __restrict__ global_state, float velocity, int grid_size, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
@@ -158,7 +159,7 @@ __global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell
 	}
 }
 
-__global__ void copyBirthWeightKernel(Particle* birth_particle_array, float* birth_weight_array, int particle_count)
+__global__ void copyBirthWeightKernel(Particle* __restrict__ birth_particle_array, float* __restrict__ birth_weight_array, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{

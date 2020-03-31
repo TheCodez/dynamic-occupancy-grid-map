@@ -33,10 +33,12 @@ struct Particle;
 
 void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B);
 
-__global__ void initNewParticlesKernel1(Particle* particle_array, GridCell* grid_cell_array, MeasurementCell* meas_cell_array,
-	float* weight_array, float* born_masses_array, Particle* birth_particle_array, float* particle_orders_array_accum, int cell_count);
+__global__ void initNewParticlesKernel1(Particle* __restrict__ particle_array, GridCell* __restrict__ grid_cell_array, 
+	MeasurementCell* __restrict__ meas_cell_array, float* __restrict__ weight_array, float* __restrict__ born_masses_array,
+	Particle* __restrict__ birth_particle_array, float* __restrict__ particle_orders_array_accum, int cell_count);
 
-__global__ void initNewParticlesKernel2(Particle* birth_particle_array, GridCell* grid_cell_array, curandState* global_state, 
-	float velocity, int grid_size, int particle_count);
+__global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_array, GridCell* __restrict__ grid_cell_array, 
+	curandState* __restrict__ global_state, float velocity, int grid_size, int particle_count);
 
-__global__ void copyBirthWeightKernel(Particle* birth_particle_array, float* birth_weight_array, int particle_count);
+__global__ void copyBirthWeightKernel(Particle* __restrict__ birth_particle_array, float* __restrict__ birth_weight_array,
+	int particle_count);

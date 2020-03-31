@@ -29,10 +29,11 @@ struct GridCell;
 struct MeasurementCell;
 struct Particle;
 
-__global__ void updatePersistentParticlesKernel1(Particle* particle_array, MeasurementCell* meas_cell_array, float* weight_array,
-	int particle_count);
+__global__ void updatePersistentParticlesKernel1(Particle* __restrict__ particle_array, MeasurementCell* __restrict__ meas_cell_array,
+	float* __restrict__ weight_array, int particle_count);
 
-__global__ void updatePersistentParticlesKernel2(GridCell* grid_cell_array, float* weight_array_accum, int cell_count);
+__global__ void updatePersistentParticlesKernel2(GridCell* __restrict__ grid_cell_array, float* __restrict__ weight_array_accum,
+	int cell_count);
 
-__global__ void updatePersistentParticlesKernel3(Particle* particle_array, MeasurementCell* meas_cell_array, 
-	GridCell* grid_cell_array, float* weight_array, int particle_count);
+__global__ void updatePersistentParticlesKernel3(Particle* __restrict__ particle_array, MeasurementCell* __restrict__ meas_cell_array,
+	GridCell* __restrict__ grid_cell_array, float* __restrict__ weight_array, int particle_count);

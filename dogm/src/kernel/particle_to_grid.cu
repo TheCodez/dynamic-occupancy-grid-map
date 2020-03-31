@@ -30,17 +30,18 @@ SOFTWARE.
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-__device__ bool is_first_particle(Particle* particle_array, int i)
+__device__ bool is_first_particle(Particle* __restrict__ particle_array, int i)
 {
 	return i == 0 || particle_array[i].grid_cell_idx != particle_array[i - 1].grid_cell_idx;
 }
 
-__device__ bool is_last_particle(Particle* particle_array, int particle_count, int i)
+__device__ bool is_last_particle(Particle* __restrict__ particle_array, int particle_count, int i)
 {
 	return i == particle_count - 1 || particle_array[i].grid_cell_idx != particle_array[i + 1].grid_cell_idx;
 }
 
-__global__ void particleToGridKernel(Particle* particle_array, GridCell* grid_cell_array, float* weight_array, int particle_count)
+__global__ void particleToGridKernel(Particle* __restrict__ particle_array, GridCell* __restrict__ grid_cell_array, 
+	float* __restrict__ weight_array, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{

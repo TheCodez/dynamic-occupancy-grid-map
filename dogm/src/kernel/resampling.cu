@@ -30,7 +30,8 @@ SOFTWARE.
 #include <device_launch_parameters.h>
 #include <thrust/binary_search.h>
 
-__global__ void resamplingGenerateRandomNumbersKernel(float* rand_array, curandState* global_state, float max, int particle_count)
+__global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_array, curandState* __restrict__ global_state, float max,
+	int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
@@ -67,7 +68,8 @@ void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, th
 	thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(), indices.begin());
 }
 
-__device__ Particle copy_particle(Particle* particle_array, int particle_count, Particle* birth_particle_array, int idx)
+__device__ Particle copy_particle(Particle* __restrict__ particle_array, int particle_count, Particle* __restrict__ birth_particle_array,
+	int idx)
 {
 	if (idx < particle_count)
 	{
@@ -79,8 +81,8 @@ __device__ Particle copy_particle(Particle* particle_array, int particle_count, 
 	}
 }
 
-__global__ void resamplingKernel(Particle* particle_array, Particle* particle_array_next, Particle* birth_particle_array,
-	int* idx_array_resampled, float new_weight, int particle_count)
+__global__ void resamplingKernel(Particle* __restrict__ particle_array, Particle* __restrict__ particle_array_next,
+	Particle* __restrict__ birth_particle_array, int* __restrict__ idx_array_resampled, float new_weight, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{

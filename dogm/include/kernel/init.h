@@ -31,13 +31,16 @@ struct GridCell;
 struct MeasurementCell;
 struct Particle;
 
-__global__ void setupRandomStatesKernel(curandState* states, unsigned long long seed, int count);
+__global__ void setupRandomStatesKernel(curandState* __restrict__ states, unsigned long long seed, int count);
 
-__global__ void initParticlesKernel(Particle* particle_array, curandState* global_state, float velocity, int grid_size, int particle_count);
+__global__ void initParticlesKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state, 
+	float velocity, int grid_size, int particle_count);
 
-__global__ void initBirthParticlesKernel(Particle* birth_particle_array, curandState* global_state, float velocity, int grid_size,
+__global__ void initBirthParticlesKernel(Particle* __restrict__ birth_particle_array, curandState* __restrict__ global_state, 
+	float velocity, int grid_size,
 	int particle_count);
 
-__global__ void initGridCellsKernel(GridCell* grid_cell_array, MeasurementCell* meas_cell_array, int grid_size, int cell_count);
+__global__ void initGridCellsKernel(GridCell* __restrict__ grid_cell_array, MeasurementCell* __restrict__ meas_cell_array, 
+	int grid_size, int cell_count);
 
-__global__ void reinitGridParticleIndices(GridCell* grid_cell_array, int cell_count);
+__global__ void reinitGridParticleIndices(GridCell* __restrict__ grid_cell_array, int cell_count);
