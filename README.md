@@ -42,7 +42,7 @@ You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this proje
   - Download and install OpenCV Windows from [here](https://opencv.org/releases/).
 
 - GLFW3, GLEW, GLM:
-  - It is recomended to place all packages in a folder ```dogm/external```
+  - It is recommended to place all packages in a folder ```dogm/external```
     - Download [GLFW3 64-bit Windows binary](https://www.glfw.org/download.html), [GLEW binaries](http://glew.sourceforge.net/) and [GLM](https://github.com/g-truc/glm/releases)
     - Unzip all of them in the ```dogm/external``` folder.
 
