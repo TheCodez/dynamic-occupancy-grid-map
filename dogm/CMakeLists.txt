@@ -106,11 +106,11 @@ target_link_libraries(dogm
 	${GLEW_LIBRARY}
 )
 
-INSTALL(TARGETS dogm
-		ARCHIVE DESTINATION lib/dogm
-        LIBRARY DESTINATION lib/dogm
-        PUBLIC_HEADER DESTINATION include/dogm
-)
+#INSTALL(TARGETS dogm
+#		ARCHIVE DESTINATION lib/dogm
+#        LIBRARY DESTINATION lib/dogm
+#        PUBLIC_HEADER DESTINATION include/dogm
+#)
 
 add_executable(demo
 	demo/main.cpp
