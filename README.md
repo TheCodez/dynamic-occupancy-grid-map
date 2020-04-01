@@ -19,10 +19,6 @@ You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this proje
 
 ### Ubuntu 18.04
 - OpenCV: recommended to compile from source following the [official instructions](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html).
-- OpenGL (from [stackoverflow](https://stackoverflow.com/a/1988688/7260972)):
-    ```console
-    sudo apt install freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev
-    ```
 - GLFW3, GLEW, GLM:
     ```console
     sudo apt install libglfw3-dev libglew-dev libglm-dev
@@ -42,11 +38,28 @@ You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this proje
   - To verify that your CUDA installation is working, consider compiling and running one of the examples from /usr/local/cuda/samples. In particular ones that use OpenGL+CUDA, e.g. `samples/2_Graphics/Mandelbrot`.
 
 ### Windows 10
-TODO
+- OpenCV:
+  - Download and install OpenCV Windows from [here](https://opencv.org/releases/).
 
-## How to build and run
+- GLFW3, GLEW, GLM:
+  - It is recomended to place all packages in a folder ```dogm/external```
+    - Download [GLFW3 64-bit Windows binary](https://www.glfw.org/download.html), [GLEW binaries](http://glew.sourceforge.net/) and [GLM](https://github.com/g-truc/glm/releases)
+    - Unzip all of them in the ```dogm/external``` folder.
+
+  - In the end you should have a folder structure that's something like this:
+    - ```dogm/external/glew-2.1.0```
+    - ```dogm/external/glfw-3.3```
+    - ```dogm/external/glm```
+
+- CUDA:
+  - Have the most recent nvidia driver installed on your system, then check which CUDA version it supports
+  - Follow the corresponding instructions from the [cuda toolkit archive](https://developer.nvidia.com/cuda-toolkit-archive)
+
+## How to build
 
 Use CMake to build the project:
+
+### Ubuntu 18.04
 
 ```
 cd dogm
@@ -55,6 +68,16 @@ cd build
 cmake ..
 make
 ```
+
+### Windows 10
+
+On Windows it's easiest to use cmake-gui. Use it to configure and generate the project like shown below (required variables are marked with a red dot):
+
+<p align="center">
+  <img src="./docs/cmake-gui.png">
+</p>
+
+Afterwards open the generated ```.sln``` in Visual Studio and compile it.
 
 ## References
 
