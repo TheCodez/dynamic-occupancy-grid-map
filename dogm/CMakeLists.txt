@@ -3,8 +3,6 @@ project(DOGM LANGUAGES CXX CUDA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
-option(BUILD_TESTS "Build tests" ON)
-
 find_package(OpenGL REQUIRED)
 
 find_package(GLM)
