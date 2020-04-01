@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,8 @@ namespace dogm
 {
 
 __global__ void predictKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state, float velocity, int grid_size,
-	float p_S, const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count){
+	float p_S, const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count)
+{
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		curandState local_state = global_state[i];

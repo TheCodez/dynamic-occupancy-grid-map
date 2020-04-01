@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,10 @@ SOFTWARE.
 #include <device_launch_parameters.h>
 
 namespace dogm
-{__global__ void setupRandomStatesKernel(curandState* __restrict__ states, unsigned long long seed, int count){
+{
+	
+__global__ void setupRandomStatesKernel(curandState* __restrict__ states, unsigned long long seed, int count)
+{
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < count; i += blockDim.x * gridDim.x)
 	{
 		curand_init(seed, i, 0, &states[i]);

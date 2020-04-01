@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,8 @@ SOFTWARE.
 namespace dogm
 {
 
-__device__ bool is_first_particle(const Particle* __restrict__ particle_array, int i){
+__device__ bool is_first_particle(const Particle* __restrict__ particle_array, int i)
+{
 	return i == 0 || particle_array[i].grid_cell_idx != particle_array[i - 1].grid_cell_idx;
 }
 

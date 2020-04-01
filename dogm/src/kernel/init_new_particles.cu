@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,8 @@ SOFTWARE.
 namespace dogm
 {
 
-__device__ void set_cell_idx_A(Particle* __restrict__ birth_particle_array, int i, int grid_cell_idx){
+__device__ void set_cell_idx_A(Particle* __restrict__ birth_particle_array, int i, int grid_cell_idx)
+{
 	birth_particle_array[i].grid_cell_idx = grid_cell_idx;
 	birth_particle_array[i].associated = true;
 }

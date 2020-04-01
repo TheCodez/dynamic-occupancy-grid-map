@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,8 @@ SOFTWARE.
 namespace dogm
 {
 
-__device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, float alpha = 0.9){
+__device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, float alpha = 0.9)
+{
 	float m_free_pred = min(alpha * grid_cell.free_mass, 1.0 - m_occ_pred);
 
 	// limit free mass
