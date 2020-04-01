@@ -41,24 +41,24 @@ include_directories(
 )
 
 set(HEADERS_FILES
-	include/opengl/texture.h
-	include/opengl/framebuffer.h
-	include/opengl/polygon.h
-	include/opengl/renderer.h
-	include/opengl/shader.h
-	include/kernel/init.h
-	include/kernel/init_new_particles.h
-	include/kernel/mass_update.h
-	include/kernel/measurement_grid.h
-	include/kernel/particle_to_grid.h
-	include/kernel/predict.h
-	include/kernel/resampling.h
-	include/kernel/statistical_moments.h
-	include/kernel/update_persistent_particles.h
-	include/common.h
-	include/cuda_utils.h
-	include/dogm.h
-	include/dogm_types.h
+	include/dogm/opengl/texture.h
+	include/dogm/opengl/framebuffer.h
+	include/dogm/opengl/polygon.h
+	include/dogm/opengl/renderer.h
+	include/dogm/opengl/shader.h
+	include/dogm/kernel/init.h
+	include/dogm/kernel/init_new_particles.h
+	include/dogm/kernel/mass_update.h
+	include/dogm/kernel/measurement_grid.h
+	include/dogm/kernel/particle_to_grid.h
+	include/dogm/kernel/predict.h
+	include/dogm/kernel/resampling.h
+	include/dogm/kernel/statistical_moments.h
+	include/dogm/kernel/update_persistent_particles.h
+	include/dogm/common.h
+	include/dogm/cuda_utils.h
+	include/dogm/dogm.h
+	include/dogm/dogm_types.h
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS_FILES})
