@@ -32,9 +32,8 @@ SOFTWARE.
 namespace dogm
 {
 
-__global__ void predictKernel(Particle* particle_array, curandState* global_state, float velocity, int grid_size, float p_S,
-	const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count)
-{
+__global__ void predictKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state, float velocity, int grid_size,
+	float p_S, const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count){
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
 		curandState local_state = global_state[i];
@@ -53,8 +52,8 @@ __global__ void predictKernel(Particle* particle_array, curandState* global_stat
 
 		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
 		{
-			x = curand_uniform(&local_state, 0.0f, grid_size);
-			y = curand_uniform(&local_state, 0.0f, grid_size);
+			x = curand_uniform(&local_state, 0.0f, grid_size - 1);
+			y = curand_uniform(&local_state, 0.0f, grid_size - 1);
 			float vel_x = curand_normal(&local_state, 0.0f, velocity);
 			float vel_y = curand_normal(&local_state, 0.0f, velocity);
 

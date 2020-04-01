@@ -459,6 +459,9 @@ node_modules/
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
 
+# CLion, VS Code
+.idea/
+
 # Paket dependency manager
 .paket/paket.exe
 paket-files/
@@ -512,5 +515,8 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+# Ignore external dependencies
+dogm/external
 
 # End of https://www.gitignore.io/api/c++,cuda,cmake,linux,xcode,macos,windows,visualstudio

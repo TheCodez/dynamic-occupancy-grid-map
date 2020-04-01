@@ -46,6 +46,7 @@ inline int divUp(int total, int grain)
 
 inline __device__ float curand_uniform(curandState* state, float min, float max)
 {
+	// Change from (0, 1] to [0, 1)
 	float rand = curand_uniform(state);
 	float rand_reversed = rand == 1.0f ? 0.0f : rand;
 
@@ -54,5 +55,4 @@ inline __device__ float curand_uniform(curandState* state, float min, float max)
 
 inline __device__ float curand_normal(curandState* state, float mean, float stddev)
 {
-	return curand_normal(state) *stddev + mean;
 }

@@ -32,8 +32,7 @@ SOFTWARE.
 namespace dogm
 {
 
-__device__ float calc_mean(float* vel_array_accum, int start_idx, int end_idx, float rho_p)
-{
+__device__ float calc_mean(const float* __restrict__ vel_array_accum, int start_idx, int end_idx, float rho_p){
 	if (rho_p > 0.0f)
 	{
 		float vel_accum = subtract(vel_array_accum, start_idx, end_idx);
@@ -42,7 +41,7 @@ __device__ float calc_mean(float* vel_array_accum, int start_idx, int end_idx, f
 	return 0.0f;
 }
 
-__device__ float calc_variance(float* vel_squared_array_accum, int start_idx, int end_idx, float rho_p, float mean_vel)
+__device__ float calc_variance(const float* __restrict__ vel_squared_array_accum, int start_idx, int end_idx, float rho_p, float mean_vel)
 {
 	if (rho_p > 0.0f)
 	{
@@ -52,7 +51,8 @@ __device__ float calc_variance(float* vel_squared_array_accum, int start_idx, in
 	return 0.0f;
 }
 
-__device__ float calc_covariance(float* vel_xy_array_accum, int start_idx, int end_idx, float rho_p, float mean_x_vel, float mean_y_vel)
+__device__ float calc_covariance(const float* __restrict__ vel_xy_array_accum, int start_idx, int end_idx, float rho_p,
+	float mean_x_vel, float mean_y_vel)
 {
 	if (rho_p > 0.0f)
 	{
@@ -62,7 +62,7 @@ __device__ float calc_covariance(float* vel_xy_array_accum, int start_idx, int e
 	return 0.0f;
 }
 
-__device__ void store(GridCell* grid_cell_array, int j, float mean_x_vel, float mean_y_vel, float var_x_vel, float var_y_vel,
+__device__ void store(GridCell* __restrict__ grid_cell_array, int j, float mean_x_vel, float mean_y_vel, float var_x_vel, float var_y_vel,
 	float covar_xy_vel)
 {
 	grid_cell_array[j].mean_x_vel = mean_x_vel;
@@ -72,8 +72,9 @@ __device__ void store(GridCell* grid_cell_array, int j, float mean_x_vel, float 
 	grid_cell_array[j].covar_xy_vel = covar_xy_vel;
 }
 
-__global__ void statisticalMomentsKernel1(Particle* particle_array, float* weight_array, float* vel_x_array, float* vel_y_array,
-	float* vel_x_squared_array, float* vel_y_squared_array, float* vel_xy_array, int particle_count)
+__global__ void statisticalMomentsKernel1(const Particle* __restrict__ particle_array, const float* __restrict__ weight_array,
+	float* __restrict__ vel_x_array, float* __restrict__ vel_y_array, float* __restrict__ vel_x_squared_array, 
+	float* __restrict__ vel_y_squared_array, float* __restrict__ vel_xy_array, int particle_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
 	{
@@ -90,8 +91,9 @@ __global__ void statisticalMomentsKernel1(Particle* particle_array, float* weigh
 	}
 }
 
-__global__ void statisticalMomentsKernel2(GridCell* grid_cell_array, float* vel_x_array_accum, float* vel_y_array_accum,
-	float* vel_x_squared_array_accum, float* vel_y_squared_array_accum, float* vel_xy_array_accum, int cell_count)
+__global__ void statisticalMomentsKernel2(GridCell* __restrict__ grid_cell_array, const float* __restrict__ vel_x_array_accum,
+	const float* __restrict__ vel_y_array_accum, const float* __restrict__ vel_x_squared_array_accum, 
+	const float* __restrict__ vel_y_squared_array_accum, const float* __restrict__ vel_xy_array_accum, int cell_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{

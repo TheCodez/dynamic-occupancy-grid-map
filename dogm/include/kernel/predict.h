@@ -32,7 +32,8 @@ namespace dogm
 
 struct Particle;
 
-__global__ void predictKernel(Particle* particle_array, curandState* global_state, float velocity, int grid_size, float p_S, 
-	const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count);
+__global__ void predictKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state, float velocity,
+	int grid_size, float p_S, const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity,
+	int particle_count);
 
 } /* namespace dogm */

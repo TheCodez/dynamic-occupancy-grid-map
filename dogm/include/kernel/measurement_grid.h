@@ -30,14 +30,17 @@ namespace dogm
 
 struct MeasurementCell;
 
-__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution);
+__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements, int width, int height,
+	float resolution);
 
-__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, MeasurementCell* polar_meas_grid, float* measurements, int width, int height, float resolution);
+__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, MeasurementCell* __restrict__ polar_meas_grid, 
+	const float* __restrict__ measurements, int width, int height, float resolution);
 
-__global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, float* measurements, int width, int height, float resolution);
+__global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements, int width, int height,
+	float resolution);
 
-__global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* meas_grid, cudaSurfaceObject_t cart, int grid_size);
+__global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* __restrict__ meas_grid, cudaSurfaceObject_t cart, int grid_size);
 
-__global__ void gridArrayToMeasurementGridKernel(MeasurementCell* meas_grid, float2* grid, int grid_size);
+__global__ void gridArrayToMeasurementGridKernel(MeasurementCell* __restrict__ meas_grid, const float2* __restrict__ grid, int grid_size);
 
 } /* namespace dogm */

@@ -32,8 +32,7 @@ SOFTWARE.
 namespace dogm
 {
 
-__device__ float predict_free_mass(GridCell& grid_cell, float m_occ_pred, float alpha = 0.9)
-{
+__device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, float alpha = 0.9){
 	float m_free_pred = min(alpha * grid_cell.free_mass, 1.0 - m_occ_pred);
 
 	// limit free mass
@@ -71,7 +70,7 @@ __device__ float separate_newborn_part(float m_occ_pred, float m_occ_up, float p
 	return (m_occ_up * p_B * (1.0 - m_occ_pred)) / (m_occ_pred + p_B * (1.0 - m_occ_pred));
 }
 
-__device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_occ_up, GridCell* grid_cell_array, int i)
+__device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_occ_up, GridCell* __restrict__ grid_cell_array, int i)
 {
 	grid_cell_array[i].pers_occ_mass = rho_p;
 	grid_cell_array[i].new_born_occ_mass = rho_b;
@@ -79,7 +78,8 @@ __device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_
 	grid_cell_array[i].occ_mass = m_occ_up;
 }
 
-__device__ void normalize_to_pS(Particle* particle_array, float* weight_array, float p_S, int start_idx, int end_idx)
+__device__ void normalize_to_pS(Particle* __restrict__ particle_array, float* __restrict__ weight_array, float p_S,
+	int start_idx, int end_idx)
 {
 	float sum = 0.0f;
 	for (int i = start_idx; i < end_idx + 1; i++)
@@ -94,8 +94,9 @@ __device__ void normalize_to_pS(Particle* particle_array, float* weight_array, f
 	}
 }
 
-__global__ void gridCellPredictionUpdateKernel(GridCell* grid_cell_array, Particle* particle_array, float* weight_array,
-	float* weight_array_accum, MeasurementCell* meas_cell_array, float* born_masses_array, float p_B, float p_S, int cell_count)
+__global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_array, Particle* __restrict__ particle_array,
+	float* __restrict__ weight_array, const float* __restrict__ weight_array_accum, const MeasurementCell* __restrict__ meas_cell_array,
+	float* __restrict__ born_masses_array, float p_B, float p_S, int cell_count)
 {
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
 	{
