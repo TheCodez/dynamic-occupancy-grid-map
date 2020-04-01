@@ -23,7 +23,6 @@ SOFTWARE.
 */
 #pragma once
 
-#include "dogm.h"
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
 
