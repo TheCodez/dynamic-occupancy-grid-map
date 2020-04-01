@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Michael Kösel
+Copyright (c) 2019 Michael KÃ¶sel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include "kernel/update_persistent_particles.h"
-#include "common.h"
-#include "cuda_utils.h"
-#include "dogm_types.h"
+#include "dogm/kernel/update_persistent_particles.h"
+#include "dogm/common.h"
+#include "dogm/cuda_utils.h"
+#include "dogm/dogm_types.h"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>

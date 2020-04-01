@@ -21,10 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include "kernel/predict.h"
-#include "cuda_utils.h"
-#include "common.h"
-#include "dogm_types.h"
+#include "dogm/kernel/predict.h"
+#include "dogm/cuda_utils.h"
+#include "dogm/common.h"
+#include "dogm/dogm_types.h"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
