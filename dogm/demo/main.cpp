@@ -68,7 +68,7 @@ struct Vehicle
 
 struct Simulator
 {
-	Simulator(int num_measurements) : num_measurements(num_measurements) {}
+	explicit Simulator(int num_measurements) : num_measurements(num_measurements) {}
 
 	void addVehicle(const Vehicle& vehicle)
 	{
@@ -87,9 +87,9 @@ struct Simulator
 			{
 				vehicle.move(dt);
 
-				for (int i = 0; i < vehicle.width; i++)
+				for (int j = 0; j < vehicle.width; j++)
 				{
-					int index = static_cast<int>(vehicle.pos.x) + i;
+					int index = static_cast<int>(vehicle.pos.x) + j;
 					measurement[index] = vehicle.pos.y;
 				}
 			}
@@ -179,7 +179,7 @@ cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
 
 			const dogm::MeasurementCell& cell = grid_map.meas_cell_array[index];
 			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
-			uchar temp = static_cast<uchar>(floor(occ * 255));
+			const auto temp = static_cast<uchar>(floor(occ * 255));
 			grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
 		}
 	}
@@ -238,7 +238,7 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, f
 
 			const dogm::GridCell& cell = grid_map.grid_cell_array[index];
 			float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
-			uchar temp = static_cast<uchar>(floor(occ * 255));
+			const auto temp = static_cast<uchar>(floor(occ * 255));
 
 			cv::Mat vel_img(2, 1, CV_32FC1);
 			vel_img.at<float>(0) = cell.mean_x_vel;
