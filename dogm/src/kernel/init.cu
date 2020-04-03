@@ -49,8 +49,8 @@ __global__ void initParticlesKernel(Particle* __restrict__ particle_array, curan
 
 		float x = curand_uniform(&local_state, 0.0f, grid_size - 1);
 		float y = curand_uniform(&local_state, 0.0f, grid_size - 1);
-		float vel_x = curand_normal(&local_state, 0.0f, velocity);
-		float vel_y = curand_normal(&local_state, 0.0f, velocity);
+		float vel_x = curand_uniform(&local_state, -velocity, velocity);
+		float vel_y = curand_uniform(&local_state, -velocity, velocity);
 
 		particle_array[i].weight = 1.0f / particle_count;
 		particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
