@@ -199,8 +199,9 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, f
 				
 				//printf("Angle: %f\n", angle);
 
-				const auto hsv_value_opencv = static_cast<uint8_t>(angle*0.5F);
-				cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(hsv_value_opencv, 255, 255)};
+				// OpenCV hue range is [0, 179], see https://docs.opencv.org/3.2.0/df/d9d/tutorial_py_colorspaces.html
+				const auto hue_opencv = static_cast<uint8_t>(angle*0.5F);
+				cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(hue_opencv, 255, 255)};
 				cv::Mat rgb{1, 1, CV_8UC3}; cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
 				grid_img.at<cv::Vec3b>(y, x) = rgb.at<cv::Vec3b>(0,0);
 
