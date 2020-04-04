@@ -104,65 +104,6 @@ struct Simulator
 	std::vector<Vehicle> vehicles;
 };
 
-void hsv_to_rgb(float hue, float saturation, float value, int& R, int& G, int& B)
-{
-	float r, g, b = 0.0f;
-
-	if (saturation == 0.0f)
-	{
-		r = g = b = value;
-	}
-	else
-	{
-		int i = static_cast<int>(hue * 6.0f);
-		float f = (hue * 6.0f) - i;
-		float p = value * (1.0f - saturation);
-		float q = value * (1.0f - saturation * f);
-		float t = value * (1.0f - saturation * (1.0f - f));
-		int res = i % 6;
-
-		switch (res)
-		{
-		case 0:
-			r = value;
-			g = t;
-			b = p;
-			break;
-		case 1:
-			r = q;
-			g = value;
-			b = p;
-			break;
-		case 2:
-			r = p;
-			g = value;
-			b = t;
-			break;
-		case 3:
-			r = p;
-			g = q;
-			b = value;
-			break;
-		case 4:
-			r = t;
-			g = p;
-			b = value;
-			break;
-		case 5:
-			r = value;
-			g = p;
-			b = q;
-			break;
-		default:
-			r = g = b = value;
-		}
-	}
-
-	R = static_cast<int>(r * 255.0f);
-	G = static_cast<int>(g * 255.0f);
-	B = static_cast<int>(b * 255.0f);
-}
-
 float pignistic_transformation(float free_mass, float occ_mass)
 {
 	return occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
@@ -258,9 +199,10 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, f
 				
 				//printf("Angle: %f\n", angle);
 
-				int r, g, b;
-				hsv_to_rgb(angle / 360.0f, 1.0f, 1.0f, r, g, b);
-				grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(r, g, b);
+				const auto hsv_value_opencv = static_cast<uint8_t>(angle*0.5F);
+				cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(hsv_value_opencv, 255, 255)};
+				cv::Mat rgb{1, 1, CV_8UC3}; cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
+				grid_img.at<cv::Vec3b>(y, x) = rgb.at<cv::Vec3b>(0,0);
 
 				//printf("Vel Y: %f\n", cell.mean_y_vel);
 			}
