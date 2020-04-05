@@ -254,59 +254,70 @@ std::vector<float2> load_measurement_from_image(const std::string &file_name)
     return meas_grid;
 }
 
-void addColorWheelToLowerRight(cv::Mat &img, const float relative_size = 0.2, const size_t angle_offset = 0)
+void createColorWheelImageAndMask(cv::Mat &destination_image, cv::Mat &destination_mask, const size_t hue_offset)
 {
     // Set linear gradient (180 levels). Needed because the OpenCV hue range is [0, 179], see
     // https://docs.opencv.org/3.2.0/df/d9d/tutorial_py_colorspaces.html
-    const size_t edge_length = 180;
-    cv::Mat lines(edge_length, edge_length, CV_8UC3, cv::Scalar(0));
+    const size_t hue_steps = 180;
+    cv::Mat hue_image(hue_steps, hue_steps, CV_8UC3, cv::Scalar(0));
+    cv::Mat mask(hue_image.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+
     cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(0, 255, 255)};
     cv::Mat rgb{1, 1, CV_8UC3};
-    for (int r = 0; r < lines.rows; r++)
+    for (int hue = 0; hue < hue_image.rows; hue++)
     {
-        hsv.at<cv::Vec3b>(0, 0) = cv::Vec3b((r + angle_offset) % 180, 255, 255);
+        hsv.at<uchar>(0, 0, 0) = (hue + hue_offset) % 180;
         cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
-        lines.row(r).setTo(rgb.at<cv::Vec3b>(0, 0));
+        hue_image.row(hue).setTo(rgb.at<cv::Vec3b>(0, 0));
     }
 
-    // Convert to polar (needs WARP_INVERSE_MAP flag)
-    cv::linearPolar(lines, lines, cv::Point(lines.cols / 2, lines.rows / 2), 255,
+    cv::linearPolar(hue_image, hue_image, cv::Point(hue_image.cols / 2, hue_image.rows / 2), 255,
                     cv::INTER_CUBIC | cv::WARP_FILL_OUTLIERS | cv::WARP_INVERSE_MAP);
 
-    cv::Mat mask(lines.size(), CV_8UC3, cv::Scalar(0, 0, 0));
-    cv::circle(mask, cv::Point(mask.cols / 2, mask.rows / 2), lines.rows / 2, cv::Scalar(255, 255, 255), -1);
-    cv::circle(mask, cv::Point(mask.cols / 2, mask.rows / 2), lines.rows / 4, cv::Scalar(0, 0, 0), -1);
-    cv::Mat circle_gradient;
-    lines.copyTo(circle_gradient, mask);
-    // cv::imshow("Circle Gradient", circle_gradient);
+    cv::circle(mask, cv::Point(mask.cols / 2, mask.rows / 2), hue_image.rows / 2, cv::Scalar(1, 1, 1), -1);
+    cv::circle(mask, cv::Point(mask.cols / 2, mask.rows / 2), hue_image.rows / 4, cv::Scalar(0, 0, 0), -1);
+    hue_image.copyTo(destination_image, mask);
+    mask.copyTo(destination_mask);
+}
 
-    // Use mask for alpha addition
-    mask /= 255;
+void resizeImagesRelativeToShorterEdge(const cv::Mat &original_img, const float relative_size,
+                                       std::vector<cv::Mat> imgs)
+{
+    const float edge_length{std::min(original_img.cols, original_img.rows) * relative_size};
+    for (auto &img : imgs)
+    {
+        cv::resize(img, img, cv::Size(edge_length, edge_length));
+    }
+}
 
-    // Resize
-    cv::resize(circle_gradient, circle_gradient, cv::Size(img.cols * relative_size, img.rows * relative_size));
-    cv::resize(mask, mask, cv::Size(img.cols * relative_size, img.rows * relative_size));
-
-    // const size_t edge_img = 800;
-    cv::Rect roi = cv::Rect(img.cols - circle_gradient.cols, img.rows - circle_gradient.rows, circle_gradient.cols,
-                            circle_gradient.rows);
-
-    // Set the ROIs for the selected sections of A and out_image (the same at the moment)
+void blendIntoImage(cv::Mat &img, cv::Mat &img_to_blend_in, const cv::Mat &alpha_mask_of_img_to_blend_in)
+{
+    cv::Rect roi = cv::Rect(img.cols - img_to_blend_in.cols, img.rows - img_to_blend_in.rows, img_to_blend_in.cols,
+                            img_to_blend_in.rows);
     cv::Mat img_roi = img(roi);
-    cv::multiply(cv::Scalar::all(1.0) - mask, img_roi, img_roi);
-    cv::Mat out_image_roi = img(roi);
+    // cv::Mat my_mask{};
+    // cv::threshold(img_to_blend_in, my_mask, cv::Scalar())
+    cv::multiply(cv::Scalar::all(1.0) - alpha_mask_of_img_to_blend_in, img_roi, img_roi);
+    cv::addWeighted(img_roi, 1.0F, img_to_blend_in, 1.0F, 0.0, img_roi);
+}
 
-    // Blend the ROI of A with B into the ROI of out_image
-    const float alpha = 0.0F;
-    cv::addWeighted(img_roi, 1.0F, circle_gradient, 1.0F, 0.0, out_image_roi);
+void addColorWheelToLowerRight(cv::Mat &img, const float relative_size = 0.2, const size_t hue_offset = 0)
+{
+    cv::Mat color_wheel_rgb{};
+    cv::Mat color_wheel_mask{};
+    createColorWheelImageAndMask(color_wheel_rgb, color_wheel_mask, hue_offset);
+
+    resizeImagesRelativeToShorterEdge(img, relative_size, {color_wheel_rgb, color_wheel_mask});
+
+    blendIntoImage(img, color_wheel_rgb, color_wheel_mask);
 }
 
 int main(int argc, const char **argv)
 {
 
     const size_t edge_img = 800;
-    cv::Mat img(edge_img, edge_img, CV_8UC3, cv::Scalar(100, 100, 100));
-    addColorWheelToLowerRight(img, 0.1, 0);
+    cv::Mat img(edge_img, 1.5 * edge_img, CV_8UC3, cv::Scalar(100, 100, 100));
+    addColorWheelToLowerRight(img, 0.15, 0);
     cv::imshow("Added images", img);
 
     cv::waitKey(0);
