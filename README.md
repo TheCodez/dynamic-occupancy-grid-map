@@ -79,6 +79,16 @@ On Windows it's easiest to use cmake-gui. Use it to configure and generate the p
 
 Afterwards open the generated ```.sln``` in Visual Studio and compile it.
 
+## Contributing
+
+Contributions are welcome. Please make sure to apply `clang-format` to your code, e.g. by manually executing
+
+```console
+find dogm/include dogm/src -iname '*.h' -o -iname '*.cpp' -o -iname '*.cu' | xargs clang-format -i
+```
+
+or including this formatting in your editor/IDE.
+
 ## References
 
 Nuss et al. ["A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application"](https://arxiv.org/abs/1605.02406)

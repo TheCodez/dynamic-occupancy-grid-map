@@ -23,17 +23,17 @@ SOFTWARE.
 */
 #pragma once
 
-#include <glm/glm.hpp>
-#include <device_launch_parameters.h>
 #include <curand_kernel.h>
+#include <device_launch_parameters.h>
+#include <glm/glm.hpp>
 
 namespace dogm
 {
 
 struct Particle;
 
-__global__ void predictKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state, float velocity,
-	int grid_size, float p_S, const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity,
-	int particle_count);
+__global__ void predictKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state,
+                              float velocity, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
+                              float process_noise_position, float process_noise_velocity, int particle_count);
 
 } /* namespace dogm */
