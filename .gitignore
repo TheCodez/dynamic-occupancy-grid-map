@@ -459,8 +459,11 @@ node_modules/
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
 
-# CLion, VS Code
+# CLion
 .idea/
+
+# VS Code
+.vscode/
 
 # Paket dependency manager
 .paket/paket.exe
