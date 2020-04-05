@@ -207,7 +207,12 @@ void DOGM::particlePrediction(float dt)
 {
     // std::cout << "DOGM::particlePrediction" << std::endl;
 
-    glm::mat4x4 transition_matrix(1, 0, dt, 0, 0, 1, 0, dt, 0, 0, 1, 0, 0, 0, 0, 1);
+    // clang-format off
+    glm::mat4x4 transition_matrix(1, 0, dt, 0,
+                                  0, 1, 0, dt,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1);
+    // clang-format on
 
     // FIXME: glm uses column major, we need row major
     transition_matrix = glm::transpose(transition_matrix);
