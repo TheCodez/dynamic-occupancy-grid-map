@@ -160,6 +160,80 @@ cv::Mat compute_raw_polar_measurement_grid_image(const dogm::DOGM &grid_map)
     return grid_img;
 }
 
+cv::Mat createCircularColorGradient(const size_t hue_offset)
+{
+    // Set linear gradient (180 levels). Needed because the OpenCV hue range is [0, 179], see
+    // https://docs.opencv.org/3.2.0/df/d9d/tutorial_py_colorspaces.html
+    const size_t hue_steps = 180;
+    cv::Mat hue_image{hue_steps, hue_steps, CV_8UC3, cv::Scalar(0)};
+    const cv::Point image_center{hue_image.cols / 2, hue_image.rows / 2};
+    cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(0, 255, 255)};
+    cv::Mat rgb{1, 1, CV_8UC3};
+    for (int hue = 0; hue < hue_image.rows; ++hue)
+    {
+        hsv.at<uchar>(0, 0, 0) = (hue + hue_offset) % 180;
+        cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
+        hue_image.row(hue).setTo(rgb.at<cv::Vec3b>(0, 0));
+    }
+    cv::linearPolar(hue_image, hue_image, image_center, 255,
+                    cv::INTER_CUBIC | cv::WARP_FILL_OUTLIERS | cv::WARP_INVERSE_MAP);
+    return hue_image;
+}
+
+cv::Mat createCircleMask(const cv::Size2d &size)
+{
+    cv::Mat mask{size, CV_8UC3, cv::Scalar(0, 0, 0)};
+    const cv::Point image_center{mask.cols / 2, mask.rows / 2};
+    const float outer_radius = mask.rows / 2;
+    const float inner_radius = mask.rows / 4;
+    cv::circle(mask, image_center, outer_radius, cv::Scalar(1, 1, 1), -1);
+    cv::circle(mask, image_center, inner_radius, cv::Scalar(0, 0, 0), -1);
+    return mask;
+}
+
+cv::Mat createColorWheel(const size_t hue_offset = 0)
+{
+    cv::Mat circular_color_gradient = createCircularColorGradient(hue_offset);
+    cv::Mat circle_mask = createCircleMask(circular_color_gradient.size());
+
+    cv::Mat color_wheel{};
+    circular_color_gradient.copyTo(color_wheel, circle_mask);
+    return color_wheel;
+}
+
+void resizeRelativeToShorterEdge(const cv::Mat &original_image, const float relative_size, cv::Mat &destination_image)
+{
+    const float target_edge_length = std::min(original_image.cols, original_image.rows) * relative_size;
+    cv::resize(destination_image, destination_image, cv::Size(target_edge_length, target_edge_length));
+}
+
+cv::Mat createFullSaturationFullValueAlphaMaskOf(const cv::Mat &img)
+{
+    cv::Mat mask{};
+    cv::Mat img_hsv{};
+    cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);
+    cv::inRange(img_hsv, cv::Scalar(0, 254, 254), cv::Scalar(180, 255, 255), mask);
+    cv::cvtColor(mask, mask, cv::COLOR_GRAY2RGB);
+    return mask;
+}
+
+void blendIntoBottomRightCorner(cv::Mat &img_to_blend_in, cv::Mat &img)
+{
+    const cv::Rect roi{img.cols - img_to_blend_in.cols, img.rows - img_to_blend_in.rows, img_to_blend_in.cols,
+                       img_to_blend_in.rows};
+    cv::Mat img_roi = img(roi);
+    cv::Mat mask = createFullSaturationFullValueAlphaMaskOf(img_to_blend_in);
+    cv::multiply(cv::Scalar::all(1.0) - mask, img_roi, img_roi);
+    cv::addWeighted(img_roi, 1.0F, img_to_blend_in, 1.0F, 0.0, img_roi);
+}
+
+void addColorWheelToBottomRightCorner(cv::Mat &img, const float relative_size = 0.2, const size_t hue_offset = 0)
+{
+    cv::Mat color_wheel = createColorWheel(hue_offset);
+    resizeRelativeToShorterEdge(img, relative_size, color_wheel);
+    blendIntoBottomRightCorner(color_wheel, img);
+}
+
 cv::Mat compute_dogm_image(const dogm::DOGM &grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
 {
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
@@ -208,6 +282,8 @@ cv::Mat compute_dogm_image(const dogm::DOGM &grid_map, float occ_tresh = 0.7f, f
         }
     }
 
+    addColorWheelToBottomRightCorner(grid_img, 0.15, 0);
+
     return grid_img;
 }
 
@@ -254,91 +330,8 @@ std::vector<float2> load_measurement_from_image(const std::string &file_name)
     return meas_grid;
 }
 
-cv::Mat createCircularColorGradient(const size_t hue_offset)
-{
-    // Set linear gradient (180 levels). Needed because the OpenCV hue range is [0, 179], see
-    // https://docs.opencv.org/3.2.0/df/d9d/tutorial_py_colorspaces.html
-    const size_t hue_steps = 180;
-    cv::Mat hue_image(hue_steps, hue_steps, CV_8UC3, cv::Scalar(0));
-    const cv::Point image_center{hue_image.cols / 2, hue_image.rows / 2};
-    cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(0, 255, 255)};
-    cv::Mat rgb{1, 1, CV_8UC3};
-    for (int hue = 0; hue < hue_image.rows; hue++)
-    {
-        hsv.at<uchar>(0, 0, 0) = (hue + hue_offset) % 180;
-        cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
-        hue_image.row(hue).setTo(rgb.at<cv::Vec3b>(0, 0));
-    }
-    cv::linearPolar(hue_image, hue_image, image_center, 255,
-                    cv::INTER_CUBIC | cv::WARP_FILL_OUTLIERS | cv::WARP_INVERSE_MAP);
-    return hue_image;
-}
-
-cv::Mat createCircleMask(const cv::Size2d &size)
-{
-    cv::Mat mask(size, CV_8UC3, cv::Scalar(0, 0, 0));
-    const cv::Point image_center{mask.cols / 2, mask.rows / 2};
-    const float outer_radius = mask.rows / 2;
-    const float inner_radius = mask.rows / 4;
-    cv::circle(mask, image_center, outer_radius, cv::Scalar(1, 1, 1), -1);
-    cv::circle(mask, image_center, inner_radius, cv::Scalar(0, 0, 0), -1);
-    return mask;
-}
-
-cv::Mat createColorWheel(const size_t hue_offset = 0)
-{
-    cv::Mat circular_color_gradient = createCircularColorGradient(hue_offset);
-    cv::Mat circle_mask = createCircleMask(circular_color_gradient.size());
-
-    cv::Mat color_wheel{};
-    circular_color_gradient.copyTo(color_wheel, circle_mask);
-    return color_wheel;
-}
-
-void resizeRelativeToShorterEdge(const cv::Mat &original_image, const float relative_size, cv::Mat &destination_image)
-{
-    const float target_edge_length{std::min(original_image.cols, original_image.rows) * relative_size};
-    cv::resize(destination_image, destination_image, cv::Size(target_edge_length, target_edge_length));
-}
-
-cv::Mat createFullSaturationFullValueAlphaMaskOf(const cv::Mat &img)
-{
-    cv::Mat mask{};
-    cv::Mat img_hsv{};
-    cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);
-    cv::inRange(img_hsv, cv::Scalar(0, 254, 254), cv::Scalar(180, 255, 255), mask);
-    cv::cvtColor(mask, mask, cv::COLOR_GRAY2RGB);
-    return mask;
-}
-
-void blendIntoBottomRightCorner(cv::Mat &img_to_blend_in, cv::Mat &img)
-{
-    const cv::Rect roi = cv::Rect(img.cols - img_to_blend_in.cols, img.rows - img_to_blend_in.rows,
-                                  img_to_blend_in.cols, img_to_blend_in.rows);
-    cv::Mat img_roi = img(roi);
-    cv::Mat mask = createFullSaturationFullValueAlphaMaskOf(img_to_blend_in);
-    cv::multiply(cv::Scalar::all(1.0) - mask, img_roi, img_roi);
-    cv::addWeighted(img_roi, 1.0F, img_to_blend_in, 1.0F, 0.0, img_roi);
-}
-
-void addColorWheelToBottomRightCorner(cv::Mat &img, const float relative_size = 0.2, const size_t hue_offset = 0)
-{
-    cv::Mat color_wheel = createColorWheel(hue_offset);
-    resizeRelativeToShorterEdge(img, relative_size, color_wheel);
-    blendIntoBottomRightCorner(color_wheel, img);
-}
-
 int main(int argc, const char **argv)
 {
-
-    const size_t edge_img = 800;
-    cv::Mat img(edge_img, 1.5 * edge_img, CV_8UC3, cv::Scalar(100, 100, 100));
-    addColorWheelToBottomRightCorner(img, 0.15, 0);
-    cv::imshow("Added images", img);
-
-    cv::waitKey(0);
-    exit(0);
-
     std::vector<std::vector<float2>> mg_meas;
 
     for (int i = 0; i < 10; i++)
@@ -346,7 +339,6 @@ int main(int argc, const char **argv)
         std::vector<float2> grid = load_measurement_from_image(cv::format("meas_grids/meas_grid%d.png", i));
         mg_meas.push_back(grid);
     }
-    std::cout << "Here A\n";
 
 #if 0
 	dogm::GridParams params;
@@ -389,9 +381,7 @@ int main(int argc, const char **argv)
     laser_params.fov = 120.0f;
     laser_params.max_range = 50.0f;
 
-    std::cout << "Here B\n";
     dogm::DOGM grid_map(params, laser_params);
-    std::cout << "Here C\n";
 
     Simulator simulator(100);
     simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
@@ -402,9 +392,7 @@ int main(int argc, const char **argv)
     simulator.addVehicle(Vehicle(5, glm::vec2(80, 24), glm::vec2(-15, -5)));
 
     float delta_time = 0.1f;
-    std::cout << "Here D\n";
     std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
-    std::cout << "Here E\n";
 
     for (int i = 0; i < sim_measurements.size(); i++)
     {
