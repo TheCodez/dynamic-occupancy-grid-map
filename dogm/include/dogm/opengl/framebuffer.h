@@ -29,19 +29,18 @@ SOFTWARE.
 class Framebuffer
 {
 public:
-	Framebuffer(int width, int height);
-	~Framebuffer();
+    Framebuffer(int width, int height);
+    ~Framebuffer();
 
-	void beginCudaAccess(cudaSurfaceObject_t* surfaceObject);
-	void endCudaAccess(cudaSurfaceObject_t surfaceObject);
+    void beginCudaAccess(cudaSurfaceObject_t* surfaceObject);
+    void endCudaAccess(cudaSurfaceObject_t surfaceObject);
 
-	void bind();
-	void unbind();
+    void bind();
+    void unbind();
 
 private:
-	GLuint framebuffer;
-	GLuint texture;
+    GLuint framebuffer;
+    GLuint texture;
 
-	cudaGraphicsResource_t resource;
+    cudaGraphicsResource_t resource;
 };
-

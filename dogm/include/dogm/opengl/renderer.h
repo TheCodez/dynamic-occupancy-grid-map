@@ -27,33 +27,32 @@ SOFTWARE.
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "framebuffer.h"
 #include "polygon.h"
 #include "shader.h"
 #include "texture.h"
-#include "framebuffer.h"
 
 #include <vector>
 
 class Renderer
 {
 public:
-	Renderer(int grid_size, float fov, float grid_range, float max_range);
-	~Renderer();
+    Renderer(int grid_size, float fov, float grid_range, float max_range);
+    ~Renderer();
 
-	void renderToTexture(Texture& polar_texture);
+    void renderToTexture(Texture& polar_texture);
 
-	Framebuffer* getFrameBuffer() const { return framebuffer; }
-
-private:
-	void generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy);
+    Framebuffer* getFrameBuffer() const { return framebuffer; }
 
 private:
-	int grid_size;
+    void generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy);
 
-	Polygon* polygon;
-	Shader* shader;
-	Framebuffer* framebuffer;
+private:
+    int grid_size;
 
-	GLFWwindow* window;
+    Polygon* polygon;
+    Shader* shader;
+    Framebuffer* framebuffer;
+
+    GLFWwindow* window;
 };
-

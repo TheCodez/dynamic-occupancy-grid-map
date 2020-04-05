@@ -55,48 +55,45 @@ const char* fragment_source = R"glsl(
 
 Shader::Shader()
 {
-	program = glCreateProgram();
+    program = glCreateProgram();
 
-	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, &vertex_source, nullptr);
-	glCompileShader(vertex_shader);
-	checkShaderError(vertex_shader);
+    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader, 1, &vertex_source, nullptr);
+    glCompileShader(vertex_shader);
+    checkShaderError(vertex_shader);
 
-	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, &fragment_source, nullptr);
-	glCompileShader(fragment_shader);
-	checkShaderError(fragment_shader);
+    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader, 1, &fragment_source, nullptr);
+    glCompileShader(fragment_shader);
+    checkShaderError(fragment_shader);
 
-	glAttachShader(program, vertex_shader);
-	glAttachShader(program, fragment_shader);
+    glAttachShader(program, vertex_shader);
+    glAttachShader(program, fragment_shader);
 
-	glBindAttribLocation(program, 0, "position");
-	glBindAttribLocation(program, 1, "texCoord");
+    glBindAttribLocation(program, 0, "position");
+    glBindAttribLocation(program, 1, "texCoord");
 
-	glLinkProgram(program);
+    glLinkProgram(program);
 }
 
 Shader::~Shader()
 {
-	glDeleteProgram(program);
-	glDeleteShader(fragment_shader);
-	glDeleteShader(vertex_shader);
+    glDeleteProgram(program);
+    glDeleteShader(fragment_shader);
+    glDeleteShader(vertex_shader);
 }
 
 void Shader::checkShaderError(GLuint shader)
 {
-	GLint status;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    GLint status;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 
-	if (status == GL_FALSE)
-	{
-		char buffer[512];
-		glGetShaderInfoLog(shader, 512, nullptr, buffer);
-		std::cerr << buffer << "'" << std::endl;
-	}
+    if (status == GL_FALSE)
+    {
+        char buffer[512];
+        glGetShaderInfoLog(shader, 512, nullptr, buffer);
+        std::cerr << buffer << "'" << std::endl;
+    }
 }
 
-void Shader::use()
-{
-	glUseProgram(program);
-}
+void Shader::use() { glUseProgram(program); }
