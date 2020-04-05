@@ -18,3 +18,5 @@ BreakBeforeBraces: Allman
 # Comments
 SpacesBeforeTrailingComments: 2
 
+# Pointer
+PointerAlignment: Left
