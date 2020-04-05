@@ -1,0 +1,20 @@
+Language:        Cpp
+Standard:        Cpp11
+BasedOnStyle:    LLVM
+
+# General Settings
+SortIncludes: true
+ColumnLimit:  120
+
+# Spacing
+UseTab:                Never
+IndentWidth:           4
+AccessModifierOffset: -4
+
+# Parens, brackets
+SpaceBeforeParens: ControlStatements
+BreakBeforeBraces: Allman
+
+# Comments
+SpacesBeforeTrailingComments: 2
+
