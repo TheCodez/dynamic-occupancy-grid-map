@@ -302,8 +302,8 @@ void DOGM::initializeNewParticles()
 
 	normalize_particle_orders(particle_orders_array_accum, grid_cell_count, new_born_particle_count);
 
-	initNewParticlesKernel1<<<grid_map_grid, block_dim>>>(particle_array, grid_cell_array,
-		meas_cell_array, weight_array, born_masses_array, birth_particle_array, particle_orders_array_accum, grid_cell_count);
+	initNewParticlesKernel1<<<grid_map_grid, block_dim>>>(grid_cell_array, meas_cell_array, weight_array, born_masses_array,
+		birth_particle_array, particle_orders_array_accum, grid_cell_count);
 
 	CHECK_ERROR(cudaGetLastError());
 

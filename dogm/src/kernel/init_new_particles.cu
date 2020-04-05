@@ -63,7 +63,7 @@ __device__ int calc_end_idx(const float* __restrict__ particle_orders_array_accu
 
 __device__ int calc_num_assoc(int num_new_particles, float p_A)
 {
-	return static_cast<int>(num_new_particles * p_A);
+	return static_cast<int>(roundf(num_new_particles * p_A));
 }
 
 __device__ float calc_weight_assoc(int nu_A, float p_A, float born_mass)
@@ -94,9 +94,9 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
 	});
 }
 
-__global__ void initNewParticlesKernel1(Particle* __restrict__ particle_array, GridCell* __restrict__ grid_cell_array, 
-	const MeasurementCell *__restrict__ meas_cell_array, const float *__restrict__ weight_array, const float *__restrict__ born_masses_array,
-	Particle* __restrict__ birth_particle_array, const float *__restrict__ particle_orders_array_accum, int cell_count)
+__global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array, const MeasurementCell *__restrict__ meas_cell_array,
+	const float *__restrict__ weight_array, const float *__restrict__ born_masses_array, Particle* __restrict__ birth_particle_array,
+	const float *__restrict__ particle_orders_array_accum, int cell_count)
 {
 	for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
 	{
@@ -137,23 +137,20 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
 		int cell_idx = birth_particle_array[i].grid_cell_idx;
 		const GridCell& grid_cell = grid_cell_array[cell_idx];
 
+		float x = cell_idx % grid_size;
+		float y = cell_idx / grid_size;
 		float vel_x = curand_normal(&local_state, 0.0f, velocity);
 		float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
 		bool associated = birth_particle_array[i].associated;
+		// TODO: Use correct distribution
 		if (associated)
 		{
-			float x = cell_idx % grid_size;
-			float y = cell_idx / grid_size;
-
 			birth_particle_array[i].weight = grid_cell.w_A;
 			birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 		}
 		else
 		{
-			float x = curand_uniform(&local_state, 0.0f, grid_size - 1);
-			float y = curand_uniform(&local_state, 0.0f, grid_size - 1);
-
 			birth_particle_array[i].weight = grid_cell.w_UA;
 			birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 		}
