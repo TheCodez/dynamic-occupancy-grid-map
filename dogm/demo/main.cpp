@@ -52,7 +52,7 @@ using namespace std;
 
 struct Vehicle
 {
-    Vehicle(const int width, const glm::vec2 &pos, const glm::vec2 &vel) : width(width), pos(pos), vel(vel) {}
+    Vehicle(const int width, const glm::vec2& pos, const glm::vec2& vel) : width(width), pos(pos), vel(vel) {}
 
     void move(float dt) { pos += vel * dt; }
 
@@ -65,7 +65,7 @@ struct Simulator
 {
     Simulator(int num_measurements) : num_measurements(num_measurements) {}
 
-    void addVehicle(const Vehicle &vehicle) { vehicles.push_back(vehicle); }
+    void addVehicle(const Vehicle& vehicle) { vehicles.push_back(vehicle); }
 
     std::vector<std::vector<float>> update(int steps, float dt)
     {
@@ -75,7 +75,7 @@ struct Simulator
         {
             std::vector<float> measurement(num_measurements, INFINITY);
 
-            for (auto &vehicle : vehicles)
+            for (auto& vehicle : vehicles)
             {
                 vehicle.move(dt);
 
@@ -101,7 +101,7 @@ float pignistic_transformation(float free_mass, float occ_mass)
     return occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
 }
 
-cv::Mat compute_measurement_grid_image(const dogm::DOGM &grid_map)
+cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
 {
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
@@ -110,7 +110,7 @@ cv::Mat compute_measurement_grid_image(const dogm::DOGM &grid_map)
         {
             int index = y * grid_map.getGridSize() + x;
 
-            const dogm::MeasurementCell &cell = grid_map.meas_cell_array[index];
+            const dogm::MeasurementCell& cell = grid_map.meas_cell_array[index];
             float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
             uchar temp = static_cast<uchar>(floor(occ * 255));
             grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
@@ -120,7 +120,7 @@ cv::Mat compute_measurement_grid_image(const dogm::DOGM &grid_map)
     return grid_img;
 }
 
-cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM &grid_map)
+cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
 {
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
@@ -128,7 +128,7 @@ cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM &grid_map)
         for (int x = 0; x < grid_map.getGridSize(); x++)
         {
             int index = y * grid_map.getGridSize() + x;
-            const dogm::MeasurementCell &cell = grid_map.meas_cell_array[index];
+            const dogm::MeasurementCell& cell = grid_map.meas_cell_array[index];
             int red = static_cast<int>(cell.occ_mass * 255.0f);
             int green = static_cast<int>(cell.free_mass * 255.0f);
             int blue = 255 - red - green;
@@ -140,7 +140,7 @@ cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM &grid_map)
     return grid_img;
 }
 
-cv::Mat compute_raw_polar_measurement_grid_image(const dogm::DOGM &grid_map)
+cv::Mat compute_raw_polar_measurement_grid_image(const dogm::DOGM& grid_map)
 {
     cv::Mat grid_img(grid_map.getGridSize(), 100, CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
@@ -148,7 +148,7 @@ cv::Mat compute_raw_polar_measurement_grid_image(const dogm::DOGM &grid_map)
         for (int x = 0; x < 100; x++)
         {
             int index = y * 100 + x;
-            const dogm::MeasurementCell &cell = grid_map.polar_meas_cell_array[index];
+            const dogm::MeasurementCell& cell = grid_map.polar_meas_cell_array[index];
             int red = static_cast<int>(cell.occ_mass * 255.0f);
             int green = static_cast<int>(cell.free_mass * 255.0f);
             int blue = 255 - red - green;
@@ -180,7 +180,7 @@ cv::Mat createCircularColorGradient(const size_t hue_offset)
     return hue_image;
 }
 
-cv::Mat createCircleMask(const cv::Size2d &size)
+cv::Mat createCircleMask(const cv::Size2d& size)
 {
     cv::Mat mask{size, CV_8UC3, cv::Scalar(0, 0, 0)};
     const cv::Point image_center{mask.cols / 2, mask.rows / 2};
@@ -201,13 +201,13 @@ cv::Mat createColorWheel(const size_t hue_offset = 0)
     return color_wheel;
 }
 
-void resizeRelativeToShorterEdge(const cv::Mat &original_image, const float relative_size, cv::Mat &destination_image)
+void resizeRelativeToShorterEdge(const cv::Mat& original_image, const float relative_size, cv::Mat& destination_image)
 {
     const float target_edge_length = std::min(original_image.cols, original_image.rows) * relative_size;
     cv::resize(destination_image, destination_image, cv::Size(target_edge_length, target_edge_length));
 }
 
-cv::Mat createFullSaturationFullValueAlphaMaskOf(const cv::Mat &img)
+cv::Mat createFullSaturationFullValueAlphaMaskOf(const cv::Mat& img)
 {
     cv::Mat mask{};
     cv::Mat img_hsv{};
@@ -217,7 +217,7 @@ cv::Mat createFullSaturationFullValueAlphaMaskOf(const cv::Mat &img)
     return mask;
 }
 
-void blendIntoBottomRightCorner(cv::Mat &img_to_blend_in, cv::Mat &img)
+void blendIntoBottomRightCorner(cv::Mat& img_to_blend_in, cv::Mat& img)
 {
     const cv::Rect roi{img.cols - img_to_blend_in.cols, img.rows - img_to_blend_in.rows, img_to_blend_in.cols,
                        img_to_blend_in.rows};
@@ -227,14 +227,14 @@ void blendIntoBottomRightCorner(cv::Mat &img_to_blend_in, cv::Mat &img)
     cv::addWeighted(img_roi, 1.0F, img_to_blend_in, 1.0F, 0.0, img_roi);
 }
 
-void addColorWheelToBottomRightCorner(cv::Mat &img, const float relative_size = 0.2, const size_t hue_offset = 0)
+void addColorWheelToBottomRightCorner(cv::Mat& img, const float relative_size = 0.2, const size_t hue_offset = 0)
 {
     cv::Mat color_wheel = createColorWheel(hue_offset);
     resizeRelativeToShorterEdge(img, relative_size, color_wheel);
     blendIntoBottomRightCorner(color_wheel, img);
 }
 
-cv::Mat compute_dogm_image(const dogm::DOGM &grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
+cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
 {
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
@@ -243,7 +243,7 @@ cv::Mat compute_dogm_image(const dogm::DOGM &grid_map, float occ_tresh = 0.7f, f
         {
             int index = y * grid_map.getGridSize() + x;
 
-            const dogm::GridCell &cell = grid_map.grid_cell_array[index];
+            const dogm::GridCell& cell = grid_map.grid_cell_array[index];
             float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
             uchar temp = static_cast<uchar>(floor(occ * 255));
 
@@ -287,12 +287,12 @@ cv::Mat compute_dogm_image(const dogm::DOGM &grid_map, float occ_tresh = 0.7f, f
     return grid_img;
 }
 
-cv::Mat compute_particles_image(const dogm::DOGM &grid_map)
+cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
 {
     cv::Mat particles_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
     for (int i = 0; i < grid_map.particle_count; i++)
     {
-        const dogm::Particle &part = grid_map.particle_array[i];
+        const dogm::Particle& part = grid_map.particle_array[i];
         float x = part.state[0];
         float y = part.state[1];
 
@@ -305,7 +305,7 @@ cv::Mat compute_particles_image(const dogm::DOGM &grid_map)
     return particles_img;
 }
 
-std::vector<float2> load_measurement_from_image(const std::string &file_name)
+std::vector<float2> load_measurement_from_image(const std::string& file_name)
 {
     cv::Mat grid_img = cv::imread(file_name);
 
@@ -330,7 +330,7 @@ std::vector<float2> load_measurement_from_image(const std::string &file_name)
     return meas_grid;
 }
 
-int main(int argc, const char **argv)
+int main(int argc, const char** argv)
 {
     std::vector<std::vector<float2>> mg_meas;
 
