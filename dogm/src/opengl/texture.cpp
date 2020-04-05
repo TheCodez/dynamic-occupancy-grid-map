@@ -57,7 +57,10 @@ Texture::Texture(int width, int height, float anisotropy_level)
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture::~Texture() { glDeleteTextures(1, &texture); }
+Texture::~Texture()
+{
+    glDeleteTextures(1, &texture);
+}
 
 void Texture::beginCudaAccess(cudaSurfaceObject_t* surfaceObject)
 {

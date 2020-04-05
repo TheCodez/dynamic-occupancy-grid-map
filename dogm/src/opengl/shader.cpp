@@ -96,4 +96,7 @@ void Shader::checkShaderError(GLuint shader)
     }
 }
 
-void Shader::use() { glUseProgram(program); }
+void Shader::use()
+{
+    glUseProgram(program);
+}

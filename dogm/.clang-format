@@ -20,3 +20,7 @@ SpacesBeforeTrailingComments: 2
 
 # Pointer
 PointerAlignment: Left
+
+AlwaysBreakTemplateDeclarations: true
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: false

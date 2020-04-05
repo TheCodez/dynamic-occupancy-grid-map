@@ -42,7 +42,10 @@ inline void checkError(cudaError_t code, const char* file, int line)
     }
 }
 
-inline int divUp(int total, int grain) { return (total + grain - 1) / grain; }
+inline int divUp(int total, int grain)
+{
+    return (total + grain - 1) / grain;
+}
 
 inline __device__ float curand_uniform(curandState* state, float min, float max)
 {

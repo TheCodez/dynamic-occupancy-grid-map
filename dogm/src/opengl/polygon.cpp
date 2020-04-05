@@ -45,7 +45,10 @@ Polygon::Polygon(Vertex* vertices, size_t numVertices)
     glBindVertexArray(0);
 }
 
-Polygon::~Polygon() { glDeleteVertexArrays(1, &vao); }
+Polygon::~Polygon()
+{
+    glDeleteVertexArrays(1, &vao);
+}
 
 void Polygon::draw()
 {

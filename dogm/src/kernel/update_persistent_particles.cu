@@ -32,7 +32,10 @@ SOFTWARE.
 namespace dogm
 {
 
-__device__ float calc_norm_assoc(float occ_accum, float rho_p) { return occ_accum > 0.0 ? rho_p / occ_accum : 0.0; }
+__device__ float calc_norm_assoc(float occ_accum, float rho_p)
+{
+    return occ_accum > 0.0 ? rho_p / occ_accum : 0.0;
+}
 
 __device__ float calc_norm_unassoc(const GridCell& grid_cell)
 {

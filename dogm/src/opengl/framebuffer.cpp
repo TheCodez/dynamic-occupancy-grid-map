@@ -74,6 +74,12 @@ void Framebuffer::endCudaAccess(cudaSurfaceObject_t surfaceObject)
     CHECK_ERROR(cudaDestroySurfaceObject(surfaceObject));
 }
 
-void Framebuffer::bind() { glBindFramebuffer(GL_FRAMEBUFFER, framebuffer); }
+void Framebuffer::bind()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+}
 
-void Framebuffer::unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+void Framebuffer::unbind()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}

@@ -27,18 +27,21 @@ SOFTWARE.
 #include <thrust/device_vector.h>
 #include <thrust/scan.h>
 
-template <typename T> inline void accumulate(T* arr, thrust::device_vector<T>& result)
+template <typename T>
+inline void accumulate(T* arr, thrust::device_vector<T>& result)
 {
     thrust::device_ptr<T> ptr(arr);
     thrust::inclusive_scan(ptr, ptr + result.size(), result.begin());
 }
 
-template <typename T> inline void accumulate(thrust::device_vector<T>& arr, thrust::device_vector<T>& result)
+template <typename T>
+inline void accumulate(thrust::device_vector<T>& arr, thrust::device_vector<T>& result)
 {
     thrust::inclusive_scan(arr.begin(), arr.end(), result.begin());
 }
 
-template <typename T> inline __device__ __host__ T subtract(T* accum_array, int start_idx, int end_idx)
+template <typename T>
+inline __device__ __host__ T subtract(T* accum_array, int start_idx, int end_idx)
 {
     if (start_idx == 0)
     {
@@ -47,7 +50,11 @@ template <typename T> inline __device__ __host__ T subtract(T* accum_array, int 
     return accum_array[end_idx] - accum_array[start_idx - 1];
 }
 
-template <typename T> inline __device__ __host__ T clamp(T a, T lower, T upper) { return max(min(a, upper), lower); }
+template <typename T>
+inline __device__ __host__ T clamp(T a, T lower, T upper)
+{
+    return max(min(a, upper), lower);
+}
 
 inline __host__ __device__ unsigned int hash(unsigned int a)
 {
