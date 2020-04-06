@@ -211,7 +211,7 @@ cv::Mat createFullSaturationFullValueAlphaMaskOf(const cv::Mat& img)
     return mask;
 }
 
-void blendIntoBottomRightCorner(cv::Mat& img_to_blend_in, cv::Mat& img)
+void blendIntoBottomRightCorner(const cv::Mat& img_to_blend_in, cv::Mat& img)
 {
     const cv::Rect roi{img.cols - img_to_blend_in.cols, img.rows - img_to_blend_in.rows, img_to_blend_in.cols,
                        img_to_blend_in.rows};
