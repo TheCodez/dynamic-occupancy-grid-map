@@ -259,8 +259,7 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, f
 
                 // printf("Angle: %f\n", angle);
 
-                // OpenCV hue range is [0, 179], see
-                // https://docs.opencv.org/3.2.0/df/d9d/tutorial_py_colorspaces.html
+                // OpenCV hue range is [0, 179], see https://docs.opencv.org/3.2.0/df/d9d/tutorial_py_colorspaces.html
                 const auto hue_opencv = static_cast<uint8_t>(angle * 0.5F);
                 cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(hue_opencv, 255, 255)};
                 cv::Mat rgb{1, 1, CV_8UC3};
@@ -360,66 +359,65 @@ int main(int argc, const char** argv)
 		// Update measurement grid
 		grid_map.updateMeasurementGridFromArray(mg_meas[i]);
 #else
-    dogm::GridParams params;
-    params.size = 50.0f;
-    params.resolution = 0.2f;
-    params.particle_count = 3 * static_cast<int>(10e5);
-    params.new_born_particle_count = 3 * static_cast<int>(10e4);
-    params.persistence_prob = 0.99f;
-    params.process_noise_position = 0.02f;
-    params.process_noise_velocity = 0.8f;
-    params.birth_prob = 0.02f;
-    params.velocity_persistent = 30.0f;
-    params.velocity_birth = 30.0f;
+	dogm::GridParams params;
+	params.size = 50.0f;
+	params.resolution = 0.2f;
+	params.particle_count = 3 * static_cast<int>(10e5);
+	params.new_born_particle_count = 3 * static_cast<int>(10e4);
+	params.persistence_prob = 0.99f;
+	params.process_noise_position = 0.02f;
+	params.process_noise_velocity = 0.8f;
+	params.birth_prob = 0.02f;
+	params.velocity_persistent = 30.0f;
+	params.velocity_birth = 30.0f;
 
-    dogm::LaserSensorParams laser_params;
-    laser_params.fov = 120.0f;
-    laser_params.max_range = 50.0f;
+	dogm::LaserSensorParams laser_params;
+	laser_params.fov = 120.0f;
+	laser_params.max_range = 50.0f;
 
-    dogm::DOGM grid_map(params, laser_params);
+	dogm::DOGM grid_map(params, laser_params);
 
-    Simulator simulator(100);
-    simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
-    //	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
-    //	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+	Simulator simulator(100);
+	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
+//	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
+//	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
-    simulator.addVehicle(Vehicle(6, glm::vec2(40, 30), glm::vec2(20, 5)));
-    simulator.addVehicle(Vehicle(5, glm::vec2(80, 24), glm::vec2(-15, -5)));
+	simulator.addVehicle(Vehicle(6, glm::vec2(40, 30), glm::vec2(20, 5)));
+	simulator.addVehicle(Vehicle(5, glm::vec2(80, 24), glm::vec2(-15, -5)));
 
-    float delta_time = 0.1f;
-    std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
+	float delta_time = 0.1f;
+	std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
 
-    for (int i = 0; i < sim_measurements.size(); i++)
-    {
-        grid_map.updateMeasurementGrid(sim_measurements[i].data(), sim_measurements[i].size());
+	for (int i = 0; i < sim_measurements.size(); i++)
+	{
+		grid_map.updateMeasurementGrid(sim_measurements[i].data(), sim_measurements[i].size());
 #endif
-    auto begin = chrono::high_resolution_clock::now();
+		auto begin = chrono::high_resolution_clock::now();
 
-    // Run Particle filter
-    grid_map.updateParticleFilter(delta_time);
+		// Run Particle filter
+		grid_map.updateParticleFilter(delta_time);
 
-    auto end = chrono::high_resolution_clock::now();
-    auto dur = end - begin;
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-    std::cout << "### Iteration took: " << ms << " ms"
-              << " ###" << std::endl;
-    std::cout << "######  Saving result  #######" << std::endl;
-    std::cout << "##############################" << std::endl;
+		auto end = chrono::high_resolution_clock::now();
+		auto dur = end - begin;
+		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+		std::cout << "### Iteration took: " << ms << " ms" << " ###" << std::endl;
+		std::cout << "######  Saving result  #######" << std::endl;
+		std::cout << "##############################" << std::endl;
 
-    cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
-    cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
+		cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
+		cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
 
-    cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
-    cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
+		cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
+		cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
 
-    cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
-    cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);
+		cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
+		cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);
 
-    cv::Mat particle_img = compute_particles_image(grid_map);
-    cv::imwrite(cv::format("particles_iter-%d.png", i + 1), particle_img);
-}
+		cv::Mat particle_img = compute_particles_image(grid_map);
+		cv::imwrite(cv::format("particles_iter-%d.png", i + 1), particle_img);
+	}
 
-#if 0
+#if	1
 	cv::Mat particle_img = compute_particles_image(grid_map);
 	cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
 
