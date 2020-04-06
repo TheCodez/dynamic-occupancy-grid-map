@@ -363,7 +363,7 @@ int main(int argc, const char** argv)
     dogm::GridParams params;
     params.size = 50.0f;
     params.resolution = 0.2f;
-    params.particle_count = 6 * static_cast<int>(10e4);
+    params.particle_count = 3 * static_cast<int>(10e5);
     params.new_born_particle_count = 3 * static_cast<int>(10e4);
     params.persistence_prob = 0.99f;
     params.process_noise_position = 0.02f;
