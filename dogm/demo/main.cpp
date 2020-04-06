@@ -154,18 +154,18 @@ cv::Mat compute_raw_polar_measurement_grid_image(const dogm::DOGM& grid_map)
     return grid_img;
 }
 
-cv::Mat createCircularColorGradient(const size_t hue_offset)
+cv::Mat createCircularColorGradient(const int hue_offset)
 {
     // Set linear gradient (180 levels). Needed because the OpenCV hue range is [0, 179], see
     // https://docs.opencv.org/3.2.0/df/d9d/tutorial_py_colorspaces.html
-    const size_t hue_steps = 180;
+    const int hue_steps = 180;
     cv::Mat hue_image{hue_steps, hue_steps, CV_8UC3, cv::Scalar(0)};
     const cv::Point image_center{hue_image.cols / 2, hue_image.rows / 2};
     cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(0, 255, 255)};
     cv::Mat rgb{1, 1, CV_8UC3};
     for (int hue = 0; hue < hue_image.rows; ++hue)
     {
-        hsv.at<uchar>(0, 0, 0) = (hue + hue_offset) % 180;
+        hsv.at<uchar>(0, 0) = (hue + hue_offset) % 180;
         cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
         hue_image.row(hue).setTo(rgb.at<cv::Vec3b>(0, 0));
     }
@@ -185,7 +185,7 @@ cv::Mat createCircleMask(const cv::Size2d& size)
     return mask;
 }
 
-cv::Mat createColorWheel(const size_t hue_offset = 0)
+cv::Mat createColorWheel(const int hue_offset = 0)
 {
     cv::Mat circular_color_gradient = createCircularColorGradient(hue_offset);
     cv::Mat circle_mask = createCircleMask(circular_color_gradient.size());
@@ -221,7 +221,7 @@ void blendIntoBottomRightCorner(const cv::Mat& img_to_blend_in, cv::Mat& img)
     cv::addWeighted(img_roi, 1.0F, img_to_blend_in, 1.0F, 0.0, img_roi);
 }
 
-void addColorWheelToBottomRightCorner(cv::Mat& img, const float relative_size = 0.2, const size_t hue_offset = 0)
+void addColorWheelToBottomRightCorner(cv::Mat& img, const float relative_size = 0.2, const int hue_offset = 0)
 {
     cv::Mat color_wheel = createColorWheel(hue_offset);
     resizeRelativeToShorterEdge(img, relative_size, color_wheel);
