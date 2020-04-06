@@ -62,8 +62,8 @@ __global__ void predictKernel(Particle* __restrict__ particle_array, curandState
             particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
         }
 
-        int pos_x = clamp(static_cast<int>(roundf(x)), 0, grid_size - 1);
-        int pos_y = clamp(static_cast<int>(roundf(y)), 0, grid_size - 1);
+        int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
+        int pos_y = clamp(static_cast<int>(y), 0, grid_size - 1);
         particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
 
         // printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));

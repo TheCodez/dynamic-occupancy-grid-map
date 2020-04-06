@@ -25,26 +25,20 @@ SOFTWARE.
 #include "dogm/dogm_types.h"
 
 #include <glm/glm.hpp>
-
-#include <array>
-#include <iostream>
-#include <stdio.h>
+#include <opencv2/opencv.hpp>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
-
 #include <fstream>
 #include <iostream>
+#include <numeric>
+#include <random>
 #include <sstream>
+#include <stdio.h>
 #include <string>
 #include <vector>
-
-#include <algorithm>
-#include <iostream>
-#include <numeric>
-#include <opencv2/opencv.hpp>
-#include <random>
 
 using namespace std;
 
@@ -340,6 +334,7 @@ int main(int argc, const char** argv)
         mg_meas.push_back(grid);
     }
 
+// clang-format off
 #if 0
 	dogm::GridParams params;
 	params.size = 128;
@@ -437,5 +432,6 @@ int main(int argc, const char** argv)
 	cv::waitKey(0);
 #endif
 
-return 0;
+	return 0;
+// clang-format on
 }
