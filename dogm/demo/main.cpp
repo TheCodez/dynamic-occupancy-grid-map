@@ -25,26 +25,20 @@ SOFTWARE.
 #include "dogm/dogm_types.h"
 
 #include <glm/glm.hpp>
-
-#include <array>
-#include <iostream>
-#include <stdio.h>
+#include <opencv2/opencv.hpp>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
-
 #include <fstream>
 #include <iostream>
+#include <numeric>
+#include <random>
 #include <sstream>
+#include <stdio.h>
 #include <string>
 #include <vector>
-
-#include <algorithm>
-#include <iostream>
-#include <numeric>
-#include <opencv2/opencv.hpp>
-#include <random>
 
 using namespace std;
 
