@@ -275,7 +275,7 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, f
         }
     }
 
-    addColorWheelToBottomRightCorner(grid_img, 0.15, 0);
+    addColorWheelToBottomRightCorner(grid_img);
 
     return grid_img;
 }
