@@ -34,7 +34,7 @@ include_directories(
 	${GLM_INCLUDE_DIR}
 )
 
-set(HEADERS_FILES
+set(HEADER_FILES
 	include/dogm/opengl/texture.h
 	include/dogm/opengl/framebuffer.h
 	include/dogm/opengl/polygon.h
@@ -55,7 +55,7 @@ set(HEADERS_FILES
 	include/dogm/dogm_types.h
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS_FILES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES})
 
 set(SRC_FILES
 	src/opengl/texture.cpp
@@ -78,7 +78,7 @@ set(SRC_FILES
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})
 
 add_library(dogm STATIC
-    ${HEADERS_FILES}
+    ${HEADER_FILES}
 	${SRC_FILES}
 )
 
