@@ -21,12 +21,6 @@ if (NOT GLEW_FOUND)
 	set(GLEW_LIBRARY "" CACHE FILEPATH "" )
 endif()
 
-find_package(OpenCV)
-if (NOT OpenCV_FOUND)
-	set(OpenCV_INCLUDE_DIRS "" CACHE PATH "" )
-	set(OpenCV_LIBS "" CACHE FILEPATH "" )
-endif()
-
 #if(WIN32)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}d.dll" DESTINATION ${CMAKE_INSTALL_BINARY}/debug CONFIGURATIONS Debug)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}.dll" DESTINATION ${CMAKE_INSTALL_BINARY} CONFIGURATIONS RelWithDebInfo Release)

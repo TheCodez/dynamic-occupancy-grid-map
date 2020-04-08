@@ -1,3 +1,9 @@
+find_package(OpenCV)
+if (NOT OpenCV_FOUND)
+	set(OpenCV_INCLUDE_DIRS "" CACHE PATH "" )
+	set(OpenCV_LIBS "" CACHE FILEPATH "" )
+endif()
+
 add_executable(demo
 	main.cpp
 )
