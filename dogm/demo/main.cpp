@@ -375,6 +375,9 @@ int main(int argc, const char** argv)
 	laser_params.fov = 120.0f;
 	laser_params.max_range = 50.0f;
 
+	// Just to init cuda
+	cudaDeviceSynchronize();
+
 	auto begin = chrono::high_resolution_clock::now();
 
 	dogm::DOGM grid_map(params, laser_params);
