@@ -106,19 +106,4 @@ target_link_libraries(dogm
 	${GLEW_LIBRARY}
 )
 
-#INSTALL(TARGETS dogm
-#		ARCHIVE DESTINATION lib/dogm
-#        LIBRARY DESTINATION lib/dogm
-#        PUBLIC_HEADER DESTINATION include/dogm
-#)
-
-add_executable(demo
-	demo/main.cpp
-)
-
-target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS})
-
-target_link_libraries(demo
-	dogm
-	${OpenCV_LIBS}
-)
+add_subdirectory(demo)
