@@ -375,7 +375,14 @@ int main(int argc, const char** argv)
 	laser_params.fov = 120.0f;
 	laser_params.max_range = 50.0f;
 
+	auto begin = chrono::high_resolution_clock::now();
+
 	dogm::DOGM grid_map(params, laser_params);
+
+	auto end = chrono::high_resolution_clock::now();
+	auto dur = end - begin;
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+	std::cout << "### DOGM initialization took: " << ms << " ms" << " ###" << std::endl << std::endl;
 
 	Simulator simulator(100);
 	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
@@ -392,14 +399,14 @@ int main(int argc, const char** argv)
 	{
 		grid_map.updateMeasurementGrid(sim_measurements[i].data(), sim_measurements[i].size());
 #endif
-		auto begin = chrono::high_resolution_clock::now();
+		begin = chrono::high_resolution_clock::now();
 
 		// Run Particle filter
 		grid_map.updateParticleFilter(delta_time);
 
-		auto end = chrono::high_resolution_clock::now();
-		auto dur = end - begin;
-		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+		end = chrono::high_resolution_clock::now();
+		dur = end - begin;
+		ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 		std::cout << "### Iteration took: " << ms << " ms" << " ###" << std::endl;
 		std::cout << "######  Saving result  #######" << std::endl;
 		std::cout << "##############################" << std::endl;
