@@ -100,4 +100,10 @@ target_link_libraries(dogm
 	${GLEW_LIBRARY}
 )
 
+#INSTALL(TARGETS dogm	add_subdirectory(demo)
+#		ARCHIVE DESTINATION lib/dogm
+#        LIBRARY DESTINATION lib/dogm
+#        PUBLIC_HEADER DESTINATION include/dogm
+#)
+
 add_subdirectory(demo)
