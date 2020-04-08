@@ -133,10 +133,13 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
                                         curandState* __restrict__ global_state, float velocity, int grid_size,
                                         int particle_count)
 {
-    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
-    {
-        curandState local_state = global_state[i];
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
 
+    curandState local_state = global_state[thread_id];
+
+    for (int i = thread_id; i < particle_count; i += stride)
+    {
         int cell_idx = birth_particle_array[i].grid_cell_idx;
         const GridCell& grid_cell = grid_cell_array[cell_idx];
 
@@ -157,9 +160,9 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
             birth_particle_array[i].weight = grid_cell.w_UA;
             birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
         }
-
-        global_state[i] = local_state;
     }
+
+    global_state[thread_id] = local_state;
 }
 
 __global__ void copyBirthWeightKernel(const Particle* __restrict__ birth_particle_array,

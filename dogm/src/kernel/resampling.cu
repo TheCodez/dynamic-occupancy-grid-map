@@ -37,14 +37,17 @@ __global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_a
                                                       curandState* __restrict__ global_state, float max,
                                                       int particle_count)
 {
-    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    curandState local_state = global_state[thread_id];
+
+    for (int i = thread_id; i < particle_count; i += stride)
     {
-        curandState local_state = global_state[i];
-
         rand_array[i] = curand_uniform(&local_state, 0.0f, max);
-
-        global_state[i] = local_state;
     }
+
+    global_state[thread_id] = local_state;
 }
 
 void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<float>& rand_array,

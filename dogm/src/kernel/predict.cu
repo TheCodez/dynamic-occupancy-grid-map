@@ -36,10 +36,13 @@ __global__ void predictKernel(Particle* __restrict__ particle_array, curandState
                               float velocity, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
                               float process_noise_position, float process_noise_velocity, int particle_count)
 {
-    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
-    {
-        curandState local_state = global_state[i];
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
 
+    curandState local_state = global_state[thread_id];
+
+    for (int i = thread_id; i < particle_count; i += stride)
+    {
         float noise_pos_x = curand_normal(&local_state, 0.0f, process_noise_position);
         float noise_pos_y = curand_normal(&local_state, 0.0f, process_noise_position);
         float noise_vel_x = curand_normal(&local_state, 0.0f, process_noise_velocity);
@@ -67,9 +70,9 @@ __global__ void predictKernel(Particle* __restrict__ particle_array, curandState
         particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
 
         // printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
-
-        global_state[i] = local_state;
     }
+
+    global_state[thread_id] = local_state;
 }
 
 } /* namespace dogm */
