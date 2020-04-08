@@ -57,7 +57,7 @@ struct Vehicle
 
 struct Simulator
 {
-	explicit Simulator(int num_measurements) : num_measurements(num_measurements) {}
+    explicit Simulator(int num_measurements) : num_measurements(num_measurements) {}
 
     void addVehicle(const Vehicle& vehicle) { vehicles.push_back(vehicle); }
 
@@ -73,12 +73,12 @@ struct Simulator
             {
                 vehicle.move(dt);
 
-				for (int j = 0; j < vehicle.width; ++j)
-				{
-					int index = static_cast<int>(vehicle.pos.x) + j;
-					measurement[index] = vehicle.pos.y;
-				}
-			}
+                for (int j = 0; j < vehicle.width; ++j)
+                {
+                    int index = static_cast<int>(vehicle.pos.x) + j;
+                    measurement[index] = vehicle.pos.y;
+                }
+            }
 
             measurements.push_back(measurement);
         }
