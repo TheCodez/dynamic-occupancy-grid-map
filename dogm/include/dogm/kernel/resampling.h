@@ -34,13 +34,16 @@ namespace dogm
 
 struct Particle;
 
-__global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_array, curandState* __restrict__ global_state,
-	float max, int particle_count);
+__global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_array,
+                                                      curandState* __restrict__ global_state, float max,
+                                                      int particle_count);
 
 void calc_resampled_indices(thrust::device_vector<float>& weight_accum, thrust::device_vector<float>& rand_array,
-	thrust::device_vector<int>& indices);
+                            thrust::device_vector<int>& indices);
 
-__global__ void resamplingKernel(const Particle* __restrict__ particle_array, Particle* __restrict__ particle_array_next,
-	const Particle* __restrict__ birth_particle_array, const int* __restrict__ idx_array_resampled, float new_weight, int particle_count);
+__global__ void resamplingKernel(const Particle* __restrict__ particle_array,
+                                 Particle* __restrict__ particle_array_next,
+                                 const Particle* __restrict__ birth_particle_array,
+                                 const int* __restrict__ idx_array_resampled, float new_weight, int particle_count);
 
 } /* namespace dogm */

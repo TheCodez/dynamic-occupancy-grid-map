@@ -21,10 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include "dogm/kernel/resampling.h"
 #include "dogm/common.h"
 #include "dogm/cuda_utils.h"
 #include "dogm/dogm_types.h"
+#include "dogm/kernel/resampling.h"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -33,65 +33,71 @@ SOFTWARE.
 namespace dogm
 {
 
-__global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_array, curandState* __restrict__ global_state, float max,
-	int particle_count)
+__global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_array,
+                                                      curandState* __restrict__ global_state, float max,
+                                                      int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
-	{
-		curandState local_state = global_state[i];
-		
-		rand_array[i] = curand_uniform(&local_state, 0.0f, max);
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
 
-		global_state[i] = local_state;
-	}
+    curandState local_state = global_state[thread_id];
+
+    for (int i = thread_id; i < particle_count; i += stride)
+    {
+        rand_array[i] = curand_uniform(&local_state, 0.0f, max);
+    }
+
+    global_state[thread_id] = local_state;
 }
 
 void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<float>& rand_array,
-	thrust::device_vector<int>& indices)
+                            thrust::device_vector<int>& indices)
 {
-	thrust::device_vector<float> norm_weight_accum(joint_weight_accum.size());
-	float max = joint_weight_accum.back();
-	size_t size = joint_weight_accum.size();
-	thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(), norm_weight_accum.begin(), GPU_LAMBDA(float x)
-	{
-		return  x * (size / max);
-	});
+    thrust::device_vector<float> norm_weight_accum(joint_weight_accum.size());
+    float max = joint_weight_accum.back();
+    size_t size = joint_weight_accum.size();
+    thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(), norm_weight_accum.begin(),
+                      GPU_LAMBDA(float x) { return x * (size / max); });
 
-	float norm_max = norm_weight_accum.back();
-	float rand_max = rand_array.back();
+    float norm_max = norm_weight_accum.back();
+    float rand_max = rand_array.back();
 
-	printf("Norm: %f, Rand: %f\n", norm_max, rand_max);
+    printf("Norm: %f, Rand: %f\n", norm_max, rand_max);
 
-	if (norm_max != rand_max)
-	{
-		norm_weight_accum.back() = rand_max;
-	}
+    if (norm_max != rand_max)
+    {
+        norm_weight_accum.back() = rand_max;
+    }
 
-	// multinomial sampling
-	thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(), indices.begin());
+    // multinomial sampling
+    thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(),
+                        indices.begin());
 }
 
-__device__ Particle copy_particle(const Particle* __restrict__ particle_array, int particle_count, 
-	const Particle* __restrict__ birth_particle_array, int idx)
+__device__ Particle copy_particle(const Particle* __restrict__ particle_array, int particle_count,
+                                  const Particle* __restrict__ birth_particle_array, int idx)
 {
-	if (idx < particle_count)
-	{
-		return particle_array[idx];
-	}
-	else
-	{
-		return birth_particle_array[idx - particle_count];
-	}
+    if (idx < particle_count)
+    {
+        return particle_array[idx];
+    }
+    else
+    {
+        return birth_particle_array[idx - particle_count];
+    }
 }
 
-__global__ void resamplingKernel(const Particle* __restrict__ particle_array, Particle* __restrict__ particle_array_next,
-	const Particle* __restrict__ birth_particle_array, const int* __restrict__ idx_array_resampled, float new_weight, int particle_count)
+__global__ void resamplingKernel(const Particle* __restrict__ particle_array,
+                                 Particle* __restrict__ particle_array_next,
+                                 const Particle* __restrict__ birth_particle_array,
+                                 const int* __restrict__ idx_array_resampled, float new_weight, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
-	{
-		particle_array_next[i] = copy_particle(particle_array, particle_count, birth_particle_array, idx_array_resampled[i]);
-		particle_array_next[i].weight = new_weight;
-	}
+    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
+    {
+        particle_array_next[i] =
+            copy_particle(particle_array, particle_count, birth_particle_array, idx_array_resampled[i]);
+        particle_array_next[i].weight = new_weight;
+    }
 }
 
 } /* namespace dogm */

@@ -21,12 +21,6 @@ if (NOT GLEW_FOUND)
 	set(GLEW_LIBRARY "" CACHE FILEPATH "" )
 endif()
 
-find_package(OpenCV)
-if (NOT OpenCV_FOUND)
-	set(OpenCV_INCLUDE_DIRS "" CACHE PATH "" )
-	set(OpenCV_LIBS "" CACHE FILEPATH "" )
-endif()
-
 #if(WIN32)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}d.dll" DESTINATION ${CMAKE_INSTALL_BINARY}/debug CONFIGURATIONS Debug)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}.dll" DESTINATION ${CMAKE_INSTALL_BINARY} CONFIGURATIONS RelWithDebInfo Release)
@@ -40,7 +34,7 @@ include_directories(
 	${GLM_INCLUDE_DIR}
 )
 
-set(HEADERS_FILES
+set(HEADER_FILES
 	include/dogm/opengl/texture.h
 	include/dogm/opengl/framebuffer.h
 	include/dogm/opengl/polygon.h
@@ -61,7 +55,7 @@ set(HEADERS_FILES
 	include/dogm/dogm_types.h
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS_FILES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES})
 
 set(SRC_FILES
 	src/opengl/texture.cpp
@@ -84,7 +78,7 @@ set(SRC_FILES
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})
 
 add_library(dogm STATIC
-    ${HEADERS_FILES}
+    ${HEADER_FILES}
 	${SRC_FILES}
 )
 
@@ -112,13 +106,4 @@ target_link_libraries(dogm
 #        PUBLIC_HEADER DESTINATION include/dogm
 #)
 
-add_executable(demo
-	demo/main.cpp
-)
-
-target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS})
-
-target_link_libraries(demo
-	dogm
-	${OpenCV_LIBS}
-)
+add_subdirectory(demo)

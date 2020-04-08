@@ -21,10 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include "dogm/kernel/predict.h"
-#include "dogm/cuda_utils.h"
 #include "dogm/common.h"
+#include "dogm/cuda_utils.h"
 #include "dogm/dogm_types.h"
+#include "dogm/kernel/predict.h"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -32,43 +32,47 @@ SOFTWARE.
 namespace dogm
 {
 
-__global__ void predictKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state, float velocity, int grid_size,
-	float p_S, const glm::mat4x4 transition_matrix, float process_noise_position, float process_noise_velocity, int particle_count)
+__global__ void predictKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state,
+                              float velocity, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
+                              float process_noise_position, float process_noise_velocity, int particle_count)
 {
-	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
-	{
-		curandState local_state = global_state[i];
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
 
-		float noise_pos_x = curand_normal(&local_state, 0.0f, process_noise_position);
-		float noise_pos_y = curand_normal(&local_state, 0.0f, process_noise_position);
-		float noise_vel_x = curand_normal(&local_state, 0.0f, process_noise_velocity);
-		float noise_vel_y = curand_normal(&local_state, 0.0f, process_noise_velocity);
-		glm::vec4 process_noise(noise_pos_x, noise_pos_y, noise_vel_x, noise_vel_y);
+    curandState local_state = global_state[thread_id];
 
-		particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
-		particle_array[i].weight = p_S * particle_array[i].weight;
+    for (int i = thread_id; i < particle_count; i += stride)
+    {
+        float noise_pos_x = curand_normal(&local_state, 0.0f, process_noise_position);
+        float noise_pos_y = curand_normal(&local_state, 0.0f, process_noise_position);
+        float noise_vel_x = curand_normal(&local_state, 0.0f, process_noise_velocity);
+        float noise_vel_y = curand_normal(&local_state, 0.0f, process_noise_velocity);
+        glm::vec4 process_noise(noise_pos_x, noise_pos_y, noise_vel_x, noise_vel_y);
 
-		float x = particle_array[i].state[0];
-		float y = particle_array[i].state[1];
+        particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
+        particle_array[i].weight = p_S * particle_array[i].weight;
 
-		if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
-		{
-			x = curand_uniform(&local_state, 0.0f, grid_size - 1);
-			y = curand_uniform(&local_state, 0.0f, grid_size - 1);
-			float vel_x = curand_normal(&local_state, 0.0f, velocity);
-			float vel_y = curand_normal(&local_state, 0.0f, velocity);
+        float x = particle_array[i].state[0];
+        float y = particle_array[i].state[1];
 
-			particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
-		}
+        if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
+        {
+            x = curand_uniform(&local_state, 0.0f, grid_size - 1);
+            y = curand_uniform(&local_state, 0.0f, grid_size - 1);
+            float vel_x = curand_uniform(&local_state, -velocity, velocity);
+            float vel_y = curand_uniform(&local_state, -velocity, velocity);
 
-		int pos_x = clamp(static_cast<int>(roundf(x)), 0, grid_size - 1);
-		int pos_y = clamp(static_cast<int>(roundf(y)), 0, grid_size - 1);
-		particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
+            particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
+        }
 
-		//printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
+        int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
+        int pos_y = clamp(static_cast<int>(y), 0, grid_size - 1);
+        particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
 
-		global_state[i] = local_state;
-	}
+        // printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
+    }
+
+    global_state[thread_id] = local_state;
 }
 
 } /* namespace dogm */

@@ -29,20 +29,19 @@ SOFTWARE.
 class Texture
 {
 public:
-	Texture(int width, int height, float anisotropy_level = 0.0f);
-	~Texture();
+    Texture(int width, int height, float anisotropy_level = 0.0f);
+    ~Texture();
 
-	void beginCudaAccess(cudaSurfaceObject_t* surfaceObject);
-	void endCudaAccess(cudaSurfaceObject_t surfaceObject);
+    void beginCudaAccess(cudaSurfaceObject_t* surfaceObject);
+    void endCudaAccess(cudaSurfaceObject_t surfaceObject);
 
-	void generateMipMap();
+    void generateMipMap();
 
-	void bind(GLuint unit);
+    void bind(GLuint unit);
 
 private:
-	GLuint texture;
-	GLuint unit;
+    GLuint texture;
+    GLuint unit;
 
-	cudaGraphicsResource_t resource;
+    cudaGraphicsResource_t resource;
 };
-

@@ -29,33 +29,29 @@ SOFTWARE.
 class Vertex
 {
 public:
-	Vertex(const glm::vec2& pos)
-	{
-		this->pos = pos;
-	}
+    Vertex(const glm::vec2& pos) { this->pos = pos; }
 
-	Vertex(const glm::vec2& pos, const glm::vec2& tex_coord)
-	{
-		this->pos = pos;
-		this->tex_coord = tex_coord;
-	}
+    Vertex(const glm::vec2& pos, const glm::vec2& tex_coord)
+    {
+        this->pos = pos;
+        this->tex_coord = tex_coord;
+    }
 
-	glm::vec2 pos;
-	glm::vec2 tex_coord;
+    glm::vec2 pos;
+    glm::vec2 tex_coord;
 };
 
 class Polygon
 {
 public:
-	Polygon(Vertex* vertices, size_t num_vertices);
-	~Polygon();
+    Polygon(Vertex* vertices, size_t num_vertices);
+    ~Polygon();
 
-	void draw();
+    void draw();
 
 private:
-	GLuint vao;
-	GLuint vbo;
+    GLuint vao;
+    GLuint vbo;
 
-	unsigned int vertices_count;
+    unsigned int vertices_count;
 };
-

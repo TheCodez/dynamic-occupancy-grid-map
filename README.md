@@ -14,6 +14,17 @@ Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps 
   <img src="./docs/videos/dogm2_new.gif">
 </p>
 
+## Performance
+
+|             | Particle count | Birth particle count | Grid cell count* |  Time  |        GPU**        |
+|-------------|:--------------:|:--------------------:|:----------------:|:------:|:-------------------:|
+|     Ours    |     3 * 10⁵    |        3 * 10⁴       |    6.25 * 10⁴    | 156 ms | NVIDIA Quadro P2000 |
+| Nuss et al. |     2 * 10⁶    |        2 * 10⁵       |    1.44 * 10⁶    |  50 ms |    NVIDIA GTX 980   |
+
+\* increasing the grid cell count to the one in the paper increases the runtime by only ~20ms
+
+\** the NVIDIA GTX 980 is more than twice as fast as the NVIDIA Quadro P2000
+
 ## Requirements and Setup
 You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this project. You can find the setup instructions for Ubuntu 18.04 LTS and Windows 10 below.
 
@@ -78,6 +89,16 @@ On Windows it's easiest to use cmake-gui. Use it to configure and generate the p
 </p>
 
 Afterwards open the generated ```.sln``` in Visual Studio and compile it.
+
+## Contributing
+
+Contributions are welcome. Please make sure to apply `clang-format` to your code, e.g. by manually executing
+
+```console
+find dogm/include dogm/src -iname '*.h' -o -iname '*.cpp' -o -iname '*.cu' | xargs clang-format -i
+```
+
+or including this formatting in your editor/IDE.
 
 ## References
 
