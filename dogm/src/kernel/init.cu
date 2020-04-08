@@ -43,10 +43,13 @@ __global__ void setupRandomStatesKernel(curandState* __restrict__ states, unsign
 __global__ void initParticlesKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state,
                                     float velocity, int grid_size, int particle_count)
 {
-    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
-    {
-        curandState local_state = global_state[i];
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
 
+    curandState local_state = global_state[thread_id];
+
+    for (int i = thread_id; i < particle_count; i += stride)
+    {
         float x = curand_uniform(&local_state, 0.0f, grid_size - 1);
         float y = curand_uniform(&local_state, 0.0f, grid_size - 1);
         float vel_x = curand_uniform(&local_state, -velocity, velocity);
@@ -55,21 +58,24 @@ __global__ void initParticlesKernel(Particle* __restrict__ particle_array, curan
         particle_array[i].weight = 1.0f / particle_count;
         particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
 
-        global_state[i] = local_state;
-
         // printf("w: %f, x: %f, y: %f, vx: %f, vy: %f\n", particle_array[i].weight, particle_array[i].state[0],
         // particle_array[i].state[1], 	particle_array[i].state[2], particle_array[i].state[3]);
     }
+
+    global_state[thread_id] = local_state;
 }
 
 __global__ void initBirthParticlesKernel(Particle* __restrict__ birth_particle_array,
                                          curandState* __restrict__ global_state, float velocity, int grid_size,
                                          int particle_count)
 {
-    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
-    {
-        curandState local_state = global_state[i];
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
 
+    curandState local_state = global_state[thread_id];
+
+    for (int i = thread_id; i < particle_count; i += stride)
+    {
         float x = curand_uniform(&local_state, 0.0f, grid_size - 1);
         float y = curand_uniform(&local_state, 0.0f, grid_size - 1);
         float vel_x = curand_normal(&local_state, 0.0f, velocity);
@@ -78,9 +84,9 @@ __global__ void initBirthParticlesKernel(Particle* __restrict__ birth_particle_a
         birth_particle_array[i].weight = 0.0;
         birth_particle_array[i].associated = false;
         birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
-
-        global_state[i] = local_state;
     }
+
+    global_state[thread_id] = local_state;
 }
 
 __global__ void initGridCellsKernel(GridCell* __restrict__ grid_cell_array,
