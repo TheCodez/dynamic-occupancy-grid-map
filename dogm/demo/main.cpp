@@ -24,6 +24,7 @@ SOFTWARE.
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 
+#define _USE_MATH_DEFINES
 #include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -40,10 +41,6 @@ SOFTWARE.
 #include <string>
 #include <vector>
 
-using namespace std;
-
-#define PI 3.14159265358979323846f
-
 struct Vehicle
 {
     Vehicle(const int width, const glm::vec2& pos, const glm::vec2& vel) : width(width), pos(pos), vel(vel) {}
@@ -57,7 +54,7 @@ struct Vehicle
 
 struct Simulator
 {
-    Simulator(int num_measurements) : num_measurements(num_measurements) {}
+    explicit Simulator(int num_measurements) : num_measurements(num_measurements) {}
 
     void addVehicle(const Vehicle& vehicle) { vehicles.push_back(vehicle); }
 
@@ -73,9 +70,9 @@ struct Simulator
             {
                 vehicle.move(dt);
 
-                for (int i = 0; i < vehicle.width; i++)
+                for (int j = 0; j < vehicle.width; ++j)
                 {
-                    int index = static_cast<int>(vehicle.pos.x) + i;
+                    int index = static_cast<int>(vehicle.pos.x) + j;
                     measurement[index] = vehicle.pos.y;
                 }
             }
@@ -255,7 +252,7 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, f
 
             if (occ >= occ_tresh && mdist.at<float>(0, 0) >= m_tresh)
             {
-                float angle = fmodf((atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI)) + 360, 360);
+                float angle = fmodf((atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / M_PI)) + 360, 360);
 
                 // printf("Angle: %f\n", angle);
 
@@ -378,11 +375,11 @@ int main(int argc, const char** argv)
 	// Just to init cuda
 	cudaDeviceSynchronize();
 
-	auto begin = chrono::high_resolution_clock::now();
+	auto begin = std::chrono::high_resolution_clock::now();
 
 	dogm::DOGM grid_map(params, laser_params);
 
-	auto end = chrono::high_resolution_clock::now();
+	auto end = std::chrono::high_resolution_clock::now();
 	auto dur = end - begin;
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 	std::cout << "### DOGM initialization took: " << ms << " ms" << " ###" << std::endl << std::endl;
@@ -402,12 +399,12 @@ int main(int argc, const char** argv)
 	{
 		grid_map.updateMeasurementGrid(sim_measurements[i].data(), sim_measurements[i].size());
 #endif
-		begin = chrono::high_resolution_clock::now();
+		begin = std::chrono::high_resolution_clock::now();
 
 		// Run Particle filter
 		grid_map.updateParticleFilter(delta_time);
 
-		end = chrono::high_resolution_clock::now();
+		end = std::chrono::high_resolution_clock::now();
 		dur = end - begin;
 		ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 		std::cout << "### Iteration took: " << ms << " ms" << " ###" << std::endl;
