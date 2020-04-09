@@ -24,6 +24,7 @@ SOFTWARE.
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 
+#define _USE_MATH_DEFINES
 #include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
 
