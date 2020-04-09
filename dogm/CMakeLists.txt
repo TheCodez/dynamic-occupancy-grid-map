@@ -27,7 +27,6 @@ endif()
 #endif(WIN32)
 
 include_directories(
-	include
 	SYSTEM ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 	${GLFW3_INCLUDE_DIR}
 	${GLEW_INCLUDE_DIRS}
@@ -81,6 +80,8 @@ add_library(dogm STATIC
     ${HEADER_FILES}
 	${SRC_FILES}
 )
+
+target_include_directories(dogm PUBLIC include)
 
 set(CMAKE_CXX_STANDARD 11)
 
