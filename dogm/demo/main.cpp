@@ -42,8 +42,6 @@ SOFTWARE.
 #include <string>
 #include <vector>
 
-using namespace std;
-
 int main(int argc, const char** argv)
 {
     std::vector<std::vector<float2>> mg_meas;
@@ -99,11 +97,11 @@ int main(int argc, const char** argv)
 	// Just to init cuda
 	cudaDeviceSynchronize();
 
-	auto begin = chrono::high_resolution_clock::now();
+	auto begin = std::chrono::high_resolution_clock::now();
 
 	dogm::DOGM grid_map(params, laser_params);
 
-	auto end = chrono::high_resolution_clock::now();
+	auto end = std::chrono::high_resolution_clock::now();
 	auto dur = end - begin;
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 	std::cout << "### DOGM initialization took: " << ms << " ms" << " ###" << std::endl << std::endl;
@@ -123,12 +121,12 @@ int main(int argc, const char** argv)
 	{
 		grid_map.updateMeasurementGrid(sim_measurements[i].data(), sim_measurements[i].size());
 #endif
-		begin = chrono::high_resolution_clock::now();
+		begin = std::chrono::high_resolution_clock::now();
 
 		// Run Particle filter
 		grid_map.updateParticleFilter(delta_time);
 
-		end = chrono::high_resolution_clock::now();
+		end = std::chrono::high_resolution_clock::now();
 		dur = end - begin;
 		ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 		std::cout << "### Iteration took: " << ms << " ms" << " ###" << std::endl;

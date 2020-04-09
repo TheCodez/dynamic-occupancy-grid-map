@@ -28,11 +28,14 @@ SOFTWARE.
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 
+#define _USE_MATH_DEFINES
+#include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
+
+#include <algorithm>
+#include <cmath>
 #include <string>
 #include <vector>
-
-#define PI 3.14159265358979323846f
 
 inline float pignistic_transformation(float free_mass, float occ_mass)
 {
@@ -200,7 +203,7 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 
 
             if (occ >= occ_tresh && mdist.at<float>(0, 0) >= m_tresh)
             {
-                float angle = fmodf((atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / PI)) + 360, 360);
+                float angle = fmodf((atan2(cell.mean_y_vel, cell.mean_x_vel) * (180.0f / M_PI)) + 360, 360);
 
                 // printf("Angle: %f\n", angle);
 
