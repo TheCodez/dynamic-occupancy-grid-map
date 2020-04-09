@@ -23,8 +23,8 @@ SOFTWARE.
 */
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
-#include "simulator.h"
 #include "image_creation.h"
+#include "simulator.h"
 
 #include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
