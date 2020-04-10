@@ -6,9 +6,11 @@ endif()
 
 add_executable(demo
 	main.cpp
+	image_creation.h
+	simulator.h
 )
 
-target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS})
+target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR})
 
 target_link_libraries(demo
 	dogm
