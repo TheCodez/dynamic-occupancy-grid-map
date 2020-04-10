@@ -178,6 +178,9 @@ inline void addColorWheelToBottomRightCorner(cv::Mat& img, const float relative_
 
 inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
 {
+    int occ_cell_count = 0;
+    float vel = 0.0f;
+
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
@@ -214,13 +217,23 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 
                 cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
                 grid_img.at<cv::Vec3b>(y, x) = rgb.at<cv::Vec3b>(0, 0);
 
-                // printf("Vel Y: %f\n", cell.mean_y_vel);
+                vel += cell.mean_y_vel;
+                occ_cell_count++;
             }
             else
             {
                 grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
             }
         }
+    }
+
+    if (occ_cell_count > 0)
+    {
+		// grid resolution
+        float resolution = 0.2f;
+        float mean_vel = -(vel / occ_cell_count) * resolution;
+
+        printf("Ground thruth y-velocity: %f, Estimated y-velocity: %f\n", 20.0f, mean_vel);
     }
 
     addColorWheelToBottomRightCorner(grid_img);
