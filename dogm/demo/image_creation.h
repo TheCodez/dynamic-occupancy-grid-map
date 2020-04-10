@@ -235,8 +235,8 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 
         float mean_x_vel = (x_vel / occ_cell_count) * resolution;
         float mean_y_vel = -(y_vel / occ_cell_count) * resolution;
 
-        printf("Ground thruth x-velocity: %f, Estimated x-velocity: %f\n", -5.0f, mean_x_vel);
-        printf("Ground thruth y-velocity: %f, Estimated y-velocity: %f\n", 20.0f, mean_y_vel);
+        printf("Ground truth x-velocity: %f, Estimated x-velocity: %f\n", -5.0f, mean_x_vel);
+        printf("Ground truth y-velocity: %f, Estimated y-velocity: %f\n", 20.0f, mean_y_vel);
     }
 
     addColorWheelToBottomRightCorner(grid_img);
