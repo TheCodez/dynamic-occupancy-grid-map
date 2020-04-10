@@ -28,6 +28,8 @@ SOFTWARE.
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 
+#include "dbscan.h"
+
 #define _USE_MATH_DEFINES
 #include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
@@ -178,8 +180,7 @@ inline void addColorWheelToBottomRightCorner(cv::Mat& img, const float relative_
 
 inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 0.7f, float m_tresh = 4.0f)
 {
-    int occ_cell_count = 0;
-    float y_vel = 0.0f, x_vel = 0.0f;
+    std::vector<Point<dogm::GridCell>> cell_points;
 
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
@@ -217,9 +218,13 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 
                 cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
                 grid_img.at<cv::Vec3b>(y, x) = rgb.at<cv::Vec3b>(0, 0);
 
-                y_vel += cell.mean_y_vel;
-                x_vel += cell.mean_x_vel;
-                occ_cell_count++;
+                Point<dogm::GridCell> point;
+                point.x = x;
+                point.y = y;
+                point.data = cell;
+                point.cluster_id = UNCLASSIFIED;
+
+                cell_points.push_back(point);
             }
             else
             {
@@ -228,15 +233,33 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 
         }
     }
 
-    if (occ_cell_count > 0)
+    if (cell_points.size() > 0)
     {
-		// grid resolution
-        float resolution = 0.2f;
-        float mean_x_vel = (x_vel / occ_cell_count) * resolution;
-        float mean_y_vel = -(y_vel / occ_cell_count) * resolution;
+        DBSCAN<dogm::GridCell> dbscan(cell_points);
+        dbscan.cluster(2, 1.0f);
 
-        printf("Ground truth x-velocity: %f, Estimated x-velocity: %f\n", -5.0f, mean_x_vel);
-        printf("Ground truth y-velocity: %f, Estimated y-velocity: %f\n", 20.0f, mean_y_vel);
+        std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
+        int num_cluster = dbscan.getNumCluster();
+        std::map<int, std::vector<Point<dogm::GridCell>>> clustered_map = dbscan.getClusteredPoints();
+
+        for (auto& iter = clustered_map.begin(); iter != clustered_map.end(); ++iter)
+        {
+            int cluster_id = iter->first;
+            std::vector<Point<dogm::GridCell>> cluster = iter->second;
+
+            float y_vel = 0.0f, x_vel = 0.0f;
+            for (auto& point : cluster)
+            {
+                x_vel += point.data.mean_x_vel;
+                y_vel += point.data.mean_y_vel;
+            }
+
+            float resolution = 0.2f;
+            float mean_x_vel = (x_vel / cluster.size()) * resolution;
+            float mean_y_vel = -(y_vel / cluster.size()) * resolution;
+
+            printf("Cluster ID: %d, est. x-velocity: %f, est. y-velocity: %f\n", cluster_id, mean_x_vel, mean_y_vel);
+        }
     }
 
     addColorWheelToBottomRightCorner(grid_img);
