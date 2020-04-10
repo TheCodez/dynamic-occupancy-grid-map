@@ -258,6 +258,10 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 
             float mean_x_vel = (x_vel / cluster.size()) * resolution;
             float mean_y_vel = -(y_vel / cluster.size()) * resolution;
 
+            // Ground truth velocities are in polar coordinates so convert them
+            mean_x_vel = sqrtf(powf(mean_x_vel, 2) + powf(mean_y_vel, 2));
+            mean_y_vel = atan2(mean_y_vel, mean_x_vel);
+
             printf("Cluster ID: %d, est. x-velocity: %f, est. y-velocity: %f\n", cluster_id, mean_x_vel, mean_y_vel);
         }
     }

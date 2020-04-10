@@ -109,7 +109,7 @@ int main(int argc, const char** argv)
 	Simulator simulator(100);
 //	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
 	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(-5, 20)));
-//	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
 //	simulator.addVehicle(Vehicle(6, glm::vec2(40, 30), glm::vec2(20, 5)));
 //	simulator.addVehicle(Vehicle(5, glm::vec2(80, 24), glm::vec2(-15, -5)));
