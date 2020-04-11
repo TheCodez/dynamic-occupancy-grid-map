@@ -92,7 +92,6 @@ public:
                 // Find matching ground truth vehicle: compute center location of cluster. Find vehicles with distance
                 // smaller than eps; from those, take vehicle with smallest dist Compute velocity error, store
             }
-
         }
     }
 
