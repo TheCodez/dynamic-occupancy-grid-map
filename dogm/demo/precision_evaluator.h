@@ -39,7 +39,7 @@ public:
     explicit PrecisionEvaluator(const SimulationData _sim_data) : sim_data{_sim_data} {}
 
     void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
-                  bool print_current_precision = false)
+                              bool print_current_precision = false)
     {
         if (cells_with_velocity.size() > 0)
         {
@@ -77,9 +77,7 @@ public:
         }
     }
 
-    void printSummary(){
-        std::cout << "\nPrecision evaluator prints no summary yet.\n";
-    }
+    void printSummary() { std::cout << "\nPrecision evaluator prints no summary yet.\n"; }
 
 private:
     SimulationData sim_data;
