@@ -39,15 +39,23 @@ struct Vehicle
     glm::vec2 vel;
 };
 
+struct SimulationStep
+{
+    std::vector<Vehicle> vehicles;
+    std::vector<float> measurements;
+};
+
+using SimulationData = std::vector<SimulationStep>;
+
 struct Simulator
 {
     Simulator(int num_measurements) : num_measurements(num_measurements) {}
 
     void addVehicle(const Vehicle& vehicle) { vehicles.push_back(vehicle); }
 
-    std::vector<std::vector<float>> update(int steps, float dt)
+    SimulationData update(int steps, float dt)
     {
-        std::vector<std::vector<float>> measurements;
+        SimulationData sim_data;
 
         for (int i = 0; i < steps; i++)
         {
@@ -64,10 +72,13 @@ struct Simulator
                 }
             }
 
-            measurements.push_back(measurement);
+            SimulationStep step;
+            step.measurements = measurement;
+            step.vehicles = vehicles;
+            sim_data.push_back(step);
         }
 
-        return measurements;
+        return sim_data;
     }
 
     int num_measurements;

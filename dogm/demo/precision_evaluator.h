@@ -26,45 +26,63 @@ SOFTWARE.
 #define PRECISION_EVALUATOR_H
 
 #include <cmath>
+#include <iostream>
 #include <vector>
 
 #include "dbscan.h"
 #include "dogm/dogm_types.h"
+#include "simulator.h"
 
-inline void evaluate(const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
+class PrecisionEvaluator
 {
-    if (cells_with_velocity.size() > 0)
+public:
+    explicit PrecisionEvaluator(const SimulationData _sim_data) : sim_data{_sim_data} {}
+
+    void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
+                  bool print_current_precision = false)
     {
-        DBSCAN<dogm::GridCell> dbscan(cells_with_velocity);
-        dbscan.cluster(3.0f, 5);
-
-        std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
-        int num_cluster = dbscan.getNumCluster();
-        std::map<int, std::vector<Point<dogm::GridCell>>> clustered_map = dbscan.getClusteredPoints();
-
-        for (const auto& iter : clustered_map)
+        if (cells_with_velocity.size() > 0)
         {
-            int cluster_id = iter.first;
-            std::vector<Point<dogm::GridCell>> cluster = iter.second;
+            DBSCAN<dogm::GridCell> dbscan(cells_with_velocity);
+            dbscan.cluster(3.0f, 5);
 
-            float y_vel = 0.0f, x_vel = 0.0f;
-            for (auto& point : cluster)
+            std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
+            int num_cluster = dbscan.getNumCluster();
+            std::map<int, std::vector<Point<dogm::GridCell>>> clustered_map = dbscan.getClusteredPoints();
+
+            for (const auto& iter : clustered_map)
             {
-                x_vel += point.data.mean_x_vel;
-                y_vel += point.data.mean_y_vel;
+                int cluster_id = iter.first;
+                std::vector<Point<dogm::GridCell>> cluster = iter.second;
+
+                float y_vel = 0.0f, x_vel = 0.0f;
+                for (auto& point : cluster)
+                {
+                    x_vel += point.data.mean_x_vel;
+                    y_vel += point.data.mean_y_vel;
+                }
+
+                float resolution = 0.2f;
+                float mean_x_vel = (x_vel / cluster.size()) * resolution;
+                float mean_y_vel = -(y_vel / cluster.size()) * resolution;
+
+                // Ground truth velocities are in polar coordinates so convert them
+                mean_y_vel = sqrtf(powf(mean_x_vel, 2) + powf(mean_y_vel, 2));
+                mean_x_vel = atan2(mean_y_vel, mean_x_vel);
+
+                if (print_current_precision)
+                    std::cout << "Cluster ID: " << cluster_id << " , est. x-velocity: " << mean_x_vel
+                              << ", est. y-velocity: " << mean_y_vel << "\n";
             }
-
-            float resolution = 0.2f;
-            float mean_x_vel = (x_vel / cluster.size()) * resolution;
-            float mean_y_vel = -(y_vel / cluster.size()) * resolution;
-
-            // Ground truth velocities are in polar coordinates so convert them
-            mean_y_vel = sqrtf(powf(mean_x_vel, 2) + powf(mean_y_vel, 2));
-            mean_x_vel = atan2(mean_y_vel, mean_x_vel);
-
-            printf("Cluster ID: %d, est. x-velocity: %f, est. y-velocity: %f\n", cluster_id, mean_x_vel, mean_y_vel);
         }
     }
-}
+
+    void printSummary(){
+        std::cout << "\nPrecision evaluator prints no summary yet.\n";
+    }
+
+private:
+    SimulationData sim_data;
+};
 
 #endif  // PRECISION_EVALUATOR_H
