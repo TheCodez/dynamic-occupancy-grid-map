@@ -108,9 +108,9 @@ int main(int argc, const char** argv)
 	std::cout << "### DOGM initialization took: " << ms << " ms" << " ###" << std::endl << std::endl;
 
 	Simulator simulator(100);
-	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
+	// simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
 	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(-5, 20)));
-	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+	// simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
 //	simulator.addVehicle(Vehicle(6, glm::vec2(40, 30), glm::vec2(20, 5)));
 //	simulator.addVehicle(Vehicle(5, glm::vec2(80, 24), glm::vec2(-15, -5)));
@@ -135,7 +135,7 @@ int main(int argc, const char** argv)
 		std::cout << "######  Saving result  #######" << std::endl;
 		std::cout << "##############################" << std::endl;
 
-		const auto cells_with_velocity{computeCellsWithVelocity(grid_map, 0.7f, 4.0f)};
+		const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
 		precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity, true);
 
 		cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);

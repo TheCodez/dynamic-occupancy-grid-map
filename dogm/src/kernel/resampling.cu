@@ -62,7 +62,7 @@ void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, th
     float norm_max = norm_weight_accum.back();
     float rand_max = rand_array.back();
 
-    printf("Norm: %f, Rand: %f\n", norm_max, rand_max);
+    // printf("Norm: %f, Rand: %f\n", norm_max, rand_max);
 
     if (norm_max != rand_max)
     {

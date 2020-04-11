@@ -26,6 +26,7 @@ SOFTWARE.
 #define PRECISION_EVALUATOR_H
 
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <vector>
 
@@ -39,6 +40,7 @@ public:
     explicit PrecisionEvaluator(const SimulationData _sim_data, const float _resolution)
         : sim_data{_sim_data}, resolution{_resolution}
     {
+        // step_errors.reserve(sim_data.size());
     }
 
     void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
@@ -46,37 +48,63 @@ public:
     {
         if (cells_with_velocity.size() > 0)
         {
-            DBSCAN<dogm::GridCell> dbscan(cells_with_velocity);
-            dbscan.cluster(3.0f, 5);
+            for (const auto& vehicle : sim_data[simulation_step_index].vehicles)
+            {
+                std::cout << "\nGround Truth: vel: " << vehicle.vel[0] << " " << vehicle.vel[1]
+                          << ", pos: " << vehicle.pos[0] << " " << vehicle.pos[1] << "\n";
+            }
 
-            std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
-            int num_cluster = dbscan.getNumCluster();
-            std::map<int, std::vector<Point<dogm::GridCell>>> clustered_map = dbscan.getClusteredPoints();
-
+            const auto clustered_map = computeDbscanClusters(cells_with_velocity);
             for (const auto& iter : clustered_map)
             {
                 int cluster_id = iter.first;
                 std::vector<Point<dogm::GridCell>> cluster = iter.second;
 
-                float y_vel = 0.0f, x_vel = 0.0f;
+                float x_vel = 0.0f, y_vel = 0.0f, x_pos = 0.0f, y_pos = 0.0f;
                 for (auto& point : cluster)
                 {
                     x_vel += point.data.mean_x_vel;
                     y_vel += point.data.mean_y_vel;
+                    x_pos += point.x;
+                    y_pos += point.y;
                 }
 
                 float mean_x_vel = (x_vel / cluster.size()) * resolution;
                 float mean_y_vel = -(y_vel / cluster.size()) * resolution;
+                float mean_x_pos = (x_pos / cluster.size()) * resolution;
+                float mean_y_pos = (y_pos / cluster.size()) * resolution;
 
                 // Ground truth velocities are in polar coordinates so convert them
                 mean_y_vel = sqrtf(powf(mean_x_vel, 2) + powf(mean_y_vel, 2));
                 mean_x_vel = atan2(mean_y_vel, mean_x_vel);
 
+                // mean_y_pos = sqrtf(powf(mean_x_pos, 2) + powf(mean_y_pos, 2));
+                // mean_x_pos = atan2(mean_y_pos, mean_x_pos);
+
                 if (print_current_precision)
-                    std::cout << "Cluster ID: " << cluster_id << " , est. x-velocity: " << mean_x_vel
-                              << ", est. y-velocity: " << mean_y_vel << "\n";
+                {
+                    // std::cout << "Cluster ID: " << cluster_id << "\n";
+                    std::cout << std::setprecision(2);
+                    std::cout << "Est. values: vel: " << mean_x_vel << " " << mean_y_vel;
+                    std::cout << " , pos: " << mean_x_pos << " " << mean_y_pos << "\n\n";
+                }
+
+                // Find matching ground truth vehicle: compute center location of cluster. Find vehicles with distance
+                // smaller than eps; from those, take vehicle with smallest dist Compute velocity error, store
             }
+
         }
+    }
+
+    std::map<int, std::vector<Point<dogm::GridCell>>>
+    computeDbscanClusters(const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
+    {
+        DBSCAN<dogm::GridCell> dbscan(cells_with_velocity);
+        dbscan.cluster(3.0f, 5);
+
+        std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
+        int num_cluster = dbscan.getNumCluster();
+        return dbscan.getClusteredPoints();
     }
 
     void printSummary() { std::cout << "\nPrecision evaluator prints no summary yet.\n"; }
@@ -84,6 +112,7 @@ public:
 private:
     SimulationData sim_data;
     float resolution;
+    // std::vector<?> step_errors;
 };
 
 #endif  // PRECISION_EVALUATOR_H
