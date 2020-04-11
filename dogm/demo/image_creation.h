@@ -236,7 +236,7 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 
     if (cell_points.size() > 0)
     {
         DBSCAN<dogm::GridCell> dbscan(cell_points);
-        dbscan.cluster(2, 1.0f);
+        dbscan.cluster(3.0f, 5);
 
         std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
         int num_cluster = dbscan.getNumCluster();
