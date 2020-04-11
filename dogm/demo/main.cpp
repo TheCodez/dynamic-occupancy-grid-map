@@ -107,7 +107,7 @@ int main(int argc, const char** argv)
 	std::cout << "### DOGM initialization took: " << ms << " ms" << " ###" << std::endl << std::endl;
 
 	Simulator simulator(100);
-//	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
+	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
 	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(-5, 20)));
 	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
@@ -139,14 +139,15 @@ int main(int argc, const char** argv)
 		cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
 		cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
 
-		cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
+		const auto cells_with_velocity{computeCellsWithVelocity(grid_map, 0.7f, 4.0f)};
+		cv::Mat grid_img = compute_dogm_image(grid_map, cells_with_velocity);
 		cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);
 
 		cv::Mat particle_img = compute_particles_image(grid_map);
 		cv::imwrite(cv::format("particles_iter-%d.png", i + 1), particle_img);
 	}
 
-#if	1
+#if	0
 	cv::Mat particle_img = compute_particles_image(grid_map);
 	cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
 
