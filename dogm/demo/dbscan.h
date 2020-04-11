@@ -101,7 +101,7 @@ private:
             return false;
         }
 
-        for (std::vector<Point<T>>::iterator seeds_iter = seeds.begin(); seeds_iter != seeds.end(); seeds_iter++)
+        for (auto seeds_iter = seeds.begin(); seeds_iter != seeds.end(); seeds_iter++)
         {
             points.at(std::distance(seeds.begin(), seeds_iter)).cluster_id = cluster_id;
         }

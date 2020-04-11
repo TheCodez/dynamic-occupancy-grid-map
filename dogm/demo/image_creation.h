@@ -242,10 +242,10 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, float occ_tresh = 
         int num_cluster = dbscan.getNumCluster();
         std::map<int, std::vector<Point<dogm::GridCell>>> clustered_map = dbscan.getClusteredPoints();
 
-        for (auto& iter = clustered_map.begin(); iter != clustered_map.end(); ++iter)
+        for (const auto& iter : clustered_map)
         {
-            int cluster_id = iter->first;
-            std::vector<Point<dogm::GridCell>> cluster = iter->second;
+            int cluster_id = iter.first;
+            std::vector<Point<dogm::GridCell>> cluster = iter.second;
 
             float y_vel = 0.0f, x_vel = 0.0f;
             for (auto& point : cluster)
