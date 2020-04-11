@@ -6,9 +6,10 @@ endif()
 
 add_executable(demo
 	main.cpp
+	dbscan.h
 	image_creation.h
 	simulator.h
-	dbscan.h
+	precision_evaluator.h
 )
 
 target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR})

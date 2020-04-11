@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
+#ifndef DBSCAN_H
+#define DBSCAN_H
 
 #include <algorithm>
 #include <map>
@@ -154,3 +155,5 @@ private:
     std::vector<Point<T>> points;
     int num_clusters;
 };
+
+#endif  // DBSCAN_H

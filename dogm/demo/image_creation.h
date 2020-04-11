@@ -221,38 +221,6 @@ inline std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::D
 inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map,
                                   const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
 {
-    if (cells_with_velocity.size() > 0)
-    {
-        DBSCAN<dogm::GridCell> dbscan(cells_with_velocity);
-        dbscan.cluster(3.0f, 5);
-
-        std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
-        int num_cluster = dbscan.getNumCluster();
-        std::map<int, std::vector<Point<dogm::GridCell>>> clustered_map = dbscan.getClusteredPoints();
-
-        for (const auto& iter : clustered_map)
-        {
-            int cluster_id = iter.first;
-            std::vector<Point<dogm::GridCell>> cluster = iter.second;
-
-            float y_vel = 0.0f, x_vel = 0.0f;
-            for (auto& point : cluster)
-            {
-                x_vel += point.data.mean_x_vel;
-                y_vel += point.data.mean_y_vel;
-            }
-
-            float resolution = 0.2f;
-            float mean_x_vel = (x_vel / cluster.size()) * resolution;
-            float mean_y_vel = -(y_vel / cluster.size()) * resolution;
-
-            // Ground truth velocities are in polar coordinates so convert them
-            mean_y_vel = sqrtf(powf(mean_x_vel, 2) + powf(mean_y_vel, 2));
-            mean_x_vel = atan2(mean_y_vel, mean_x_vel);
-
-            printf("Cluster ID: %d, est. x-velocity: %f, est. y-velocity: %f\n", cluster_id, mean_x_vel, mean_y_vel);
-        }
-    }
 
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
@@ -263,9 +231,9 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map,
 
             const dogm::GridCell& cell = grid_map.grid_cell_array[index];
             float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
-            uchar temp = static_cast<uchar>(floor(occ * 255));
+            uchar grayscale_value = 255 - static_cast<uchar>(floor(occ * 255));
 
-            grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
+            grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(grayscale_value, grayscale_value, grayscale_value);
         }
     }
 

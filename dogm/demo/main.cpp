@@ -24,6 +24,7 @@ SOFTWARE.
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 #include "image_creation.h"
+#include "precision_evaluator.h"
 #include "simulator.h"
 
 #include <glm/glm.hpp>
@@ -140,6 +141,7 @@ int main(int argc, const char** argv)
 		cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
 
 		const auto cells_with_velocity{computeCellsWithVelocity(grid_map, 0.7f, 4.0f)};
+		evaluate(cells_with_velocity);
 		cv::Mat grid_img = compute_dogm_image(grid_map, cells_with_velocity);
 		cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);
 
