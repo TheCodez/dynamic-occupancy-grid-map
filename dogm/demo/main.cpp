@@ -117,7 +117,7 @@ int main(int argc, const char** argv)
 
 	float delta_time = 0.1f;
 	SimulationData sim_data = simulator.update(10, delta_time);
-	PrecisionEvaluator precision_evaluator{sim_data};
+	PrecisionEvaluator precision_evaluator{sim_data, params.resolution};
 
 	for (int i = 0; i < sim_data.size(); i++)
 	{

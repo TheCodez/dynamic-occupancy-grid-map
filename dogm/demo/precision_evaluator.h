@@ -36,7 +36,10 @@ SOFTWARE.
 class PrecisionEvaluator
 {
 public:
-    explicit PrecisionEvaluator(const SimulationData _sim_data) : sim_data{_sim_data} {}
+    explicit PrecisionEvaluator(const SimulationData _sim_data, const float _resolution)
+        : sim_data{_sim_data}, resolution{_resolution}
+    {
+    }
 
     void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
                               bool print_current_precision = false)
@@ -62,7 +65,6 @@ public:
                     y_vel += point.data.mean_y_vel;
                 }
 
-                float resolution = 0.2f;
                 float mean_x_vel = (x_vel / cluster.size()) * resolution;
                 float mean_y_vel = -(y_vel / cluster.size()) * resolution;
 
@@ -81,6 +83,7 @@ public:
 
 private:
     SimulationData sim_data;
+    float resolution;
 };
 
 #endif  // PRECISION_EVALUATOR_H
