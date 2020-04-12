@@ -92,7 +92,7 @@ int main(int argc, const char** argv)
 	params.velocity_birth = 30.0f;
 
 	dogm::LaserSensorParams laser_params;
-	laser_params.fov = 120.0f;
+	laser_params.fov = 180.0f;
 	laser_params.max_range = 50.0f;
 
 	// Just to init cuda
