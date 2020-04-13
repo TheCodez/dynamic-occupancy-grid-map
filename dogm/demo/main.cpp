@@ -106,7 +106,7 @@ int main(int argc, const char** argv)
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 	std::cout << "### DOGM initialization took: " << ms << " ms" << " ###" << std::endl << std::endl;
 
-	Simulator simulator(100);
+	Simulator simulator(100, laser_params.fov);
 	simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
 //	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
 //	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
