@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
 project(DOGM LANGUAGES CXX CUDA)
 
+set(CMAKE_CXX_STANDARD 14)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 find_package(OpenGL REQUIRED)
 
@@ -83,8 +85,6 @@ add_library(dogm STATIC
 )
 
 target_include_directories(dogm PUBLIC include)
-
-set(CMAKE_CXX_STANDARD 11)
 
 # support for gpu lambdas
 string(APPEND CMAKE_CUDA_FLAGS " --expt-extended-lambda")
