@@ -39,63 +39,57 @@ struct Point
     bool operator==(const Point<T>& other) { return x == other.x && y == other.y; }
 };
 
-constexpr int UNCLASSIFIED = -1;
-constexpr int NOISE = -2;
+constexpr int UNCLASSIFIED = -2;
+constexpr int NOISE = -1;
+
+template <typename T>
+using Cluster = std::vector<Point<T>>;
+
+template <typename T>
+using Clusters = std::vector<Cluster<T>>;
 
 template <typename T>
 class DBSCAN
 {
 public:
-    DBSCAN(const std::vector<Point<T>>& points) : points(points) {}
+    DBSCAN(float eps, int min_cells) : eps(eps), min_cells(min_cells) {}
 
-    void cluster(float eps, int min_cells)
+    Clusters<T> cluster(const std::vector<Point<T>>& points)
     {
-        int cluster_id = 0;
+        std::vector<Point<T>> result_points = points;
 
-        for (auto& point : points)
+        int cluster_id = NOISE + 1;
+
+        for (auto& point : result_points)
         {
             if (point.cluster_id == UNCLASSIFIED)
             {
-                if (expandCluster(point, cluster_id, eps, min_cells))
+                if (expandCluster(result_points, point, cluster_id, eps, min_cells))
                 {
                     cluster_id++;
                 }
             }
         }
 
-        num_clusters = cluster_id;
-    }
-
-    std::map<int, std::vector<Point<T>>> getClusteredPoints() const
-    {
-        std::map<int, std::vector<Point<T>>> result;
-        for (int i = 0; i < getNumCluster(); i++)
+        Clusters<T> clusters(cluster_id, Cluster<T>());
+        for (auto& point : result_points)
         {
-            result.emplace(i, std::vector<Point<T>>());
-        }
-
-        for (auto& point : getPoints())
-        {
-            for (int i = 0; i < getNumCluster(); i++)
+            for (int i = 0; i < clusters.size(); i++)
             {
                 if (point.cluster_id == i)
                 {
-                    auto& cluster = result.at(i);
-                    cluster.push_back(point);
+                    clusters.at(i).push_back(point);
                 }
             }
         }
 
-        return result;
+        return clusters;
     }
 
-    std::vector<Point<T>> getPoints() const { return points; }
-    int getNumCluster() const { return num_clusters; }
-
 private:
-    bool expandCluster(Point<T>& point, int cluster_id, float eps, int min_cells)
+    bool expandCluster(std::vector<Point<T>>& points, Point<T>& point, int cluster_id, float eps, int min_cells)
     {
-        std::vector<Point<T>> seeds = regionQuery(point, eps);
+        std::vector<Point<T>> seeds = regionQuery(points, point, eps);
         if (seeds.size() < min_cells)
         {
             point.cluster_id = NOISE;
@@ -112,7 +106,7 @@ private:
         {
             Point<T> current_cell = seeds.front();
 
-            std::vector<Point<T>> result = regionQuery(current_cell, eps);
+            std::vector<Point<T>> result = regionQuery(points, current_cell, eps);
             if (result.size() >= min_cells)
             {
                 for (auto& result_point : result)
@@ -135,7 +129,7 @@ private:
         return true;
     }
 
-    std::vector<Point<T>> regionQuery(const Point<T>& q, float eps)
+    std::vector<Point<T>> regionQuery(const std::vector<Point<T>>& points, const Point<T>& q, float eps)
     {
         std::vector<Point<T>> neighbors;
 
@@ -152,8 +146,8 @@ private:
 
     float distance(const Point<T>& q, const Point<T>& p) { return sqrtf(powf(q.x - p.x, 2) + powf(q.y - p.y, 2)); }
 
-    std::vector<Point<T>> points;
-    int num_clusters;
+    float eps;
+    int min_cells;
 };
 
 #endif  // DBSCAN_H

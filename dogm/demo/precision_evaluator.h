@@ -62,12 +62,10 @@ public:
         const auto groundtruth_vehicles = sim_data[simulation_step_index].vehicles;
         if (cells_with_velocity.size() > 0 && groundtruth_vehicles.size() > 0)
         {
-            const auto clustered_map = computeDbscanClusters(cells_with_velocity);
-            for (const auto& iter : clustered_map)
+            const auto clusters = computeDbscanClusters(cells_with_velocity);
+            int cluster_id = 0;
+            for (const auto& cluster : clusters)
             {
-                int cluster_id = iter.first;
-                std::vector<Point<dogm::GridCell>> cluster = iter.second;
-
                 PointWithVelocity cluster_mean = computeClusterMean(cluster);
 
                 std::vector<Vehicle> matching_groundtruth_vehicles{};
@@ -109,6 +107,7 @@ public:
                               << ", Pos. Err.: " << closest_vehicle.pos[0] - cluster_mean.x << " "
                               << closest_vehicle.pos[1] - cluster_mean.y << "\n";
                 }
+                cluster_id++;
             }
         }
     }
@@ -125,15 +124,10 @@ public:
     }
 
 private:
-    std::map<int, std::vector<Point<dogm::GridCell>>>
-    computeDbscanClusters(const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
+    Clusters<dogm::GridCell> computeDbscanClusters(const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
     {
-        DBSCAN<dogm::GridCell> dbscan(cells_with_velocity);
-        dbscan.cluster(3.0f, 5);
-
-        std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
-        int num_cluster = dbscan.getNumCluster();
-        return dbscan.getClusteredPoints();
+        DBSCAN<dogm::GridCell> dbscan(3.0f, 5);
+        return dbscan.cluster(cells_with_velocity);
     }
 
     void accumulateErrors(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
@@ -145,7 +139,7 @@ private:
         ++number_of_detections;
     }
 
-    PointWithVelocity computeClusterMean(std::vector<Point<dogm::GridCell>>& cluster)
+    PointWithVelocity computeClusterMean(const Cluster<dogm::GridCell>& cluster)
     {
         PointWithVelocity cluster_mean;
         for (auto& point : cluster)
