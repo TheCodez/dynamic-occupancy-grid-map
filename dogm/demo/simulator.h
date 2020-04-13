@@ -70,9 +70,9 @@ struct Simulator
                 const float sensor_pos_x = 50;
                 constexpr float factor_angle_to_grid = 100 / M_PI;
                 const float supersampling = 50;
-                for (int i = 0; i < vehicle.width*static_cast<int>(supersampling); i++)
+                for (int i = 0; i < vehicle.width * static_cast<int>(supersampling); i++)
                 {
-                    const float x = vehicle.pos.x + static_cast<float>(i)/supersampling - sensor_pos_x;
+                    const float x = vehicle.pos.x + static_cast<float>(i) / supersampling - sensor_pos_x;
                     const float radius = sqrtf(powf(x, 2) + powf(vehicle.pos.y, 2));
                     const float angle = M_PI - atan2(vehicle.pos.y, x);
                     const float angle_normalized_to_grid = angle * factor_angle_to_grid;
