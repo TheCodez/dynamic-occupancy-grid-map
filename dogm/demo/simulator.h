@@ -60,9 +60,11 @@ struct Simulator
 
     float regressAngleOffset(float angle_difference)
     {
+        // TODO find a final solution for this problem. The current function is only an approximation to the true,
+        // unkown function. Error is mostly <0.5 degrees, <0.05 for an fov of 120 degrees.
         angle_difference /= 100.0f;
-        std::cout << angle_difference << " " << powf(angle_difference, 3.0f) << std::endl;
-        return 76.7253f * powf(angle_difference, 3.0f) - 31.1917f * powf(angle_difference, 2.0f) + 66.6564 * angle_difference - 0.3819;
+        return 76.7253f * powf(angle_difference, 3.0f) - 31.1917f * powf(angle_difference, 2.0f) +
+               66.6564 * angle_difference - 0.3819;
     }
 
     SimulationData update(int steps, float dt)
@@ -79,7 +81,6 @@ struct Simulator
 
                 const float sensor_pos_x = 50;
                 const float factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (180.0f / field_of_view);
-                std::cout << regressAngleOffset(180.0f - field_of_view) << "\n";
                 const float angle_offset =
                     num_horizontal_scan_points * ((regressAngleOffset(180.0f - field_of_view)) / 180.0f);
 
@@ -93,13 +94,7 @@ struct Simulator
                     const float angle_normalized_to_grid = (angle * factor_angle_to_grid) - angle_offset;
 
                     int index = static_cast<int>(angle_normalized_to_grid);
-                    // std::cout << "x y = " << vehicle.pos.x << " " << vehicle.pos.y << "\n";
-                    // std::cout << "r t = " << radius << " " << index << "\n";
                     measurement[index] = radius;
-
-                    // Previous implementation
-                    // int m_index = static_cast<int>(vehicle.pos.x) + i;
-                    // measurement[m_index] = vehicle.pos.y;
                 }
             }
 
