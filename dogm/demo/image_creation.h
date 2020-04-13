@@ -47,14 +47,16 @@ inline cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
+        cv::Vec3b* row_ptr = grid_img.ptr<cv::Vec3b>(y);
         for (int x = 0; x < grid_map.getGridSize(); x++)
         {
             int index = y * grid_map.getGridSize() + x;
 
             const dogm::MeasurementCell& cell = grid_map.meas_cell_array[index];
             float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
-            uchar temp = static_cast<uchar>(floor(occ * 255));
-            grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
+            uchar temp = static_cast<uchar>(occ * 255.0f);
+
+            row_ptr[x] = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
         }
     }
 
@@ -66,6 +68,7 @@ inline cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
+        cv::Vec3b* row_ptr = grid_img.ptr<cv::Vec3b>(y);
         for (int x = 0; x < grid_map.getGridSize(); x++)
         {
             int index = y * grid_map.getGridSize() + x;
@@ -74,7 +77,7 @@ inline cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
             int green = static_cast<int>(cell.free_mass * 255.0f);
             int blue = 255 - red - green;
 
-            grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(blue, green, red);
+            row_ptr[x] = cv::Vec3b(blue, green, red);
         }
     }
 
@@ -86,6 +89,7 @@ inline cv::Mat compute_raw_polar_measurement_grid_image(const dogm::DOGM& grid_m
     cv::Mat grid_img(grid_map.getGridSize(), 100, CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
+        cv::Vec3b* row_ptr = grid_img.ptr<cv::Vec3b>(y);
         for (int x = 0; x < 100; x++)
         {
             int index = y * 100 + x;
@@ -94,7 +98,7 @@ inline cv::Mat compute_raw_polar_measurement_grid_image(const dogm::DOGM& grid_m
             int green = static_cast<int>(cell.free_mass * 255.0f);
             int blue = 255 - red - green;
 
-            grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(blue, green, red);
+            row_ptr[x] = cv::Vec3b(blue, green, red);
         }
     }
 
