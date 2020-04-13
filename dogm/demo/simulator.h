@@ -72,9 +72,11 @@ struct Simulator
 
     void addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::vector<float>& measurement)
     {
-        const float sensor_position_x = 50;
-        const float factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (180.0f / field_of_view);
-        const float angle_offset = num_horizontal_scan_points * (regressAngleOffset(180.0f - field_of_view) / 180.0f);
+        const float max_field_of_view = 180.0f;
+        const float sensor_position_x = num_horizontal_scan_points / 2;
+        const float factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (max_field_of_view / field_of_view);
+        const float angle_offset =
+            num_horizontal_scan_points * (regressAngleOffset(max_field_of_view - field_of_view) / max_field_of_view);
 
         const float supersampling = 20.0f;
         const int num_sample_points = vehicle.width * static_cast<int>(supersampling);
@@ -84,9 +86,9 @@ struct Simulator
             const float radius = sqrtf(powf(x, 2) + powf(vehicle.pos.y, 2));
 
             const float angle = M_PI - atan2(vehicle.pos.y, x);
-            const float angle_normalized_to_grid = (angle * factor_angle_to_grid) - angle_offset;
+            const float angle_normalized_to_measurement_vector = (angle * factor_angle_to_grid) - angle_offset;
 
-            int index = static_cast<int>(angle_normalized_to_grid);
+            int index = static_cast<int>(angle_normalized_to_measurement_vector);
             if (0 <= index && index <= measurement.size())
                 measurement[index] = radius;
         }
