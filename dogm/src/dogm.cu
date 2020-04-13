@@ -323,11 +323,11 @@ void DOGM::initializeNewParticles()
 
     thrust::device_ptr<float> weight(weight_array);
     float res_max = *thrust::max_element(weight, weight + particle_count);
-    // printf("Persistent max: %f\n", res_max);
+    printf("Persistent max: %f\n", res_max);
 
     thrust::device_ptr<float> birth_weight(birth_weight_array);
     float res2_max = *thrust::max_element(birth_weight, birth_weight + new_born_particle_count);
-    // printf("New born max: %f\n", res2_max);
+    printf("New born max: %f\n", res2_max);
 }
 
 void DOGM::statisticalMoments()
@@ -417,7 +417,7 @@ void DOGM::resampling()
     float joint_max = joint_weight_accum.back();
     float new_weight = joint_max / particle_count;
 
-    // printf("joint_max: %f\n", joint_max);
+    printf("joint_max: %f\n", joint_max);
 
     resamplingKernel<<<particles_grid, block_dim>>>(particle_array, particle_array_next, birth_particle_array,
                                                     idx_array_resampled, new_weight, particle_count);

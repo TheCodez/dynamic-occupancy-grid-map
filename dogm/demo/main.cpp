@@ -108,16 +108,16 @@ int main(int argc, const char** argv)
 	std::cout << "### DOGM initialization took: " << ms << " ms" << " ###" << std::endl << std::endl;
 
 	Simulator simulator(100, laser_params.fov);
-	// simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
-	simulator.addVehicle(Vehicle(5, glm::vec2(60, 30), glm::vec2(-5, 0)));
-	simulator.addVehicle(Vehicle(5, glm::vec2(40, 20), glm::vec2(0, 5)));
-	// simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+	simulator.addVehicle(Vehicle(3, glm::vec2(30, 20), glm::vec2(0, 0)));
+//	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
+//	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
-//	simulator.addVehicle(Vehicle(6, glm::vec2(40, 30), glm::vec2(20, 5)));
-//	simulator.addVehicle(Vehicle(5, glm::vec2(80, 24), glm::vec2(-15, -5)));
+	simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(20, 5)));
+	simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
+	// simulator.addVehicle(Vehicle(5, glm::vec2(60, 24), glm::vec2(0, -5)));
 
 	float delta_time = 0.1f;
-	SimulationData sim_data = simulator.update(50, delta_time);
+	SimulationData sim_data = simulator.update(20, delta_time);
 	PrecisionEvaluator precision_evaluator{sim_data, params.resolution};
 
 	for (int i = 0; i < sim_data.size(); i++)
@@ -132,12 +132,12 @@ int main(int argc, const char** argv)
 		end = std::chrono::high_resolution_clock::now();
 		dur = end - begin;
 		ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-		// std::cout << "### Iteration took: " << ms << " ms" << " ###" << std::endl;
-		// std::cout << "######  Saving result  #######" << std::endl;
-		// std::cout << "##############################" << std::endl;
+		std::cout << "### Iteration took: " << ms << " ms" << " ###" << std::endl;
+		std::cout << "######  Saving result  #######" << std::endl;
+		std::cout << "##############################" << std::endl;
 
 		const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
-		precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity, true);
+		precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity);
 
 		cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
 		cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
@@ -151,8 +151,8 @@ int main(int argc, const char** argv)
 		cv::imshow("Grid", grid_img);
 		cv::waitKey(1);
 
-		// cv::Mat particle_img = compute_particles_image(grid_map);
-		// cv::imwrite(cv::format("particles_iter-%d.png", i + 1), particle_img);
+		cv::Mat particle_img = compute_particles_image(grid_map);
+		cv::imwrite(cv::format("particles_iter-%d.png", i + 1), particle_img);
 	}
 
 	precision_evaluator.printSummary();
