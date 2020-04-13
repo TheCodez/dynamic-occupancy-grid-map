@@ -58,15 +58,6 @@ struct Simulator
 
     void addVehicle(const Vehicle& vehicle) { vehicles.push_back(vehicle); }
 
-    float regressAngleOffset(float angle_difference)
-    {
-        // TODO find a final solution for this problem. The current function is only an approximation to the true,
-        // unkown function. Error is mostly <0.5 degrees, <0.05 for an fov of 120 degrees.
-        angle_difference /= 100.0f;
-        return 76.7253f * powf(angle_difference, 3.0f) - 31.1917f * powf(angle_difference, 2.0f) +
-               66.6564 * angle_difference - 0.3819;
-    }
-
     SimulationData update(int steps, float dt)
     {
         SimulationData sim_data;
@@ -78,24 +69,7 @@ struct Simulator
             for (auto& vehicle : vehicles)
             {
                 vehicle.move(dt);
-
-                const float sensor_pos_x = 50;
-                const float factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (180.0f / field_of_view);
-                const float angle_offset =
-                    num_horizontal_scan_points * ((regressAngleOffset(180.0f - field_of_view)) / 180.0f);
-
-                const float supersampling = 20.0f;
-                for (int i = 0; i < vehicle.width * static_cast<int>(supersampling); ++i)
-                {
-                    const float x = vehicle.pos.x + static_cast<float>(i) / supersampling - sensor_pos_x;
-                    const float radius = sqrtf(powf(x, 2) + powf(vehicle.pos.y, 2));
-
-                    const float angle = M_PI - atan2(vehicle.pos.y, x);
-                    const float angle_normalized_to_grid = (angle * factor_angle_to_grid) - angle_offset;
-
-                    int index = static_cast<int>(angle_normalized_to_grid);
-                    measurement[index] = radius;
-                }
+                addVehicleDetectionsToMeasurement(vehicle, measurement);
             }
 
             SimulationStep step;
@@ -106,6 +80,45 @@ struct Simulator
 
         return sim_data;
     }
+
+    void addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::vector<float>& measurement)
+    {
+        const float sensor_position_x = 50;
+        const float factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (180.0f / field_of_view);
+        const float angle_offset = num_horizontal_scan_points * (regressAngleOffset(180.0f - field_of_view) / 180.0f);
+
+        const float supersampling = 20.0f;
+        const int num_sample_points = vehicle.width * static_cast<int>(supersampling);
+        for (int point_on_vehicle = 0; point_on_vehicle < num_sample_points; ++point_on_vehicle)
+        {
+            const float x = vehicle.pos.x + static_cast<float>(point_on_vehicle) / supersampling - sensor_position_x;
+            const float radius = sqrtf(powf(x, 2) + powf(vehicle.pos.y, 2));
+
+            const float angle = M_PI - atan2(vehicle.pos.y, x);
+            const float angle_normalized_to_grid = (angle * factor_angle_to_grid) - angle_offset;
+
+            int index = static_cast<int>(angle_normalized_to_grid);
+            if (0 <= index && index <= measurement.size())
+                measurement[index] = radius;
+        }
+    }
+
+    float regressAngleOffset(float angle_difference)
+    {
+        // TODO find a final solution for this. The current regression is only an approximation to the true,
+        // unkown function. Error is mostly <0.5 degrees, <0.05 for an fov of 120 degrees.
+        // Expected results (found manually):
+        // angle_difference==90: return 90
+        // angle_difference==60: return 45
+        // angle_difference==45: return 30
+        // angle_difference==30: return 20
+        // angle_difference==15: return 7.5
+        // angle_difference== 0: return 0
+        angle_difference /= 100.0f;
+        return 76.7253f * powf(angle_difference, 3.0f) - 31.1917f * powf(angle_difference, 2.0f) +
+               66.6564 * angle_difference - 0.3819;
+    }
+
 
     int num_horizontal_scan_points;
     float field_of_view;

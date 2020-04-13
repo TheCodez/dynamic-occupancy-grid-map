@@ -109,8 +109,8 @@ int main(int argc, const char** argv)
 
 	Simulator simulator(100, laser_params.fov);
 	// simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
-	simulator.addVehicle(Vehicle(5, glm::vec2(80, 10), glm::vec2(-15, 0)));
-	simulator.addVehicle(Vehicle(5, glm::vec2(30, 10), glm::vec2(0, 5)));
+	simulator.addVehicle(Vehicle(5, glm::vec2(60, 30), glm::vec2(-5, 0)));
+	simulator.addVehicle(Vehicle(5, glm::vec2(40, 20), glm::vec2(0, 5)));
 	// simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
 //	simulator.addVehicle(Vehicle(6, glm::vec2(40, 30), glm::vec2(20, 5)));
