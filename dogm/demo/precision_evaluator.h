@@ -54,12 +54,10 @@ public:
                           << ", pos: " << vehicle.pos[0] << " " << vehicle.pos[1] << "\n";
             }
 
-            const auto clustered_map = computeDbscanClusters(cells_with_velocity);
-            for (const auto& iter : clustered_map)
+            const auto clusters = computeDbscanClusters(cells_with_velocity);
+            int cluster_id = 0;
+            for (const auto& cluster : clusters)
             {
-                int cluster_id = iter.first;
-                std::vector<Point<dogm::GridCell>> cluster = iter.second;
-
                 float x_vel = 0.0f, y_vel = 0.0f, x_pos = 0.0f, y_pos = 0.0f;
                 for (auto& point : cluster)
                 {
@@ -91,19 +89,16 @@ public:
 
                 // Find matching ground truth vehicle: compute center location of cluster. Find vehicles with distance
                 // smaller than eps; from those, take vehicle with smallest dist Compute velocity error, store
+
+                cluster_id++;
             }
         }
     }
 
-    std::map<int, std::vector<Point<dogm::GridCell>>>
-    computeDbscanClusters(const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
+    Clusters<dogm::GridCell> computeDbscanClusters(const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
     {
-        DBSCAN<dogm::GridCell> dbscan(cells_with_velocity);
-        dbscan.cluster(3.0f, 5);
-
-        std::vector<Point<dogm::GridCell>> cluster_points = dbscan.getPoints();
-        int num_cluster = dbscan.getNumCluster();
-        return dbscan.getClusteredPoints();
+        DBSCAN<dogm::GridCell> dbscan(3.0f, 5);
+        return dbscan.cluster(cells_with_velocity);
     }
 
     void printSummary() { std::cout << "\nPrecision evaluator prints no summary yet.\n"; }
