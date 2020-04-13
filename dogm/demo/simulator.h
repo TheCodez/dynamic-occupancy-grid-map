@@ -119,7 +119,6 @@ struct Simulator
                66.6564 * angle_difference - 0.3819;
     }
 
-
     int num_horizontal_scan_points;
     float field_of_view;
     std::vector<Vehicle> vehicles;
