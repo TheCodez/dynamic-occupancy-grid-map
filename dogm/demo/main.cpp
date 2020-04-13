@@ -148,18 +148,17 @@ int main(int argc, const char** argv)
 		cv::Mat grid_img = compute_dogm_image(grid_map, cells_with_velocity);
 		cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);
 
-		cv::imshow("Grid", grid_img);
-		cv::waitKey(1);
-
 		cv::Mat particle_img = compute_particles_image(grid_map);
 		cv::imwrite(cv::format("particles_iter-%d.png", i + 1), particle_img);
 	}
 
 	precision_evaluator.printSummary();
 
-#if	0
+#if	1
+	const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
+
 	cv::Mat particle_img = compute_particles_image(grid_map);
-	cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
+	cv::Mat grid_img = compute_dogm_image(grid_map, cells_with_velocity);
 
 	cv::namedWindow("particles", cv::WINDOW_NORMAL);
 	cv::imshow("particles", particle_img);
