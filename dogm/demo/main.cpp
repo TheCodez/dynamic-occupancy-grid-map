@@ -112,7 +112,7 @@ int main(int argc, const char** argv)
 //	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
 //	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
-	simulator.addVehicle(Vehicle(6, glm::vec2(40, 35), glm::vec2(20, 0)));
+	simulator.addVehicle(Vehicle(6, glm::vec2(40, 40), glm::vec2(20, 0)));
 	// simulator.addVehicle(Vehicle(5, glm::vec2(60, 24), glm::vec2(0, -5)));
 
 	float delta_time = 0.1f;

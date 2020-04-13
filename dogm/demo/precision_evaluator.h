@@ -40,13 +40,18 @@ public:
     explicit PrecisionEvaluator(const SimulationData _sim_data, const float _resolution)
         : sim_data{_sim_data}, resolution{_resolution}
     {
+        cumulative_error_x_pos = 0.0f;
+        cumulative_error_y_pos = 0.0f;
+        cumulative_error_x_vel = 0.0f;
+        cumulative_error_y_vel = 0.0f;
+        number_of_iterations = 0;
         // step_errors.reserve(sim_data.size());
     }
 
     void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
                               bool print_current_precision = false)
     {
-        if (cells_with_velocity.size() > 0)
+        if (cells_with_velocity.size() > 0 && sim_data[simulation_step_index].vehicles.size() > 0)
         {
             for (const auto& vehicle : sim_data[simulation_step_index].vehicles)
             {
@@ -70,16 +75,14 @@ public:
                 }
 
                 float mean_x_vel = (x_vel / cluster.size()) * resolution;
-                float mean_y_vel = -(y_vel / cluster.size()) * resolution;
+                float mean_y_vel = (y_vel / cluster.size()) * resolution;
                 float mean_x_pos = (x_pos / cluster.size()) * resolution;
                 float mean_y_pos = (y_pos / cluster.size()) * resolution;
 
-                // Ground truth velocities are in polar coordinates so convert them
-                mean_y_vel = sqrtf(powf(mean_x_vel, 2) + powf(mean_y_vel, 2));
-                mean_x_vel = atan2(mean_y_vel, mean_x_vel);
-
-                // mean_y_pos = sqrtf(powf(mean_x_pos, 2) + powf(mean_y_pos, 2));
-                // mean_x_pos = atan2(mean_y_pos, mean_x_pos);
+                const float x_offset = 22.0f;
+                const float y_offset = 2.0f * (25.0f - mean_y_pos);  // motivated by numerical experiments
+                mean_x_pos += x_offset;
+                mean_y_pos += y_offset;
 
                 if (print_current_precision)
                 {
@@ -88,6 +91,14 @@ public:
                     std::cout << "Est. values: vel: " << mean_x_vel << " " << mean_y_vel;
                     std::cout << " , pos: " << mean_x_pos << " " << mean_y_pos << "\n\n";
                 }
+
+                // TODO use absolute error once you're not looking into systematic errors anymore
+                const auto vehicle = sim_data[simulation_step_index].vehicles[0];
+                cumulative_error_x_pos += mean_x_pos - vehicle.pos[0];
+                cumulative_error_y_pos += mean_y_pos - vehicle.pos[1];
+                cumulative_error_x_vel += mean_x_vel - vehicle.vel[0];
+                cumulative_error_y_vel += mean_y_vel - vehicle.vel[1];
+                ++number_of_iterations;
 
                 // Find matching ground truth vehicle: compute center location of cluster. Find vehicles with distance
                 // smaller than eps; from those, take vehicle with smallest dist Compute velocity error, store
@@ -106,11 +117,24 @@ public:
         return dbscan.getClusteredPoints();
     }
 
-    void printSummary() { std::cout << "\nPrecision evaluator prints no summary yet.\n"; }
+    void printSummary()
+    {
+        std::cout << "Mean errors: \n";
+        std::cout << "Position: " << cumulative_error_x_pos / number_of_iterations << " "
+                  << cumulative_error_y_pos / number_of_iterations << "\n";
+        std::cout << "Velocity: " << cumulative_error_x_vel / number_of_iterations << " "
+                  << cumulative_error_y_vel / number_of_iterations << "\n";
+        // TODO add reporting of relative error
+    }
 
 private:
     SimulationData sim_data;
     float resolution;
+    float cumulative_error_x_pos;
+    float cumulative_error_y_pos;
+    float cumulative_error_x_vel;
+    float cumulative_error_y_vel;
+    int number_of_iterations;
     // std::vector<?> step_errors;
 };
 
