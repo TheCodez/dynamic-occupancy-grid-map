@@ -171,10 +171,6 @@ private:
 
     SimulationData sim_data;
     float resolution;
-    // float cumulative_error_x_pos;
-    // float cumulative_error_y_pos;
-    // float cumulative_error_x_vel;
-    // float cumulative_error_y_vel;
     PointWithVelocity cumulative_error;
     int number_of_detections;
     int number_of_unassigned_detections;
