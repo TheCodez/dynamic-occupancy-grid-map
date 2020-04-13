@@ -92,7 +92,7 @@ int main(int argc, const char** argv)
 	params.velocity_birth = 30.0f;
 
 	dogm::LaserSensorParams laser_params;
-	laser_params.fov = 180.0f;
+	laser_params.fov = 120.0f;
 	laser_params.max_range = 50.0f;
 
 	// Just to init cuda
@@ -107,7 +107,7 @@ int main(int argc, const char** argv)
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 	std::cout << "### DOGM initialization took: " << ms << " ms" << " ###" << std::endl << std::endl;
 
-	Simulator simulator(100);
+	Simulator simulator(100, laser_params.fov);
 	// simulator.addVehicle(Vehicle(6, glm::vec2(20, 10), glm::vec2(0, 0)));
 	simulator.addVehicle(Vehicle(5, glm::vec2(80, 10), glm::vec2(-15, 0)));
 	simulator.addVehicle(Vehicle(5, glm::vec2(30, 10), glm::vec2(0, 5)));
@@ -139,11 +139,11 @@ int main(int argc, const char** argv)
 		const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
 		precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity, true);
 
-		// cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
-		// cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
+		cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
+		cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
 
-		// cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
-		// cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
+		cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
+		cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
 
 		cv::Mat grid_img = compute_dogm_image(grid_map, cells_with_velocity);
 		cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);

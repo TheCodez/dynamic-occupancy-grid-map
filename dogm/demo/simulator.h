@@ -51,9 +51,19 @@ using SimulationData = std::vector<SimulationStep>;
 
 struct Simulator
 {
-    Simulator(int num_measurements) : num_measurements(num_measurements) {}
+    Simulator(int _num_horizontal_scan_points, const float _field_of_view)
+        : num_horizontal_scan_points(_num_horizontal_scan_points), field_of_view(_field_of_view)
+    {
+    }
 
     void addVehicle(const Vehicle& vehicle) { vehicles.push_back(vehicle); }
+
+    float regressAngleOffset(float angle_difference)
+    {
+        angle_difference /= 100.0f;
+        std::cout << angle_difference << " " << powf(angle_difference, 3.0f) << std::endl;
+        return 76.7253f * powf(angle_difference, 3.0f) - 31.1917f * powf(angle_difference, 2.0f) + 66.6564 * angle_difference - 0.3819;
+    }
 
     SimulationData update(int steps, float dt)
     {
@@ -61,24 +71,30 @@ struct Simulator
 
         for (int i = 0; i < steps; i++)
         {
-            std::vector<float> measurement(num_measurements, INFINITY);
+            std::vector<float> measurement(num_horizontal_scan_points, INFINITY);
 
             for (auto& vehicle : vehicles)
             {
                 vehicle.move(dt);
 
                 const float sensor_pos_x = 50;
-                constexpr float factor_angle_to_grid = 100 / M_PI;
-                const float supersampling = 50;
-                for (int i = 0; i < vehicle.width * static_cast<int>(supersampling); i++)
+                const float factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (180.0f / field_of_view);
+                std::cout << regressAngleOffset(180.0f - field_of_view) << "\n";
+                const float angle_offset =
+                    num_horizontal_scan_points * ((regressAngleOffset(180.0f - field_of_view)) / 180.0f);
+
+                const float supersampling = 20.0f;
+                for (int i = 0; i < vehicle.width * static_cast<int>(supersampling); ++i)
                 {
                     const float x = vehicle.pos.x + static_cast<float>(i) / supersampling - sensor_pos_x;
                     const float radius = sqrtf(powf(x, 2) + powf(vehicle.pos.y, 2));
+
                     const float angle = M_PI - atan2(vehicle.pos.y, x);
-                    const float angle_normalized_to_grid = angle * factor_angle_to_grid;
+                    const float angle_normalized_to_grid = (angle * factor_angle_to_grid) - angle_offset;
+
                     int index = static_cast<int>(angle_normalized_to_grid);
-                    std::cout << "x y = " << vehicle.pos.x << " " << vehicle.pos.y << "\n";
-                    std::cout << "r t = " << radius << " " << index << "\n";
+                    // std::cout << "x y = " << vehicle.pos.x << " " << vehicle.pos.y << "\n";
+                    // std::cout << "r t = " << radius << " " << index << "\n";
                     measurement[index] = radius;
 
                     // Previous implementation
@@ -96,7 +112,8 @@ struct Simulator
         return sim_data;
     }
 
-    int num_measurements;
+    int num_horizontal_scan_points;
+    float field_of_view;
     std::vector<Vehicle> vehicles;
 };
 
