@@ -69,15 +69,16 @@ struct Simulator
 
                 const float sensor_pos_x = 50;
                 constexpr float factor_angle_to_grid = 100 / M_PI;
-                for (int i = 0; i < vehicle.width; i++)
+                const float supersampling = 50;
+                for (int i = 0; i < vehicle.width*static_cast<int>(supersampling); i++)
                 {
-                    const float x = vehicle.pos.x + i - sensor_pos_x;
+                    const float x = vehicle.pos.x + static_cast<float>(i)/supersampling - sensor_pos_x;
                     const float radius = sqrtf(powf(x, 2) + powf(vehicle.pos.y, 2));
                     const float angle = M_PI - atan2(vehicle.pos.y, x);
                     const float angle_normalized_to_grid = angle * factor_angle_to_grid;
                     int index = static_cast<int>(angle_normalized_to_grid);
-                    // std::cout << "x y = " << vehicle.pos.x << " " << vehicle.pos.y << "\n";
-                    // std::cout << "r t = " << radius << " " << index << "\n";
+                    std::cout << "x y = " << vehicle.pos.x << " " << vehicle.pos.y << "\n";
+                    std::cout << "r t = " << radius << " " << index << "\n";
                     measurement[index] = radius;
 
                     // Previous implementation
