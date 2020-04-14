@@ -110,37 +110,25 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
         int start_idx = grid_cell_array[i].start_idx;
         int end_idx = grid_cell_array[i].end_idx;
 
-        if (start_idx != -1)
+        float m_occ_pred = subtract(weight_array_accum, start_idx, end_idx);
+
+        if (m_occ_pred > p_S)
         {
-            float m_occ_pred = subtract(weight_array_accum, start_idx, end_idx);
-
-            if (m_occ_pred > p_S)
-            {
-                // printf("Predicted mass greater pS. Mass is: %f\n", m_occ_pred);
-                m_occ_pred = p_S;
-                normalize_to_pS(particle_array, weight_array, p_S, start_idx, end_idx);
-            }
-
-            float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);
-            float m_occ_up = update_o(m_occ_pred, m_free_pred, meas_cell_array[i]);
-            float m_free_up = update_f(m_occ_pred, m_free_pred, meas_cell_array[i]);
-            float rho_b = separate_newborn_part(m_occ_pred, m_occ_up, p_B);
-            float rho_p = m_occ_up - rho_b;
-            born_masses_array[i] = rho_b;
-
-            // printf("Rho B: %f\n", rho_b);
-
-            store_values(rho_b, rho_p, m_free_up, m_occ_up, grid_cell_array, i);
+            // printf("Predicted mass greater pS. Mass is: %f\n", m_occ_pred);
+            m_occ_pred = p_S;
+            normalize_to_pS(particle_array, weight_array, p_S, start_idx, end_idx);
         }
-        else
-        {
-            float m_occ = grid_cell_array[i].occ_mass;
-            float m_free = predict_free_mass(grid_cell_array[i], m_occ);
-            float m_occ_up = update_o(m_occ, m_free, meas_cell_array[i]);
-            float m_free_up = update_f(m_occ, m_free, meas_cell_array[i]);
-            born_masses_array[i] = 0.0f;
-            store_values(0.0f, m_occ_up, m_free_up, m_occ_up, grid_cell_array, i);
-        }
+
+        float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);
+        float m_occ_up = update_o(m_occ_pred, m_free_pred, meas_cell_array[i]);
+        float m_free_up = update_f(m_occ_pred, m_free_pred, meas_cell_array[i]);
+        float rho_b = separate_newborn_part(m_occ_pred, m_occ_up, p_B);
+        float rho_p = m_occ_up - rho_b;
+        born_masses_array[i] = rho_b;
+
+        // printf("Rho B: %f\n", rho_b);
+
+        store_values(rho_b, rho_p, m_free_up, m_occ_up, grid_cell_array, i);
     }
 }
 

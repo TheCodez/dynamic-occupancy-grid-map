@@ -82,15 +82,12 @@ __global__ void updatePersistentParticlesKernel2(GridCell* __restrict__ grid_cel
         int start_idx = grid_cell_array[i].start_idx;
         int end_idx = grid_cell_array[i].end_idx;
 
-        if (start_idx != -1)
-        {
-            float m_occ_accum = subtract(weight_array_accum, start_idx, end_idx);
-            float rho_p = grid_cell_array[i].pers_occ_mass;
-            float mu_A = calc_norm_assoc(m_occ_accum, rho_p);
-            float mu_UA = calc_norm_unassoc(grid_cell_array[i]);
-            set_normalization_components(grid_cell_array, i, mu_A, mu_UA);
-            // printf("mu_A: %f, mu_UA: %f\n", mu_A, mu_UA);
-        }
+        float m_occ_accum = subtract(weight_array_accum, start_idx, end_idx);
+        float rho_p = grid_cell_array[i].pers_occ_mass;
+        float mu_A = calc_norm_assoc(m_occ_accum, rho_p);
+        float mu_UA = calc_norm_unassoc(grid_cell_array[i]);
+        set_normalization_components(grid_cell_array, i, mu_A, mu_UA);
+        // printf("mu_A: %f, mu_UA: %f\n", mu_A, mu_UA);
     }
 }
 

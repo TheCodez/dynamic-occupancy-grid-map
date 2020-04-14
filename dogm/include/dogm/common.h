@@ -43,6 +43,11 @@ inline void accumulate(thrust::device_vector<T>& arr, thrust::device_vector<T>& 
 template <typename T>
 inline __device__ __host__ T subtract(T* accum_array, int start_idx, int end_idx)
 {
+    if (start_idx == -1 || end_idx == -1)
+    {
+        return 0.0f;
+    }
+
     if (start_idx == 0)
     {
         return accum_array[end_idx];
