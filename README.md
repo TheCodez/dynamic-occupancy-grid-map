@@ -53,6 +53,7 @@ You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this proje
 
 <details>
 <summary>Windows 10</summary>
+  
 - OpenCV:
   - Download and install OpenCV Windows from [here](https://opencv.org/releases/).
 
