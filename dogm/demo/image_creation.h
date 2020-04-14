@@ -193,16 +193,16 @@ inline std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::D
             int index = y * grid_map.getGridSize() + x;
 
             const dogm::GridCell& cell = grid_map.grid_cell_array[index];
-            float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
+            float occ = pignistic_transformation(cell.masses.y, cell.masses.x);
             cv::Mat vel_img(2, 1, CV_32FC1);
-            vel_img.at<float>(0) = cell.mean_x_vel;
-            vel_img.at<float>(1) = cell.mean_y_vel;
+            vel_img.at<float>(0) = cell.mean_vel.x;
+            vel_img.at<float>(1) = cell.mean_vel.y;
 
             cv::Mat covar_img(2, 2, CV_32FC1);
-            covar_img.at<float>(0, 0) = cell.var_x_vel;
+            covar_img.at<float>(0, 0) = cell.var_vel.x;
             covar_img.at<float>(1, 0) = cell.covar_xy_vel;
             covar_img.at<float>(0, 1) = cell.covar_xy_vel;
-            covar_img.at<float>(1, 1) = cell.var_y_vel;
+            covar_img.at<float>(1, 1) = cell.var_vel.y;
 
             cv::Mat mdist = vel_img.t() * covar_img.inv() * vel_img;
 
@@ -234,7 +234,7 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map,
             int index = y * grid_map.getGridSize() + x;
 
             const dogm::GridCell& cell = grid_map.grid_cell_array[index];
-            float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
+            float occ = pignistic_transformation(cell.masses.y, cell.masses.x);
             uchar grayscale_value = 255 - static_cast<uchar>(floor(occ * 255));
 
             row_ptr[x] = cv::Vec3b(grayscale_value, grayscale_value, grayscale_value);
@@ -243,7 +243,7 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map,
 
     for (const auto& cell : cells_with_velocity)
     {
-        float angle = fmodf((atan2(cell.data.mean_y_vel, cell.data.mean_x_vel) * (180.0f / M_PI)) + 360, 360);
+        float angle = fmodf((atan2(cell.data.mean_vel.y, cell.data.mean_vel.x) * (180.0f / M_PI)) + 360, 360);
 
         // printf("Angle: %f\n", angle);
 
