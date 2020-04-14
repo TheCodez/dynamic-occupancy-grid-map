@@ -35,10 +35,10 @@ struct Particle;
 
 __global__ void setupRandomStatesKernel(curandState* __restrict__ states, unsigned long long seed, int count);
 
-__global__ void initParticlesKernel(Particle* __restrict__ particle_array, curandState* __restrict__ global_state,
+__global__ void initParticlesKernel(ParticleSoA particle_array, curandState* __restrict__ global_state,
                                     float velocity, int grid_size, int particle_count);
 
-__global__ void initBirthParticlesKernel(Particle* __restrict__ birth_particle_array,
+__global__ void initBirthParticlesKernel(ParticleSoA birth_particle_array,
                                          curandState* __restrict__ global_state, float velocity, int grid_size,
                                          int particle_count);
 

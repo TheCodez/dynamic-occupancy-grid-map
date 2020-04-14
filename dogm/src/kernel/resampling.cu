@@ -87,16 +87,31 @@ __device__ Particle copy_particle(const Particle* __restrict__ particle_array, i
     }
 }
 
-__global__ void resamplingKernel(const Particle* __restrict__ particle_array,
-                                 Particle* __restrict__ particle_array_next,
-                                 const Particle* __restrict__ birth_particle_array,
+__global__ void resamplingKernel(const ParticleSoA particle_array,
+                                 ParticleSoA particle_array_next,
+                                 const ParticleSoA birth_particle_array,
                                  const int* __restrict__ idx_array_resampled, float new_weight, int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
     {
-        particle_array_next[i] =
-            copy_particle(particle_array, particle_count, birth_particle_array, idx_array_resampled[i]);
-        particle_array_next[i].weight = new_weight;
+        int idx = idx_array_resampled[i];
+
+        if (idx < particle_count)
+        {
+            particle_array_next.grid_cell_idx[i] = particle_array.grid_cell_idx[idx];
+            particle_array_next.weight[i] = particle_array.weight[idx];
+            particle_array_next.associated[i] = particle_array.associated[idx];
+            particle_array_next.state[i] = particle_array.state[idx];
+        }
+        else
+        {
+            particle_array_next.grid_cell_idx[i] = birth_particle_array.grid_cell_idx[idx - particle_count];
+            particle_array_next.weight[i] = birth_particle_array.weight[idx - particle_count];
+            particle_array_next.associated[i] = birth_particle_array.associated[idx - particle_count];
+            particle_array_next.state[i] = birth_particle_array.state[idx - particle_count];
+        }
+
+        particle_array_next.weight[i] = new_weight;
     }
 }
 

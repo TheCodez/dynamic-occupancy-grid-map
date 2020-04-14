@@ -264,6 +264,7 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map,
 inline cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
 {
     cv::Mat particles_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
+    /*
     for (int i = 0; i < grid_map.particle_count; i++)
     {
         const dogm::Particle& part = grid_map.particle_array[i];
@@ -275,6 +276,7 @@ inline cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
             particles_img.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x)) = cv::Vec3b(0, 0, 255);
         }
     }
+    */
 
     return particles_img;
 }

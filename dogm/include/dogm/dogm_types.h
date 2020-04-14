@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cuda_utils.h"
 #include <glm/vec4.hpp>
 
 namespace dogm
@@ -40,6 +41,42 @@ struct Particle
     float weight;
     bool associated;
     glm::vec4 state;
+};
+
+struct ParticleSoA
+{
+    int* grid_cell_idx;
+    float* weight;
+    bool* associated;
+    glm::vec4* state;
+
+    int size;
+
+    ParticleSoA() {}
+
+    ParticleSoA(int size) 
+        : size(size)
+    {
+        printf("size: %d\n", size);
+
+        CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
+        CHECK_ERROR(cudaMalloc((void**)&weight, size * sizeof(float)));
+        CHECK_ERROR(cudaMalloc((void**)&associated, size * sizeof(bool)));
+        CHECK_ERROR(cudaMalloc((void**)&state, size * sizeof(glm::vec4)));
+    }
+
+    ParticleSoA& operator=(const ParticleSoA& other)
+    {
+        if (this != &other)
+        {
+            CHECK_ERROR(cudaMemcpy(&grid_cell_idx, &other.grid_cell_idx, size * sizeof(int), cudaMemcpyDeviceToDevice));
+            CHECK_ERROR(cudaMemcpy(&weight, &other.weight, size * sizeof(float), cudaMemcpyDeviceToDevice));
+            CHECK_ERROR(cudaMemcpy(&associated, &other.associated, size * sizeof(bool), cudaMemcpyDeviceToDevice));
+            CHECK_ERROR(cudaMemcpy(&state, &other.state, size * sizeof(glm::vec4), cudaMemcpyDeviceToDevice));
+        }
+
+        return *this;
+    }
 };
 
 } /* namespace dogm */

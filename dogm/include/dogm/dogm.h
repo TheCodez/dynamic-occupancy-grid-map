@@ -32,14 +32,17 @@ SOFTWARE.
 
 #include <vector>
 
+#include "dogm_types.h"
+
 class Renderer;
 
 namespace dogm
 {
 
-struct GridCell;
-struct MeasurementCell;
-struct Particle;
+//struct GridCell;
+//struct MeasurementCell;
+//struct Particle;
+//struct ParticleSoA;
 
 struct GridParams
 {
@@ -83,6 +86,8 @@ public:
 private:
     void initialize();
 
+    void sortParticles(ParticleSoA particles);
+
 public:
     void particlePrediction(float dt);
     void particleAssignment();
@@ -99,9 +104,9 @@ public:
     std::unique_ptr<Renderer> renderer;
 
     GridCell* grid_cell_array;
-    Particle* particle_array;
-    Particle* particle_array_next;
-    Particle* birth_particle_array;
+    struct ParticleSoA particle_array;
+    struct ParticleSoA particle_array_next;
+    struct ParticleSoA birth_particle_array;
 
     MeasurementCell* polar_meas_cell_array;
     MeasurementCell* meas_cell_array;

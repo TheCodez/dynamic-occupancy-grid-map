@@ -33,7 +33,7 @@ struct MeasurementCell;
 struct Particle;
 
 __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_array,
-                                               Particle* __restrict__ particle_array, float* __restrict__ weight_array,
+                                               ParticleSoA particle_array, float* __restrict__ weight_array,
                                                const float* __restrict__ weight_array_accum,
                                                const MeasurementCell* __restrict__ meas_cell_array,
                                                float* __restrict__ born_masses_array, float p_B, float p_S,
