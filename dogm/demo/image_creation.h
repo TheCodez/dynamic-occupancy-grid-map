@@ -225,10 +225,10 @@ inline std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::D
 inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map,
                                   const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
 {
-
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
+        cv::Vec3b* row_ptr = grid_img.ptr<cv::Vec3b>(y);
         for (int x = 0; x < grid_map.getGridSize(); x++)
         {
             int index = y * grid_map.getGridSize() + x;
@@ -237,7 +237,7 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map,
             float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
             uchar grayscale_value = 255 - static_cast<uchar>(floor(occ * 255));
 
-            grid_img.at<cv::Vec3b>(y, x) = cv::Vec3b(grayscale_value, grayscale_value, grayscale_value);
+            row_ptr[x] = cv::Vec3b(grayscale_value, grayscale_value, grayscale_value);
         }
     }
 
@@ -252,7 +252,8 @@ inline cv::Mat compute_dogm_image(const dogm::DOGM& grid_map,
         cv::Mat hsv{1, 1, CV_8UC3, cv::Scalar(hue_opencv, 255, 255)};
         cv::Mat rgb{1, 1, CV_8UC3};
         cv::cvtColor(hsv, rgb, cv::COLOR_HSV2RGB);
-        grid_img.at<cv::Vec3b>(cell.y, cell.x) = rgb.at<cv::Vec3b>(0, 0);
+
+        grid_img.ptr<cv::Vec3b>(static_cast<int>(cell.y))[static_cast<int>(cell.x)] = rgb.at<cv::Vec3b>(0, 0);
     }
 
     addColorWheelToBottomRightCorner(grid_img);
