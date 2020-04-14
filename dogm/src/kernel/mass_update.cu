@@ -34,7 +34,7 @@ namespace dogm
 
 __device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, float alpha = 0.9)
 {
-    float m_free_pred = min(alpha * grid_cell.free_mass, 1.0 - m_occ_pred);
+    float m_free_pred = min(alpha * grid_cell.masses.y, 1.0 - m_occ_pred);
 
     // limit free mass
     float sum = m_free_pred + m_occ_pred;
@@ -76,10 +76,8 @@ __device__ float separate_newborn_part(float m_occ_pred, float m_occ_up, float p
 __device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_occ_up,
                              GridCell* __restrict__ grid_cell_array, int i)
 {
-    grid_cell_array[i].pers_occ_mass = rho_p;
-    grid_cell_array[i].new_born_occ_mass = rho_b;
-    grid_cell_array[i].free_mass = m_free_up;
-    grid_cell_array[i].occ_mass = m_occ_up;
+    grid_cell_array[i].rho_masses = make_float2(rho_p, rho_b);
+    grid_cell_array[i].masses = make_float2(m_occ_up, m_free_up);
 }
 
 __device__ void normalize_to_pS(Particle* __restrict__ particle_array, float* __restrict__ weight_array, float p_S,
@@ -107,8 +105,8 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        int start_idx = grid_cell_array[i].start_idx;
-        int end_idx = grid_cell_array[i].end_idx;
+        int start_idx = grid_cell_array[i].particle_indices.x;
+        int end_idx = grid_cell_array[i].particle_indices.y;
 
         if (start_idx != -1)
         {
@@ -134,7 +132,7 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
         }
         else
         {
-            float m_occ = grid_cell_array[i].occ_mass;
+            float m_occ = grid_cell_array[i].masses.x;
             float m_free = predict_free_mass(grid_cell_array[i], m_occ);
             float m_occ_up = update_o(m_occ, m_free, meas_cell_array[i]);
             float m_free_up = update_f(m_occ, m_free, meas_cell_array[i]);
