@@ -28,7 +28,9 @@ Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps 
 ## Requirements and Setup
 You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this project. You can find the setup instructions for Ubuntu 18.04 LTS and Windows 10 below.
 
-### Ubuntu 18.04
+<details>
+<summary>Ubuntu 18.04</summary>
+  
 - OpenCV: recommended to compile from source following the [official instructions](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html).
 - GLFW3, GLEW, GLM:
     ```console
@@ -47,8 +49,10 @@ You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this proje
   - Reboot (if necessary, a couple of times)
   - Check that your system GPU driver is still working by executing `nvidia-smi`
   - To verify that your CUDA installation is working, consider compiling and running one of the examples from /usr/local/cuda/samples. In particular ones that use OpenGL+CUDA, e.g. `samples/2_Graphics/Mandelbrot`.
+</details>
 
-### Windows 10
+<details>
+<summary>Windows 10</summary>
 - OpenCV:
   - Download and install OpenCV Windows from [here](https://opencv.org/releases/).
 
@@ -66,11 +70,14 @@ You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this proje
   - Have the most recent nvidia driver installed on your system, then check which CUDA version it supports
   - Follow the corresponding instructions from the [cuda toolkit archive](https://developer.nvidia.com/cuda-toolkit-archive)
 
+</details>
+
 ## How to build
 
 Use CMake to build the project:
 
-### Ubuntu 18.04
+<details>
+<summary>Ubuntu 18.04</summary>
 
 ```
 cd dogm
@@ -79,8 +86,10 @@ cd build
 cmake ..
 make
 ```
+</details>
 
-### Windows 10
+<details>
+<summary>Windows 10</summary>
 
 On Windows it's easiest to use cmake-gui. Use it to configure and generate the project like shown below (required variables are marked with a red dot):
 
@@ -88,7 +97,8 @@ On Windows it's easiest to use cmake-gui. Use it to configure and generate the p
   <img src="./docs/cmake-gui.png">
 </p>
 
-Afterwards open the generated ```.sln``` in Visual Studio and compile it.
+Afterwards open the generated ```.sln``` in Visual Studio 17/19 and compile it.
+</details>
 
 ## Contributing
 
