@@ -34,18 +34,7 @@ namespace dogm
 
 __device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, float alpha = 0.9)
 {
-    float m_free_pred = min(alpha * grid_cell.free_mass, 1.0 - m_occ_pred);
-
-    // limit free mass
-    float sum = m_free_pred + m_occ_pred;
-    if (sum > 1.0)
-    {
-        // printf("Sum of masses exceeds 1. Limiting free mass.\n");
-        float diff = sum - 1.0;
-        m_free_pred -= diff;
-    }
-
-    return m_free_pred;
+    return min(alpha * grid_cell.free_mass, 1.0f - m_occ_pred);
 }
 
 __device__ float update_o(float m_occ_pred, float m_free_pred, const MeasurementCell& meas_cell)
