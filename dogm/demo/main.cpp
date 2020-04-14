@@ -24,6 +24,7 @@ SOFTWARE.
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 #include "image_creation.h"
+#include "precision_evaluator.h"
 #include "simulator.h"
 
 #include <glm/glm.hpp>
@@ -111,15 +112,17 @@ int main(int argc, const char** argv)
 //	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
 //	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
-	simulator.addVehicle(Vehicle(6, glm::vec2(40, 35), glm::vec2(20, 0)));
-	simulator.addVehicle(Vehicle(5, glm::vec2(60, 24), glm::vec2(0, -10)));
+	simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(20, 5)));
+	simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
+	// simulator.addVehicle(Vehicle(5, glm::vec2(60, 24), glm::vec2(0, -5)));
 
 	float delta_time = 0.1f;
-	std::vector<std::vector<float>> sim_measurements = simulator.update(10, delta_time);
+	SimulationData sim_data = simulator.update(20, delta_time);
+	PrecisionEvaluator precision_evaluator{sim_data, params.resolution};
 
-	for (int i = 0; i < sim_measurements.size(); i++)
+	for (int i = 0; i < sim_data.size(); i++)
 	{
-		grid_map.updateMeasurementGrid(sim_measurements[i].data(), sim_measurements[i].size());
+		grid_map.updateMeasurementGrid(sim_data[i].measurements.data(), sim_data[i].measurements.size());
 #endif
 		begin = std::chrono::high_resolution_clock::now();
 
@@ -133,22 +136,29 @@ int main(int argc, const char** argv)
 		std::cout << "######  Saving result  #######" << std::endl;
 		std::cout << "##############################" << std::endl;
 
+		const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
+		precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity);
+
 		cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
 		cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
 
 		cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
 		cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
 
-		cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
+		cv::Mat grid_img = compute_dogm_image(grid_map, cells_with_velocity);
 		cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), grid_img);
 
 		cv::Mat particle_img = compute_particles_image(grid_map);
 		cv::imwrite(cv::format("particles_iter-%d.png", i + 1), particle_img);
 	}
 
+	precision_evaluator.printSummary();
+
 #if	1
+	const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
+
 	cv::Mat particle_img = compute_particles_image(grid_map);
-	cv::Mat grid_img = compute_dogm_image(grid_map, 0.7f, 4.0f);
+	cv::Mat grid_img = compute_dogm_image(grid_map, cells_with_velocity);
 
 	cv::namedWindow("particles", cv::WINDOW_NORMAL);
 	cv::imshow("particles", particle_img);
