@@ -95,7 +95,7 @@ Afterwards open the generated ```.sln``` in Visual Studio and compile it.
 Contributions are welcome. Please make sure to apply `clang-format` to your code, e.g. by manually executing
 
 ```console
-find dogm/include dogm/src -iname '*.h' -o -iname '*.cpp' -o -iname '*.cu' | xargs clang-format -i
+find dogm/include dogm/src dogm/demo -iname '*.h' -o -iname '*.cpp' -o -iname '*.cu' | xargs clang-format -i
 ```
 
 or including this formatting in your editor/IDE.
