@@ -9,12 +9,14 @@ add_executable(demo
 	dbscan.h
 	image_creation.h
 	simulator.h
-	precision_evaluator.h
 )
 
 target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR})
 
 target_link_libraries(demo
 	dogm
+	utils
 	${OpenCV_LIBS}
 )
+
+add_subdirectory(utils)
