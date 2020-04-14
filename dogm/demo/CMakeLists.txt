@@ -4,6 +4,8 @@ if (NOT OpenCV_FOUND)
 	set(OpenCV_LIBS "" CACHE FILEPATH "" )
 endif()
 
+add_definitions(-D_USE_MATH_DEFINES)
+
 add_executable(demo
 	main.cpp
 	dbscan.h
