@@ -1,30 +1,28 @@
 #pragma once
 
 #include <glm/vec4.hpp>
-#include <cuda_runtime.h>
 
 namespace dogm
 {
 
 struct GridCell
 {
-    // x: start_idx, y: end_idx
-    int2 particle_indices;
+    int start_idx;
+    int end_idx;
+    float new_born_occ_mass;
+    float pers_occ_mass;
+    float free_mass;
+    float occ_mass;
+    float mu_A;
+    float mu_UA;
 
-    // x: pers_occ_mass, y: new_born_occ_mass
-    float2 rho_masses;
+    float w_A;
+    float w_UA;
 
-    // x: occ_mass, y: free_mass
-    float2 masses;
-
-    // x: mu_A, y: mu_UA
-    float2 norm_constants;
-
-    // x: w_A, y: w_UA
-    float2 birth_weights;
-
-    float2 mean_vel;
-    float2 var_vel;
+    float mean_x_vel;
+    float mean_y_vel;
+    float var_x_vel;
+    float var_y_vel;
     float covar_xy_vel;
 };
 

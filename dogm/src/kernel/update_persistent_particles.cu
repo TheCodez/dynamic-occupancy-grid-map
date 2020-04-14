@@ -39,13 +39,13 @@ __device__ float calc_norm_assoc(float occ_accum, float rho_p)
 
 __device__ float calc_norm_unassoc(const GridCell& grid_cell)
 {
-    float occ_mass = grid_cell.masses.x;
-    return occ_mass > 0.0 ? grid_cell.rho_masses.x / occ_mass : 0.0;
+    return grid_cell.occ_mass > 0.0 ? grid_cell.pers_occ_mass / grid_cell.occ_mass : 0.0;
 }
 
 __device__ void set_normalization_components(GridCell* __restrict__ grid_cell_array, int i, float mu_A, float mu_UA)
 {
-    grid_cell_array[i].norm_constants = make_float2(mu_A, mu_UA);
+    grid_cell_array[i].mu_A = mu_A;
+    grid_cell_array[i].mu_UA = mu_UA;
 }
 
 __device__ float update_unnorm(const Particle* __restrict__ particle_array, int i,
@@ -61,7 +61,7 @@ __device__ float normalize(const Particle& particle, const GridCell* __restrict_
     const GridCell& cell = grid_cell_array[particle.grid_cell_idx];
     const MeasurementCell& meas_cell = meas_cell_array[particle.grid_cell_idx];
 
-    return meas_cell.p_A * cell.norm_constants.x * weight + (1.0 - meas_cell.p_A) * cell.norm_constants.y * particle.weight;
+    return meas_cell.p_A * cell.mu_A * weight + (1.0 - meas_cell.p_A) * cell.mu_UA * particle.weight;
 }
 
 __global__ void updatePersistentParticlesKernel1(const Particle* __restrict__ particle_array,
@@ -79,13 +79,13 @@ __global__ void updatePersistentParticlesKernel2(GridCell* __restrict__ grid_cel
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        int start_idx = grid_cell_array[i].particle_indices.x;
-        int end_idx = grid_cell_array[i].particle_indices.y;
+        int start_idx = grid_cell_array[i].start_idx;
+        int end_idx = grid_cell_array[i].end_idx;
 
         if (start_idx != -1)
         {
             float m_occ_accum = subtract(weight_array_accum, start_idx, end_idx);
-            float rho_p = grid_cell_array[i].rho_masses.x;
+            float rho_p = grid_cell_array[i].pers_occ_mass;
             float mu_A = calc_norm_assoc(m_occ_accum, rho_p);
             float mu_UA = calc_norm_unassoc(grid_cell_array[i]);
             set_normalization_components(grid_cell_array, i, mu_A, mu_UA);

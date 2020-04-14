@@ -123,8 +123,8 @@ PointWithVelocity PrecisionEvaluator::computeClusterMean(const Cluster<dogm::Gri
     {
         cluster_mean.x += point.x;
         cluster_mean.y += point.y;
-        cluster_mean.v_x += point.data.mean_vel.x;
-        cluster_mean.v_y += point.data.mean_vel.y;
+        cluster_mean.v_x += point.data.mean_x_vel;
+        cluster_mean.v_y += point.data.mean_y_vel;
     }
 
     cluster_mean.x = (cluster_mean.x / cluster.size()) * resolution;

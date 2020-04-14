@@ -53,11 +53,11 @@ __global__ void particleToGridKernel(const Particle* __restrict__ particle_array
 
         if (is_first_particle(particle_array, i))
         {
-            grid_cell_array[j].particle_indices.x = i;
+            grid_cell_array[j].start_idx = i;
         }
         if (is_last_particle(particle_array, particle_count, i))
         {
-            grid_cell_array[j].particle_indices.y = i;
+            grid_cell_array[j].end_idx = i;
         }
 
         // printf("Cell: %d, Start idx: %d, End idx: %d\n", j, grid_cell_array[j].start_idx,

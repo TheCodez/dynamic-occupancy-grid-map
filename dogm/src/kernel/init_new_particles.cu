@@ -78,7 +78,8 @@ __device__ float calc_weight_unassoc(int nu_UA, float p_A, float born_mass)
 
 __device__ void store_weights(float w_A, float w_UA, GridCell* __restrict__ grid_cell_array, int j)
 {
-    grid_cell_array[j].birth_weights = make_float2(w_A, w_UA);
+    grid_cell_array[j].w_A = w_A;
+    grid_cell_array[j].w_UA = w_UA;
 }
 
 void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B)
@@ -147,17 +148,16 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
         float vel_x = curand_normal(&local_state, 0.0f, velocity);
         float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
-        float2 birth_weights = grid_cell.birth_weights;
         bool associated = birth_particle_array[i].associated;
         // TODO: Use correct distribution
         if (associated)
         {
-            birth_particle_array[i].weight = birth_weights.x;
+            birth_particle_array[i].weight = grid_cell.w_A;
             birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
         }
         else
         {
-            birth_particle_array[i].weight = birth_weights.y;
+            birth_particle_array[i].weight = grid_cell.w_UA;
             birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
         }
     }

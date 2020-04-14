@@ -94,8 +94,10 @@ __global__ void initGridCellsKernel(GridCell* __restrict__ grid_cell_array,
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        grid_cell_array[i].masses = make_float2(0.0f, 0.0f);
-        grid_cell_array[i].particle_indices = make_int2(-1, -1);
+        grid_cell_array[i].free_mass = 0.0f;
+        grid_cell_array[i].occ_mass = 0.0f;
+        grid_cell_array[i].start_idx = -1;
+        grid_cell_array[i].end_idx = -1;
 
         meas_cell_array[i].occ_mass = 0.0f;
         meas_cell_array[i].free_mass = 0.0f;
@@ -108,7 +110,8 @@ __global__ void reinitGridParticleIndices(GridCell* __restrict__ grid_cell_array
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        grid_cell_array[i].particle_indices = make_int2(-1, -1);
+        grid_cell_array[i].start_idx = -1;
+        grid_cell_array[i].end_idx = -1;
     }
 }
 
