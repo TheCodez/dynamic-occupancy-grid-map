@@ -37,24 +37,19 @@ __device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, 
     return min(alpha * grid_cell.free_mass, 1.0f - m_occ_pred);
 }
 
-__device__ float update_o(float m_occ_pred, float m_free_pred, const MeasurementCell& meas_cell)
+__device__ float2 update_masses(float m_occ_pred, float m_free_pred, const MeasurementCell& meas_cell)
 {
     float unknown_pred = 1.0 - m_occ_pred - m_free_pred;
-    float meas_cell_unknown = 1.0 - meas_cell.free_mass - meas_cell.occ_mass;
+    float meas_unknown = 1.0 - meas_cell.free_mass - meas_cell.occ_mass;
     float K = m_free_pred * meas_cell.occ_mass + m_occ_pred * meas_cell.free_mass;
 
-    return (m_occ_pred * meas_cell_unknown + unknown_pred * meas_cell.occ_mass + m_occ_pred * meas_cell.occ_mass) /
-           (1.0 - K);
-}
+    float occ_mass =
+        (m_occ_pred * meas_unknown + unknown_pred * meas_cell.occ_mass + m_occ_pred * meas_cell.occ_mass) / (1.0 - K);
+    float free_mass =
+        (m_free_pred * meas_unknown + unknown_pred * meas_cell.free_mass + m_free_pred * meas_cell.free_mass) /
+        (1.0 - K);
 
-__device__ float update_f(float m_occ_pred, float m_free_pred, const MeasurementCell& meas_cell)
-{
-    float unknown_pred = 1.0 - m_occ_pred - m_free_pred;
-    float meas_cell_unknown = 1.0 - meas_cell.free_mass - meas_cell.occ_mass;
-    float K = m_free_pred * meas_cell.occ_mass + m_occ_pred * meas_cell.free_mass;
-
-    return (m_free_pred * meas_cell_unknown + unknown_pred * meas_cell.free_mass + m_free_pred * meas_cell.free_mass) /
-           (1.0 - K);
+    return make_float2(occ_mass, free_mass);
 }
 
 __device__ float separate_newborn_part(float m_occ_pred, float m_occ_up, float p_B)
@@ -111,24 +106,22 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
             }
 
             float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);
-            float m_occ_up = update_o(m_occ_pred, m_free_pred, meas_cell_array[i]);
-            float m_free_up = update_f(m_occ_pred, m_free_pred, meas_cell_array[i]);
-            float rho_b = separate_newborn_part(m_occ_pred, m_occ_up, p_B);
-            float rho_p = m_occ_up - rho_b;
+            float2 masses_up = update_masses(m_occ_pred, m_free_pred, meas_cell_array[i]);
+            float rho_b = separate_newborn_part(m_occ_pred, masses_up.x, p_B);
+            float rho_p = masses_up.x - rho_b;
             born_masses_array[i] = rho_b;
 
             // printf("Rho B: %f\n", rho_b);
 
-            store_values(rho_b, rho_p, m_free_up, m_occ_up, grid_cell_array, i);
+            store_values(rho_b, rho_p, masses_up.y, masses_up.x, grid_cell_array, i);
         }
         else
         {
             float m_occ = grid_cell_array[i].occ_mass;
             float m_free = predict_free_mass(grid_cell_array[i], m_occ);
-            float m_occ_up = update_o(m_occ, m_free, meas_cell_array[i]);
-            float m_free_up = update_f(m_occ, m_free, meas_cell_array[i]);
+            float2 masses_up = update_masses(m_occ, m_free, meas_cell_array[i]);
             born_masses_array[i] = 0.0f;
-            store_values(0.0f, m_occ_up, m_free_up, m_occ_up, grid_cell_array, i);
+            store_values(0.0f, masses_up.x, masses_up.y, masses_up.x, grid_cell_array, i);
         }
     }
 }
