@@ -25,7 +25,6 @@ SOFTWARE.
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <glm/glm.hpp>
 #include <vector>
