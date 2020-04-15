@@ -4,7 +4,7 @@ if (NOT OpenCV_FOUND)
 	set(OpenCV_LIBS "" CACHE FILEPATH "" )
 endif()
 
-add_definitions(-D_USE_MATH_DEFINES)
+add_definitions(-D_USE_MATH_DEFINES)  # Required to make M_PI from cmath available in MSVC
 
 add_executable(demo
 	main.cpp

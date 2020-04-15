@@ -30,7 +30,6 @@ SOFTWARE.
 
 #include "dbscan.h"
 
-#define _USE_MATH_DEFINES
 #include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
 
