@@ -48,7 +48,7 @@ static PointWithVelocity computeError(const PointWithVelocity& cluster_mean, con
 
 static Clusters<dogm::GridCell> computeDbscanClusters(const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
 {
-    DBSCAN<dogm::GridCell> dbscan(kMaximumDbscanNeighborDistance, kMinimumNumberOfNeighbors);
+    const DBSCAN<dogm::GridCell> dbscan(kMaximumDbscanNeighborDistance, kMinimumNumberOfNeighbors);
     return dbscan.cluster(cells_with_velocity);
 }
 

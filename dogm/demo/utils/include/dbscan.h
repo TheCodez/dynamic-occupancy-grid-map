@@ -22,40 +22,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef PRECISION_EVALUATOR_H
-#define PRECISION_EVALUATOR_H
-
-#include "dbscan.h"
-#include "dogm/dogm_types.h"
-#include "simulator.h"
+#ifndef DBSCAN_H
+#define DBSCAN_H
 
 #include <vector>
 
-struct PointWithVelocity
+template <typename T>
+struct Point
 {
-    float x{0.0f};
-    float y{0.0f};
-    float v_x{0.0f};
-    float v_y{0.0f};
+    float x, y;
+    T data;
+    int cluster_id;
+
+    bool operator==(const Point<T>& other) const { return x == other.x && y == other.y; }
 };
 
-class PrecisionEvaluator
+constexpr int UNCLASSIFIED = -2;
+constexpr int NOISE = -1;
+
+template <typename T>
+using Cluster = std::vector<Point<T>>;
+
+template <typename T>
+using Clusters = std::vector<Cluster<T>>;
+
+template <typename T>
+class DBSCAN
 {
 public:
-    PrecisionEvaluator(const SimulationData _sim_data, const float _resolution);
-    void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
-                              bool print_current_precision = false);
-    void printSummary();
+    DBSCAN(float eps, int min_cells) : eps(eps), min_cells(min_cells) {}
+    Clusters<T> cluster(const std::vector<Point<T>>& points) const;
 
 private:
-    void accumulateErrors(const PointWithVelocity& error);
-    PointWithVelocity computeClusterMean(const Cluster<dogm::GridCell>& cluster);
+    bool expandCluster(std::vector<Point<T>>& points, Point<T>& point, int cluster_id) const;
+    std::vector<Point<T>> regionQuery(const std::vector<Point<T>>& points, const Point<T>& q) const;
 
-    SimulationData sim_data;
-    float resolution;
-    PointWithVelocity cumulative_error;
-    int number_of_detections;
-    int number_of_unassigned_detections;
+    float eps;
+    int min_cells;
 };
 
-#endif  // PRECISION_EVALUATOR_H
+#endif  // DBSCAN_H
