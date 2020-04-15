@@ -55,14 +55,10 @@ __global__ void predictKernel(Particle* __restrict__ particle_array, curandState
         float x = particle_array[i].state[0];
         float y = particle_array[i].state[1];
 
+        // Particle out of grid so decrease its chance of being resampled
         if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
         {
-            x = curand_uniform(&local_state, 0.0f, grid_size - 1);
-            y = curand_uniform(&local_state, 0.0f, grid_size - 1);
-            float vel_x = curand_uniform(&local_state, -velocity, velocity);
-            float vel_y = curand_uniform(&local_state, -velocity, velocity);
-
-            particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
+            particle_array[i].weight = 0.0f;
         }
 
         int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
