@@ -8,7 +8,6 @@ add_definitions(-D_USE_MATH_DEFINES)  # Required to make M_PI from cmath availab
 
 add_executable(demo
 	main.cpp
-	dbscan.h
 	image_creation.h
 	simulator.h
 )
