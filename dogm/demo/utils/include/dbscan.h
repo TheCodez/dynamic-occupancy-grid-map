@@ -51,11 +51,11 @@ class DBSCAN
 {
 public:
     DBSCAN(float eps, int min_cells) : eps(eps), min_cells(min_cells) {}
-    Clusters<T> cluster(const std::vector<Point<T>>& points);
+    Clusters<T> cluster(const std::vector<Point<T>>& points) const;
 
 private:
-    bool expandCluster(std::vector<Point<T>>& points, Point<T>& point, int cluster_id);
-    std::vector<Point<T>> regionQuery(const std::vector<Point<T>>& points, const Point<T>& q);
+    bool expandCluster(std::vector<Point<T>>& points, Point<T>& point, int cluster_id) const;
+    std::vector<Point<T>> regionQuery(const std::vector<Point<T>>& points, const Point<T>& q) const;
 
     float eps;
     int min_cells;

@@ -32,7 +32,8 @@ SOFTWARE.
 
 // Template instantiation to avoid linker errors, see
 // https://isocpp.org/wiki/faq/templates#separate-template-fn-defn-from-decl
-template Clusters<dogm::GridCell> DBSCAN<dogm::GridCell>::cluster(const std::vector<Point<dogm::GridCell>>& points);
+template Clusters<dogm::GridCell>
+DBSCAN<dogm::GridCell>::cluster(const std::vector<Point<dogm::GridCell>>& points) const;
 
 template <typename T>
 static float distance(const Point<T>& q, const Point<T>& p)
@@ -41,7 +42,7 @@ static float distance(const Point<T>& q, const Point<T>& p)
 }
 
 template <typename T>
-Clusters<T> DBSCAN<T>::cluster(const std::vector<Point<T>>& points)
+Clusters<T> DBSCAN<T>::cluster(const std::vector<Point<T>>& points) const
 {
     std::vector<Point<T>> result_points = points;
 
@@ -74,7 +75,7 @@ Clusters<T> DBSCAN<T>::cluster(const std::vector<Point<T>>& points)
 }
 
 template <typename T>
-bool DBSCAN<T>::expandCluster(std::vector<Point<T>>& points, Point<T>& point, int cluster_id)
+bool DBSCAN<T>::expandCluster(std::vector<Point<T>>& points, Point<T>& point, int cluster_id) const
 {
     std::vector<Point<T>> seeds = regionQuery(points, point);
     if (seeds.size() < min_cells)
@@ -117,7 +118,7 @@ bool DBSCAN<T>::expandCluster(std::vector<Point<T>>& points, Point<T>& point, in
 }
 
 template <typename T>
-std::vector<Point<T>> DBSCAN<T>::regionQuery(const std::vector<Point<T>>& points, const Point<T>& q)
+std::vector<Point<T>> DBSCAN<T>::regionQuery(const std::vector<Point<T>>& points, const Point<T>& q) const
 {
     std::vector<Point<T>> neighbors;
 
