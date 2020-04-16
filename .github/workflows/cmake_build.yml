@@ -9,8 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install libglu1-mesa-dev mesa-common-dev libglfw3-dev libglew-dev libglm-dev libopencv-dev nvidia-cuda-toolkit
+    - name: install dependencies
+      run: sudo apt-get update && sudo apt-get install libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libglfw3-dev libglew-dev libglm-dev libopencv-dev nvidia-cuda-toolkit
     - name: configure
       run: cd dogm && cd build && cmake ..
     - name: build
