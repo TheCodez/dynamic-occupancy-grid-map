@@ -28,6 +28,8 @@ endif()
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}.dll" DESTINATION ${CMAKE_INSTALL_BINARY} CONFIGURATIONS RelWithDebInfo Release)
 #endif(WIN32)
 
+add_definitions(-DGLEW_STATIC)
+
 include_directories(
 	SYSTEM
 	${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
