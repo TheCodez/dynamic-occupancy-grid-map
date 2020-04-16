@@ -14,4 +14,4 @@ jobs:
     - name: configure
       run: cd dogm && mkdir build && cd build && cmake ..
     - name: build
-      run: cmake --build dogm/build
+      run: cd dogm/build && make
