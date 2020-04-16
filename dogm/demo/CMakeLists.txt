@@ -4,6 +4,14 @@ if (NOT OpenCV_FOUND)
 	set(OpenCV_LIBS "" CACHE FILEPATH "" )
 endif()
 
+find_package(OpenGL REQUIRED)
+
+find_package(GLEW)
+if (NOT GLEW_FOUND)
+	set(GLEW_INCLUDE_DIRS "" CACHE PATH "")
+	set(GLEW_LIBRARY "" CACHE FILEPATH "" )
+endif()
+
 add_definitions(-D_USE_MATH_DEFINES)  # Required to make M_PI from cmath available in MSVC
 add_definitions(-DGLEW_STATIC)
 
@@ -13,13 +21,14 @@ add_executable(demo
 	simulator.h
 )
 
-target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR})
+target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS})
 
 target_link_libraries(demo
 	dogm
 	utils
 	${OpenCV_LIBS}
-        lGLEW -lglfw3 -lGL -lX11 -lXi -lXrandr -lXxf86vm -lXinerama -lXcursor -lrt -lm -pthread
+    ${OPENGL_LIBRARY}
+	${GLEW_LIBRARY}
 )
 
 add_subdirectory(utils)
