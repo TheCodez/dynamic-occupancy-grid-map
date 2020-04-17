@@ -25,6 +25,7 @@ endif()
 
 message(STATUS "GLEW LIBRARY LOCATION: ")
 message(STATUS ${GLEW_LIBRARY})
+message(STATUS ${GLEW_LIBRARIES})
 
 # add_definitions(-DGLEW_STATIC)
 
