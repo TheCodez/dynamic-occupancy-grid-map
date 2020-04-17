@@ -20,7 +20,7 @@ endif()
 find_package(GLEW)
 if (NOT GLEW_FOUND)
 	set(GLEW_INCLUDE_DIRS "" CACHE PATH "")
-	set(GLEW_LIBRARY "" CACHE FILEPATH "" )
+	set(GLEW_LIBRARIES "" CACHE FILEPATH "" )
 endif()
 
 message(STATUS "GLEW LIBRARY LOCATION: ")
@@ -114,4 +114,4 @@ target_link_libraries(dogm
 #        PUBLIC_HEADER DESTINATION include/dogm
 #)
 
-add_subdirectory(demo)
+#add_subdirectory(demo)

@@ -21,4 +21,4 @@ jobs:
       run: cmake ..
       working-directory: dogm/build
     - name: build
-      run: cmake --build dogm/build
+      run: cd dogm/build && make
