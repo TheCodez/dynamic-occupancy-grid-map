@@ -18,7 +18,7 @@ jobs:
     - name: install CUDA toolkit
       run: sudo apt install nvidia-cuda-toolkit
     - name: configure
-      run: cmake ..
-      working-directory: dogm/build
+      run: mkdir build && cd build && cmake ..
+      working-directory: dogm
     - name: build
       run: cd dogm/build && make
