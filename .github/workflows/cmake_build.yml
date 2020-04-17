@@ -5,12 +5,18 @@ on: [push]
 jobs:
   build-ubuntu:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     
     steps:
     - uses: actions/checkout@v1
-    - name: install dependencies
-      run: sudo apt-get update && sudo apt-get install libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libglfw3-dev libglew-dev libglm-dev libopencv-dev nvidia-cuda-toolkit
+    - name: Update package lists
+      run: sudo apt update
+    - name: install OpenGL dependencies
+      run: sudo apt install libglfw3-dev libglew-dev libglm-dev
+    - name: install OpenCV
+      run: sudo apt install libopencv-dev
+    - name: install CUDA toolkit
+      run: sudo apt install nvidia-cuda-toolkit
     - name: configure
       run: cd dogm/build && cmake ..
     - name: build
