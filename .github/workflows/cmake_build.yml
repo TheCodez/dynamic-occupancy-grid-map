@@ -9,9 +9,11 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: Update package lists and installed packages
+      run: sudo apt-get update && sudo apt-get upgrade
     - name: install dependencies
       run: sudo apt-get update && sudo apt-get install libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libglfw3-dev libglew-dev libglm-dev libopencv-dev nvidia-cuda-toolkit
     - name: configure
-      run: cd dogm && cd build && cmake ..
+      run: cd dogm/build && cmake ..
     - name: build
       run: cmake --build dogm/build
