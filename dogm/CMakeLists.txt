@@ -30,14 +30,6 @@ endif()
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}.dll" DESTINATION ${CMAKE_INSTALL_BINARY} CONFIGURATIONS RelWithDebInfo Release)
 #endif(WIN32)
 
-include_directories(
-	SYSTEM
-	${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-	${GLFW3_INCLUDE_DIR}
-	${GLEW_INCLUDE_DIRS}
-	${GLM_INCLUDE_DIR}
-)
-
 set(HEADER_FILES
 	include/dogm/opengl/texture.h
 	include/dogm/opengl/framebuffer.h
@@ -86,6 +78,14 @@ add_library(dogm STATIC
 	${SRC_FILES}
 )
 
+target_include_directories(dogm
+	SYSTEM
+	PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+	PRIVATE ${GLFW3_INCLUDE_DIR}
+	PRIVATE ${GLEW_INCLUDE_DIRS}
+	PRIVATE ${GLM_INCLUDE_DIR}
+)
+
 target_include_directories(dogm PUBLIC include)
 
 # support for gpu lambdas
@@ -99,9 +99,9 @@ set(CUDA_PROPAGATE_HOST_FLAGS ON)
 set_target_properties(dogm PROPERTIES PUBLIC_HEADER "include/dogm.h;include/dogm_types.h")
 
 target_link_libraries(dogm
-	${OPENGL_LIBRARY}
-	${GLFW3_LIBRARY}
-	${GLEW_LIBRARY}
+	PRIVATE ${OPENGL_LIBRARY}
+	PRIVATE ${GLFW3_LIBRARY}
+	PRIVATE ${GLEW_LIBRARY}
 )
 
 #INSTALL(TARGETS dogm
@@ -110,4 +110,4 @@ target_link_libraries(dogm
 #        PUBLIC_HEADER DESTINATION include/dogm
 #)
 
-# add_subdirectory(demo)
+add_subdirectory(demo)
