@@ -86,8 +86,8 @@ target_include_directories(dogm
 	SYSTEM
 	PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 	PRIVATE ${GLFW3_INCLUDE_DIR}
-	# PRIVATE ${GLEW_INCLUDE_DIRS}
-	# PRIVATE ${GLM_INCLUDE_DIR}
+	PRIVATE ${GLEW_INCLUDE_DIRS}
+	PRIVATE ${GLM_INCLUDE_DIR}
 )
 
 target_include_directories(dogm PUBLIC include)
@@ -105,7 +105,7 @@ set_target_properties(dogm PROPERTIES PUBLIC_HEADER "include/dogm.h;include/dogm
 target_link_libraries(dogm
 	PRIVATE ${OPENGL_LIBRARY}
 	PRIVATE ${GLFW3_LIBRARY}
-	PRIVATE ${GLEW_LIBRARY}
+	PRIVATE ${GLEW_LIBRARIES}
 )
 
 #INSTALL(TARGETS dogm
