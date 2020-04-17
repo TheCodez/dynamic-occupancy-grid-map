@@ -51,8 +51,8 @@ int main(int argc, const char** argv)
     params.particle_count = 3 * static_cast<int>(10e5);
     params.new_born_particle_count = 3 * static_cast<int>(10e4);
     params.persistence_prob = 0.99f;
-    params.process_noise_position = 0.02f;
-    params.process_noise_velocity = 0.8f;
+    params.process_noise_position = 0.1f;
+    params.process_noise_velocity = 1.0f;
     params.birth_prob = 0.02f;
     params.velocity_persistent = 30.0f;
     params.velocity_birth = 30.0f;
@@ -76,12 +76,13 @@ int main(int argc, const char** argv)
               << std::endl;
 
     Simulator simulator(100, laser_params.fov);
-    simulator.addVehicle(Vehicle(3, glm::vec2(30, 20), glm::vec2(0, 0)));
-    //	simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(0, 20)));
-    //	simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
+    simulator.addVehicle(Vehicle(3, glm::vec2(30, 20), glm::vec2(0, 6)));
+    // simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(-10, 0)));
+    // simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
 
-    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(20, 5)));
+    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(15, 0)));
     simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
+    simulator.addVehicle(Vehicle(2, glm::vec2(68, 15), glm::vec2(0, 0)));
     // simulator.addVehicle(Vehicle(5, glm::vec2(60, 24), glm::vec2(0, -5)));
 
     float delta_time = 0.1f;
