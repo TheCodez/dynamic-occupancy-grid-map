@@ -23,6 +23,9 @@ if (NOT GLEW_FOUND)
 	set(GLEW_LIBRARY "" CACHE FILEPATH "" )
 endif()
 
+message(STATUS "GLEW LIBRARY LOCATION: ")
+message(STATUS ${GLEW_LIBRARY})
+
 # add_definitions(-DGLEW_STATIC)
 
 #if(WIN32)
@@ -82,8 +85,8 @@ target_include_directories(dogm
 	SYSTEM
 	PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 	PRIVATE ${GLFW3_INCLUDE_DIR}
-	PRIVATE ${GLEW_INCLUDE_DIRS}
-	PRIVATE ${GLM_INCLUDE_DIR}
+	# PRIVATE ${GLEW_INCLUDE_DIRS}
+	# PRIVATE ${GLM_INCLUDE_DIR}
 )
 
 target_include_directories(dogm PUBLIC include)
