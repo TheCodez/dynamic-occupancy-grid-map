@@ -76,17 +76,19 @@ int main(int argc, const char** argv)
               << std::endl;
 
     Simulator simulator(100, laser_params.fov);
+#if 1
     simulator.addVehicle(Vehicle(3, glm::vec2(30, 20), glm::vec2(0, 6)));
-    // simulator.addVehicle(Vehicle(5, glm::vec2(46, 20), glm::vec2(-10, 0)));
-    // simulator.addVehicle(Vehicle(4, glm::vec2(80, 30), glm::vec2(0, -10)));
-
     simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(15, 0)));
     simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
     simulator.addVehicle(Vehicle(2, glm::vec2(68, 15), glm::vec2(0, 0)));
-    // simulator.addVehicle(Vehicle(5, glm::vec2(60, 24), glm::vec2(0, -5)));
+#else
+    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(10, -8)));
+    simulator.addVehicle(Vehicle(6, glm::vec2(60, 30), glm::vec2(-8, 6)));
+    simulator.addVehicle(Vehicle(3, glm::vec2(68, 15), glm::vec2(-12, 0)));
+#endif
 
     float delta_time = 0.1f;
-    SimulationData sim_data = simulator.update(20, delta_time);
+    SimulationData sim_data = simulator.update(14, delta_time);
     PrecisionEvaluator precision_evaluator{sim_data, params.resolution};
 
     for (int i = 0; i < sim_data.size(); i++)

@@ -11,7 +11,7 @@ Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps 
 
 <p align="center">
   <img src="./docs/videos/dogm3.gif">
-  <img src="./docs/videos/dogm2_new.gif">
+  <img src="./docs/videos/dogm4.gif">
 </p>
 
 ## Performance
