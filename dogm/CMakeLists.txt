@@ -23,10 +23,6 @@ if (NOT GLEW_FOUND)
 	set(GLEW_LIBRARIES "" CACHE FILEPATH "" )
 endif()
 
-message(STATUS "GLEW LIBRARY LOCATION: ")
-message(STATUS ${GLEW_LIBRARY})
-message(STATUS ${GLEW_LIBRARIES})
-
 # add_definitions(-DGLEW_STATIC)
 
 #if(WIN32)
@@ -114,4 +110,4 @@ target_link_libraries(dogm
 #        PUBLIC_HEADER DESTINATION include/dogm
 #)
 
-#add_subdirectory(demo)
+add_subdirectory(demo)
