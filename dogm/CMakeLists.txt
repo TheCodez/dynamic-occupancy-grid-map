@@ -20,7 +20,7 @@ endif()
 find_package(GLEW)
 if (NOT GLEW_FOUND)
 	set(GLEW_INCLUDE_DIRS "" CACHE PATH "")
-	set(GLEW_LIBRARY "" CACHE FILEPATH "" )
+	set(GLEW_LIBRARIES "" CACHE FILEPATH "" )
 endif()
 
 #if(WIN32)
@@ -99,7 +99,7 @@ set_target_properties(dogm PROPERTIES PUBLIC_HEADER "include/dogm.h;include/dogm
 target_link_libraries(dogm
 	${OPENGL_LIBRARY}
 	${GLFW3_LIBRARY}
-	${GLEW_LIBRARY}
+	${GLEW_LIBRARIES}
 )
 
 #INSTALL(TARGETS dogm
