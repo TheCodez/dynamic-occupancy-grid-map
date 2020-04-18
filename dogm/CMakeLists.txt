@@ -17,7 +17,9 @@ if (NOT GLFW3_FOUND)
 	set(GLFW3_LIBRARY "" CACHE FILEPATH "" )
 endif()
 
-find_package(GLEW)
+if (NOT WIN32)
+	find_package(GLEW)
+endif()
 if (NOT GLEW_FOUND)
 	set(GLEW_INCLUDE_DIRS "" CACHE PATH "")
 	set(GLEW_LIBRARIES "" CACHE FILEPATH "" )
@@ -97,9 +99,9 @@ set(CUDA_PROPAGATE_HOST_FLAGS ON)
 set_target_properties(dogm PROPERTIES PUBLIC_HEADER "include/dogm.h;include/dogm_types.h")
 
 target_link_libraries(dogm
-	${OPENGL_LIBRARY}
-	${GLFW3_LIBRARY}
-	${GLEW_LIBRARIES}
+	PRIVATE ${OPENGL_LIBRARY}
+	PRIVATE ${GLFW3_LIBRARY}
+	PRIVATE ${GLEW_LIBRARIES}
 )
 
 #INSTALL(TARGETS dogm
@@ -108,4 +110,4 @@ target_link_libraries(dogm
 #        PUBLIC_HEADER DESTINATION include/dogm
 #)
 
-#add_subdirectory(demo)
+add_subdirectory(demo)
