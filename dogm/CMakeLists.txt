@@ -17,7 +17,9 @@ if (NOT GLFW3_FOUND)
 	set(GLFW3_LIBRARY "" CACHE FILEPATH "" )
 endif()
 
-find_package(GLEW)
+if (NOT WIN32)
+	find_package(GLEW)
+endif()
 if (NOT GLEW_FOUND)
 	set(GLEW_INCLUDE_DIRS "" CACHE PATH "")
 	set(GLEW_LIBRARIES "" CACHE FILEPATH "" )
@@ -27,6 +29,14 @@ endif()
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}d.dll" DESTINATION ${CMAKE_INSTALL_BINARY}/debug CONFIGURATIONS Debug)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}.dll" DESTINATION ${CMAKE_INSTALL_BINARY} CONFIGURATIONS RelWithDebInfo Release)
 #endif(WIN32)
+
+include_directories(
+	SYSTEM
+	${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+	${GLFW3_INCLUDE_DIR}
+	${GLEW_INCLUDE_DIRS}
+	${GLM_INCLUDE_DIR}
+)
 
 set(HEADER_FILES
 	include/dogm/opengl/texture.h
@@ -74,14 +84,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})
 add_library(dogm STATIC
     ${HEADER_FILES}
 	${SRC_FILES}
-)
-
-target_include_directories(dogm
-	SYSTEM
-	PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-	PRIVATE ${GLFW3_INCLUDE_DIR}
-	PRIVATE ${GLEW_INCLUDE_DIRS}
-	PRIVATE ${GLM_INCLUDE_DIR}
 )
 
 target_include_directories(dogm PUBLIC include)
