@@ -1,4 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  ![alt text](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
+![Build Ubuntu 18.04](https://github.com/TheCodez/dynamic-occupancy-grid-map/workflows/Build%20Ubuntu%2018.04/badge.svg)
 
 # DISCLAIMER
 
