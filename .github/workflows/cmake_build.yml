@@ -11,14 +11,15 @@ jobs:
     - uses: actions/checkout@v1
     - name: Update package lists
       run: sudo apt update
-    - name: install OpenGL dependencies
+    - name: Install OpenGL dependencies
       run: sudo apt install libglfw3-dev libglew-dev libglm-dev
-    - name: install OpenCV
+    - name: Install OpenCV
       run: sudo apt install libopencv-dev
-    - name: install CUDA toolkit
+    - name: Install CUDA toolkit
       run: sudo apt install nvidia-cuda-toolkit
-    - name: configure
+    - name: Configure
       run: mkdir build && cd build && cmake ..
       working-directory: dogm
-    - name: build
-      run: cd dogm/build && make
+    - name: Build
+      run: cmake --build build
+      working-directory: dogm
