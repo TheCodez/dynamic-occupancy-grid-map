@@ -16,4 +16,3 @@ jobs:
       shell: powershell
     - name: configure
       run: mkdir build && cd build
-

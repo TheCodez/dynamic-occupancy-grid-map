@@ -1,6 +1,6 @@
-SET(HEADER_FILES include/dbscan.h include/precision_evaluator.h)
+SET(HEADER_FILES include/dbscan.h include/precision_evaluator.h include/simulator.h)
 
-SET(SRC_FILES dbscan.cpp precision_evaluator.cpp)
+SET(SRC_FILES dbscan.cpp precision_evaluator.cpp simulator.cpp)
 
 ADD_LIBRARY(utils STATIC ${SRC_FILES} ${HEADER_FILES})
 

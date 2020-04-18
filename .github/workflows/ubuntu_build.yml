@@ -6,7 +6,7 @@ jobs:
   build-ubuntu:
 
     runs-on: ubuntu-18.04
-    
+
     steps:
     - uses: actions/checkout@v1
     - name: Update package lists
