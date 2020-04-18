@@ -30,18 +30,8 @@ SOFTWARE.
 #include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <algorithm>
-#include <array>
 #include <chrono>
-#include <cmath>
-#include <fstream>
 #include <iostream>
-#include <numeric>
-#include <random>
-#include <sstream>
-#include <stdio.h>
-#include <string>
-#include <vector>
 
 int main(int argc, const char** argv)
 {
