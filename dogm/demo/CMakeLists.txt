@@ -8,7 +8,6 @@ add_definitions(-D_USE_MATH_DEFINES)  # Required to make M_PI from cmath availab
 
 add_executable(demo
 	main.cpp
-	image_creation.h
 )
 
 target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR})
