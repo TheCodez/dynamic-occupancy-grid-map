@@ -14,9 +14,6 @@ jobs:
     - name: Install OpenGL dependencies
       run: vcpkg install glew glfw3 glm
       shell: powershell
-    - name: Install OpenCV
-      run: vcpkg install opencv3
-      shell: powershell
     - name: configure
       run: mkdir build && cd build
 
