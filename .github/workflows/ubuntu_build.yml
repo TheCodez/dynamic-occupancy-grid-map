@@ -23,29 +23,3 @@ jobs:
     - name: Build
       run: cmake --build build
       working-directory: dogm
-
-
-  clang-format:
-    name: clang-format
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: DoozyX/clang-format-lint-action@v0.5
-      with:
-        source: './dogm/'
-        exclude: './dogm/cmake'
-        extensions: 'h,cpp'
-        clangFormatVersion: 9
-
-
-  clang-format-alt:
-    name: clang-format-alt
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: unibeautify/clang-format:latest
-      with:
-        source: './dogm/'
-        exclude: './dogm/cmake'
-        extensions: 'h,cpp'
-        clangFormatVersion: 9
