@@ -12,10 +12,10 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install OpenGL dependencies
-      run: .\vcpkg install glew glfw3 glm
+      run: vcpkg install glew glfw3 glm
       shell: powershell
     - name: Install OpenCV
-      run: .\vcpkg install opencv3
+      run: vcpkg install opencv3
       shell: powershell
     - name: configure
       run: mkdir build && cd build
