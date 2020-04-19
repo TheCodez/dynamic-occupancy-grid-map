@@ -149,7 +149,7 @@ void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
     CHECK_ERROR(cudaMemcpy(d_measurements, measurements, num_measurements * sizeof(float), cudaMemcpyHostToDevice));
 
     const int polar_width = num_measurements;
-    const int polar_height = grid_size;
+    const int polar_height = static_cast<int>(laser_params.max_range / laser_params.resolution);
 
     dim3 dim_block(32, 32);
     dim3 grid_dim(divUp(polar_width, dim_block.x), divUp(polar_height, dim_block.y));

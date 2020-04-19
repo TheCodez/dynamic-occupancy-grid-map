@@ -39,6 +39,7 @@ struct GridParams
 struct LaserSensorParams
 {
     float max_range;
+    float resolution;
     float fov;
 };
 

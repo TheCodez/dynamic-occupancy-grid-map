@@ -31,6 +31,7 @@ int main(int argc, const char** argv)
     dogm::LaserSensorParams laser_params;
     laser_params.fov = 120.0f;
     laser_params.max_range = 50.0f;
+    laser_params.resolution = 0.2f;
 
     // Just to init cuda
     cudaDeviceSynchronize();
