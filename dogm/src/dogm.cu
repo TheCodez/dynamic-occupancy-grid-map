@@ -391,11 +391,11 @@ void DOGM::resampling()
     thrust::device_vector<float> joint_weight_accum(joint_weight_array.size());
     accumulate(joint_weight_array, joint_weight_accum);
 
+    float joint_max = joint_weight_accum.back();
     thrust::device_vector<int> idx_resampled(particle_count);
-    calc_resampled_indices(joint_weight_accum, rand_array, idx_resampled);
+    calc_resampled_indices(joint_weight_accum, rand_array, idx_resampled, joint_max);
     int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
-    float joint_max = joint_weight_accum.back();
     float new_weight = joint_max / particle_count;
 
     printf("joint_max: %f\n", joint_max);

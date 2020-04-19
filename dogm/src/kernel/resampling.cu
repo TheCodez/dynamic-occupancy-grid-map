@@ -32,26 +32,24 @@ __global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_a
 }
 
 void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<float>& rand_array,
-                            thrust::device_vector<int>& indices)
+                            thrust::device_vector<int>& indices, float accum_max)
 {
-    thrust::device_vector<float> norm_weight_accum(joint_weight_accum.size());
-    float max = joint_weight_accum.back();
     size_t size = joint_weight_accum.size();
-    thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(), norm_weight_accum.begin(),
-                      GPU_LAMBDA(float x) { return x * (size / max); });
+    thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(), joint_weight_accum.begin(),
+                      GPU_LAMBDA(float x) { return x * (size / accum_max); });
 
-    float norm_max = norm_weight_accum.back();
+    float norm_max = joint_weight_accum.back();
     float rand_max = rand_array.back();
 
-    printf("Norm: %f, Rand: %f\n", norm_max, rand_max);
+    // printf("Norm: %f, Rand: %f\n", norm_max, rand_max);
 
     if (norm_max != rand_max)
     {
-        norm_weight_accum.back() = rand_max;
+        joint_weight_accum.back() = rand_max;
     }
 
     // multinomial sampling
-    thrust::lower_bound(norm_weight_accum.begin(), norm_weight_accum.end(), rand_array.begin(), rand_array.end(),
+    thrust::lower_bound(joint_weight_accum.begin(), joint_weight_accum.end(), rand_array.begin(), rand_array.end(),
                         indices.begin());
 }
 
