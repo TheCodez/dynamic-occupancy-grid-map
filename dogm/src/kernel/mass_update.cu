@@ -48,17 +48,11 @@ __device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_
 }
 
 __device__ void normalize_weights(Particle* __restrict__ particle_array, float* __restrict__ weight_array,
-                                int start_idx, int end_idx)
+                                  int start_idx, int end_idx, float occ_pred)
 {
-    float sum = 0.0f;
     for (int i = start_idx; i < end_idx + 1; i++)
     {
-        sum += weight_array[i];
-    }
-
-    for (int i = start_idx; i < end_idx + 1; i++)
-    {
-        weight_array[i] = weight_array[i] / sum;
+        weight_array[i] = weight_array[i] / occ_pred;
         particle_array[i].weight = weight_array[i];
     }
 }
@@ -67,8 +61,7 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
                                                Particle* __restrict__ particle_array, float* __restrict__ weight_array,
                                                const float* __restrict__ weight_array_accum,
                                                const MeasurementCell* __restrict__ meas_cell_array,
-                                               float* __restrict__ born_masses_array, float p_B,
-                                               int cell_count)
+                                               float* __restrict__ born_masses_array, float p_B, int cell_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
@@ -82,8 +75,8 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
             if (m_occ_pred > 1.0f)
             {
                 // printf("Predicted mass greater 1. Mass is: %f\n", m_occ_pred);
+                normalize_weights(particle_array, weight_array, start_idx, end_idx, m_occ_pred);
                 m_occ_pred = 1.0f;
-                normalize_weights(particle_array, weight_array, start_idx, end_idx);
             }
 
             float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);

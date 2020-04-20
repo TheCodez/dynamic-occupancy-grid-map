@@ -233,9 +233,9 @@ void DOGM::gridCellOccupancyUpdate()
     accumulate(weight_array, weights_accum);
     float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
-    gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(
-        grid_cell_array, particle_array, weight_array, weight_array_accum, meas_cell_array, born_masses_array,
-        params.birth_prob, grid_cell_count);
+    gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(grid_cell_array, particle_array, weight_array,
+                                                                 weight_array_accum, meas_cell_array, born_masses_array,
+                                                                 params.birth_prob, grid_cell_count);
 
     CHECK_ERROR(cudaGetLastError());
 }
