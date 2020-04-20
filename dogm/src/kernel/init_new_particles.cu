@@ -57,10 +57,10 @@ __device__ float calc_weight_unassoc(int nu_UA, float p_A, float born_mass)
     return nu_UA > 0 ? ((1.0 - p_A) * born_mass) / nu_UA : 0.0;
 }
 
-__device__ void store_weights(float w_A, float w_UA, GridCellSoA grid_cell_array, int j)
+__device__ void store_weights(float w_A, float w_UA, GridCell* __restrict__ grid_cell_array, int j)
 {
-    grid_cell_array.w_A[j] = w_A;
-    grid_cell_array.w_UA[j] = w_UA;
+    grid_cell_array[j].w_A = w_A;
+    grid_cell_array[j].w_UA = w_UA;
 }
 
 void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B)
@@ -73,7 +73,7 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
                       GPU_LAMBDA(float x) { return x * (v_B / max); });
 }
 
-__global__ void initNewParticlesKernel1(GridCellSoA grid_cell_array,
+__global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
                                         const MeasurementCell* __restrict__ meas_cell_array,
                                         const float* __restrict__ weight_array,
                                         const float* __restrict__ born_masses_array, ParticleSoA birth_particle_array,
@@ -108,7 +108,7 @@ __global__ void initNewParticlesKernel1(GridCellSoA grid_cell_array,
     }
 }
 
-__global__ void initNewParticlesKernel2(ParticleSoA birth_particle_array, GridCellSoA grid_cell_array,
+__global__ void initNewParticlesKernel2(ParticleSoA birth_particle_array, const GridCell* __restrict__ grid_cell_array,
                                         curandState* __restrict__ global_state, float velocity, int grid_size,
                                         int particle_count)
 {
@@ -120,6 +120,7 @@ __global__ void initNewParticlesKernel2(ParticleSoA birth_particle_array, GridCe
     for (int i = thread_id; i < particle_count; i += stride)
     {
         int cell_idx = birth_particle_array.grid_cell_idx[i];
+        const GridCell& grid_cell = grid_cell_array[cell_idx];
 
         float x = cell_idx % grid_size + 0.5f;
         float y = cell_idx / grid_size + 0.5f;
@@ -130,12 +131,12 @@ __global__ void initNewParticlesKernel2(ParticleSoA birth_particle_array, GridCe
         // TODO: Use correct distribution
         if (associated)
         {
-            birth_particle_array.weight[i] = grid_cell_array.w_A[cell_idx];
+            birth_particle_array.weight[i] = grid_cell.w_A;
             birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
         }
         else
         {
-            birth_particle_array.weight[i] = grid_cell_array.w_UA[cell_idx];
+            birth_particle_array.weight[i] = grid_cell.w_UA;
             birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
         }
     }

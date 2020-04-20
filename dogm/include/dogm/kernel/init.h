@@ -22,9 +22,9 @@ __global__ void initParticlesKernel(ParticleSoA particle_array, curandState* __r
 __global__ void initBirthParticlesKernel(ParticleSoA birth_particle_array, curandState* __restrict__ global_state,
                                          float velocity, int grid_size, int particle_count);
 
-__global__ void initGridCellsKernel(GridCellSoA grid_cell_array, MeasurementCell* __restrict__ meas_cell_array,
-                                    int grid_size, int cell_count);
+__global__ void initGridCellsKernel(GridCell* __restrict__ grid_cell_array,
+                                    MeasurementCell* __restrict__ meas_cell_array, int grid_size, int cell_count);
 
-__global__ void reinitGridParticleIndices(GridCellSoA grid_cell_array, int cell_count);
+__global__ void reinitGridParticleIndices(GridCell* __restrict__ grid_cell_array, int cell_count);
 
 } /* namespace dogm */

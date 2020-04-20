@@ -17,12 +17,12 @@ __global__ void updatePersistentParticlesKernel1(const ParticleSoA particle_arra
                                                  const MeasurementCell* __restrict__ meas_cell_array,
                                                  float* __restrict__ weight_array, int particle_count);
 
-__global__ void updatePersistentParticlesKernel2(GridCellSoA grid_cell_array,
+__global__ void updatePersistentParticlesKernel2(GridCell* __restrict__ grid_cell_array,
                                                  const float* __restrict__ weight_array_accum, int cell_count);
 
 __global__ void updatePersistentParticlesKernel3(const ParticleSoA particle_array,
                                                  const MeasurementCell* __restrict__ meas_cell_array,
-                                                 GridCellSoA grid_cell_array, float* __restrict__ weight_array,
-                                                 int particle_count);
+                                                 const GridCell* __restrict__ grid_cell_array,
+                                                 float* __restrict__ weight_array, int particle_count);
 
 } /* namespace dogm */

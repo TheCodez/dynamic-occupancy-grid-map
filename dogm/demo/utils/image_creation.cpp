@@ -29,17 +29,17 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
         {
             int index = y * grid_map.getGridSize() + x;
 
-            float occ = pignistic_transformation(grid_map.grid_cell_array.free_mass[index],
-                                                 grid_map.grid_cell_array.occ_mass[index]);
+            const dogm::GridCell& cell = grid_map.grid_cell_array[index];
+            float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
             cv::Mat vel_img(2, 1, CV_32FC1);
-            vel_img.at<float>(0) = grid_map.grid_cell_array.mean_x_vel[index];
-            vel_img.at<float>(1) = grid_map.grid_cell_array.mean_y_vel[index];
+            vel_img.at<float>(0) = cell.mean_x_vel;
+            vel_img.at<float>(1) = cell.mean_y_vel;
 
             cv::Mat covar_img(2, 2, CV_32FC1);
-            covar_img.at<float>(0, 0) = grid_map.grid_cell_array.var_x_vel[index];
-            covar_img.at<float>(1, 0) = grid_map.grid_cell_array.covar_xy_vel[index];
-            covar_img.at<float>(0, 1) = grid_map.grid_cell_array.covar_xy_vel[index];
-            covar_img.at<float>(1, 1) = grid_map.grid_cell_array.var_y_vel[index];
+            covar_img.at<float>(0, 0) = cell.var_x_vel;
+            covar_img.at<float>(1, 0) = cell.covar_xy_vel;
+            covar_img.at<float>(0, 1) = cell.covar_xy_vel;
+            covar_img.at<float>(1, 1) = cell.var_y_vel;
 
             cv::Mat mdist = vel_img.t() * covar_img.inv() * vel_img;
 
@@ -48,7 +48,7 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
                 Point<dogm::GridCell> point;
                 point.x = x;
                 point.y = y;
-                // point.data = cell;
+                point.data = cell;
                 point.cluster_id = UNCLASSIFIED;
 
                 cells_with_velocity.push_back(point);
@@ -132,8 +132,8 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, const std::vector<Point<d
         {
             int index = y * grid_map.getGridSize() + x;
 
-            float occ = pignistic_transformation(grid_map.grid_cell_array.free_mass[index],
-                                                 grid_map.grid_cell_array.occ_mass[index]);
+            const dogm::GridCell& cell = grid_map.grid_cell_array[index];
+            float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
             uchar grayscale_value = 255 - static_cast<uchar>(floor(occ * 255));
 
             row_ptr[x] = cv::Vec3b(grayscale_value, grayscale_value, grayscale_value);
