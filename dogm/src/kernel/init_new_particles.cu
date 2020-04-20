@@ -124,8 +124,8 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
         int cell_idx = birth_particle_array[i].grid_cell_idx;
         const GridCell& grid_cell = grid_cell_array[cell_idx];
 
-        float x = cell_idx % grid_size;
-        float y = cell_idx / grid_size;
+        float x = cell_idx % grid_size + 0.5f;
+        float y = cell_idx / grid_size + 0.5f;
         float vel_x = curand_normal(&local_state, 0.0f, velocity);
         float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
