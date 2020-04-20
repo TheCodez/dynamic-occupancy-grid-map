@@ -39,10 +39,10 @@ class Renderer;
 namespace dogm
 {
 
-//struct GridCell;
-//struct MeasurementCell;
-//struct Particle;
-//struct ParticleSoA;
+// struct GridCell;
+// struct MeasurementCell;
+// struct Particle;
+// struct ParticleSoA;
 
 struct GridParams
 {

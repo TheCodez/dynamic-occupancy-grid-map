@@ -32,8 +32,8 @@ SOFTWARE.
 namespace dogm
 {
 
-__global__ void predictKernel(ParticleSoA particle_array, curandState* __restrict__ global_state,
-                              float velocity, int grid_size, float p_S, const glm::mat4x4 transition_matrix,
+__global__ void predictKernel(ParticleSoA particle_array, curandState* __restrict__ global_state, float velocity,
+                              int grid_size, float p_S, const glm::mat4x4 transition_matrix,
                               float process_noise_position, float process_noise_velocity, int particle_count)
 {
     int thread_id = blockIdx.x * blockDim.x + threadIdx.x;

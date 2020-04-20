@@ -43,9 +43,8 @@ __device__ bool is_last_particle(const ParticleSoA particle_array, int particle_
     return i == particle_count - 1 || particle_array.grid_cell_idx[i] != particle_array.grid_cell_idx[i + 1];
 }
 
-__global__ void particleToGridKernel(const ParticleSoA particle_array,
-                                     GridCell* __restrict__ grid_cell_array, float* __restrict__ weight_array,
-                                     int particle_count)
+__global__ void particleToGridKernel(const ParticleSoA particle_array, GridCell* __restrict__ grid_cell_array,
+                                     float* __restrict__ weight_array, int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
     {

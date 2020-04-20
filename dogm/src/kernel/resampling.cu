@@ -87,10 +87,9 @@ __device__ Particle copy_particle(const Particle* __restrict__ particle_array, i
     }
 }
 
-__global__ void resamplingKernel(const ParticleSoA particle_array,
-                                 ParticleSoA particle_array_next,
-                                 const ParticleSoA birth_particle_array,
-                                 const int* __restrict__ idx_array_resampled, float new_weight, int particle_count)
+__global__ void resamplingKernel(const ParticleSoA particle_array, ParticleSoA particle_array_next,
+                                 const ParticleSoA birth_particle_array, const int* __restrict__ idx_array_resampled,
+                                 float new_weight, int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
     {

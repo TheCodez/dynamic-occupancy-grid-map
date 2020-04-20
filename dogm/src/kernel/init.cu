@@ -40,8 +40,8 @@ __global__ void setupRandomStatesKernel(curandState* __restrict__ states, unsign
     }
 }
 
-__global__ void initParticlesKernel(ParticleSoA particle_array, curandState* __restrict__ global_state,
-                                    float velocity, int grid_size, int particle_count)
+__global__ void initParticlesKernel(ParticleSoA particle_array, curandState* __restrict__ global_state, float velocity,
+                                    int grid_size, int particle_count)
 {
     int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
@@ -65,9 +65,8 @@ __global__ void initParticlesKernel(ParticleSoA particle_array, curandState* __r
     global_state[thread_id] = local_state;
 }
 
-__global__ void initBirthParticlesKernel(ParticleSoA birth_particle_array,
-                                         curandState* __restrict__ global_state, float velocity, int grid_size,
-                                         int particle_count)
+__global__ void initBirthParticlesKernel(ParticleSoA birth_particle_array, curandState* __restrict__ global_state,
+                                         float velocity, int grid_size, int particle_count)
 {
     int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
