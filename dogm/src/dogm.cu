@@ -70,9 +70,9 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
 
     CHECK_ERROR(cudaMallocManaged((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
 
-    particle_array = ParticleSoA(particle_count);
-    particle_array_next = ParticleSoA(particle_count);
-    birth_particle_array = ParticleSoA(new_born_particle_count);
+    particle_array.init(particle_count);
+    particle_array_next.init(particle_count);
+    birth_particle_array.init(new_born_particle_count);
 
     CHECK_ERROR(cudaMallocManaged((void**)&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
 
@@ -147,8 +147,9 @@ void DOGM::updateParticleFilter(float dt)
     statisticalMoments();
     resampling();
 
-//    CHECK_ERROR(
-//        cudaMemcpy(particle_array, particle_array_next, particle_count * sizeof(Particle), cudaMemcpyDeviceToDevice));
+    //    CHECK_ERROR(
+    //        cudaMemcpy(particle_array, particle_array_next, particle_count * sizeof(Particle),
+    //        cudaMemcpyDeviceToDevice));
     particle_array = particle_array_next;
 
     CHECK_ERROR(cudaDeviceSynchronize());

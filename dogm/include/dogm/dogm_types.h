@@ -52,13 +52,13 @@ struct ParticleSoA
 
     int size;
 
-    ParticleSoA() {}
+    ParticleSoA() : size(0) {}
 
-    ParticleSoA(int size) 
-        : size(size)
+    ParticleSoA(int size) : size(size) {}
+
+    void init(int new_size)
     {
-        printf("size: %d\n", size);
-
+        size = new_size;
         CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
         CHECK_ERROR(cudaMalloc((void**)&weight, size * sizeof(float)));
         CHECK_ERROR(cudaMalloc((void**)&associated, size * sizeof(bool)));
@@ -69,10 +69,10 @@ struct ParticleSoA
     {
         if (this != &other)
         {
-            CHECK_ERROR(cudaMemcpy(&grid_cell_idx, &other.grid_cell_idx, size * sizeof(int), cudaMemcpyDeviceToDevice));
-            CHECK_ERROR(cudaMemcpy(&weight, &other.weight, size * sizeof(float), cudaMemcpyDeviceToDevice));
-            CHECK_ERROR(cudaMemcpy(&associated, &other.associated, size * sizeof(bool), cudaMemcpyDeviceToDevice));
-            CHECK_ERROR(cudaMemcpy(&state, &other.state, size * sizeof(glm::vec4), cudaMemcpyDeviceToDevice));
+            CHECK_ERROR(cudaMemcpy(grid_cell_idx, other.grid_cell_idx, size * sizeof(int), cudaMemcpyDeviceToDevice));
+            CHECK_ERROR(cudaMemcpy(weight, other.weight, size * sizeof(float), cudaMemcpyDeviceToDevice));
+            CHECK_ERROR(cudaMemcpy(associated, other.associated, size * sizeof(bool), cudaMemcpyDeviceToDevice));
+            CHECK_ERROR(cudaMemcpy(state, other.state, size * sizeof(glm::vec4), cudaMemcpyDeviceToDevice));
         }
 
         return *this;
