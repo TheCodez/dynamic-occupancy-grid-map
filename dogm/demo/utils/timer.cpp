@@ -36,7 +36,7 @@ int Timer::getLastSplitMs() const
 
 void Timer::printLastSplitMs() const
 {
-    std::cout << m_name << ": " << getLastSplitMs() << "ms";
+    std::cout << m_name << " took " << getLastSplitMs() << "ms\n";
 }
 
 void Timer::printStatsMs() const
@@ -60,6 +60,6 @@ void Timer::printStatsMs() const
         std::cout << "  Minimum: " << minimum << "ms\n";
         std::cout << "  Median:  " << median << "ms\n";
         std::cout << "  Mean:    " << mean << "ms\n";
-        std::cout << "  Maximum: " << maximum << "ms\n";
+        std::cout << "  Maximum: " << maximum << "ms\n\n";
     }
 }

@@ -9,7 +9,7 @@
 #include <string>
 #include <thread>
 
-void mysleep(const unsigned int milliseconds)
+void sleepMilliseconds(const unsigned int milliseconds)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
@@ -17,10 +17,10 @@ void mysleep(const unsigned int milliseconds)
 TEST(Timer, ConstructorCallsTic)
 {
     std::string unit_name{"name"};
-    std::string expected_output{unit_name + ": 1ms"};
+    std::string expected_output{unit_name + " took 1ms\n"};
 
     Timer unit{unit_name};
-    mysleep(1);
+    sleepMilliseconds(1);
     unit.toc();
 
     testing::internal::CaptureStdout();
@@ -39,7 +39,7 @@ protected:
     void addSplit(const unsigned int milliseconds)
     {
         m_unit.tic();
-        mysleep(milliseconds);
+        sleepMilliseconds(milliseconds);
         m_unit.toc();
     }
 
@@ -60,47 +60,45 @@ protected:
 
 TEST_F(TimerFixture, TocCanCallPrint)
 {
-    std::string expected_output{m_unit_name + ": 1ms"};
+    std::string expected_output{m_unit_name + " took 1ms\n"};
+
     testing::internal::CaptureStdout();
     m_unit.tic();
-    mysleep(1);
+    sleepMilliseconds(1);
     m_unit.toc(true);
-    std::string output = testing::internal::GetCapturedStdout();
 
+    std::string output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(expected_output, output);
 }
 
 TEST_F(TimerFixture, TocCallsTic)
 {
-    std::string expected_output{m_unit_name + ": 2ms"};
+    std::string expected_output{m_unit_name + " took 2ms\n"};
 
-    mysleep(1);
+    sleepMilliseconds(1);
     m_unit.toc();
-    mysleep(2);
+    sleepMilliseconds(2);
     m_unit.toc();
 
     std::string output = getStdoutOfSplit();
-
     EXPECT_EQ(expected_output, output);
 }
 
 TEST_F(TimerFixture, OneMillisecond)
 {
+    std::string expected_output{m_unit_name + " took 1ms\n"};
     addSplit(1);
-    std::string expected_output{m_unit_name + ": 1ms"};
 
     std::string output = getStdoutOfSplit();
-
     EXPECT_EQ(expected_output, output);
 }
 
 TEST_F(TimerFixture, TwoMilliseconds)
 {
+    std::string expected_output{m_unit_name + " took 2ms\n"};
     addSplit(2);
-    std::string expected_output{m_unit_name + ": 2ms"};
 
     std::string output = getStdoutOfSplit();
-
     EXPECT_EQ(expected_output, output);
 }
 
@@ -114,12 +112,13 @@ TEST_F(TimerFixture, PrintStatsEmpty)
 
 TEST_F(TimerFixture, PrintStats)
 {
+    std::string expected_output{m_unit_name + " stats (4 splits):\n" + "  Minimum: 1ms\n" + "  Median:  1ms\n" +
+                                "  Mean:    2ms\n" + "  Maximum: 5ms\n\n"};
+
     addSplit(1);
     addSplit(1);
     addSplit(5);
     addSplit(1);
-    std::string expected_output{m_unit_name + " stats (4 splits):\n" + "  Minimum: 1ms\n" + "  Median:  1ms\n" +
-                                "  Mean:    2ms\n" + "  Maximum: 5ms\n"};
 
     std::string output = getStdoutOfStats();
     EXPECT_EQ(expected_output, output);

@@ -7,11 +7,11 @@
 #include "image_creation.h"
 #include "precision_evaluator.h"
 #include "simulator.h"
+#include "timer.h"
 
 #include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <chrono>
 #include <iostream>
 
 int main(int argc, const char** argv)
@@ -36,16 +36,9 @@ int main(int argc, const char** argv)
     // Just to init cuda
     cudaDeviceSynchronize();
 
-    auto begin = std::chrono::high_resolution_clock::now();
-
+    Timer init_timer{"DOGM initialization"};
     dogm::DOGM grid_map(params, laser_params);
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto dur = end - begin;
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-    std::cout << "### DOGM initialization took: " << ms << " ms"
-              << " ###" << std::endl
-              << std::endl;
+    init_timer.toc(true);
 
     Simulator simulator(100, laser_params.fov);
 #if 1
@@ -62,23 +55,19 @@ int main(int argc, const char** argv)
     float delta_time = 0.1f;
     SimulationData sim_data = simulator.update(14, delta_time);
     PrecisionEvaluator precision_evaluator{sim_data, params.resolution};
+    Timer cycle_timer{"DOGM cycle"};
 
     for (int i = 0; i < sim_data.size(); i++)
     {
         grid_map.updateMeasurementGrid(sim_data[i].measurements.data(), sim_data[i].measurements.size());
 
-        begin = std::chrono::high_resolution_clock::now();
-
+        cycle_timer.tic();
         // Run Particle filter
         grid_map.updateParticleFilter(delta_time);
 
-        end = std::chrono::high_resolution_clock::now();
-        dur = end - begin;
-        ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-        std::cout << "### Iteration took: " << ms << " ms"
-                  << " ###" << std::endl;
+        cycle_timer.toc(true);
         std::cout << "######  Saving result  #######" << std::endl;
-        std::cout << "##############################" << std::endl;
+        std::cout << "##############################" << std::endl << std::endl;
 
         const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
         precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity);
@@ -99,6 +88,7 @@ int main(int argc, const char** argv)
         cv::waitKey(1);
     }
 
+    cycle_timer.printStatsMs();
     precision_evaluator.printSummary();
 
     return 0;
