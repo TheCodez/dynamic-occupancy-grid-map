@@ -10,6 +10,7 @@ SET(HEADER_FILES
     include/image_creation.h
     include/precision_evaluator.h
     include/simulator.h
+    include/timer.h
 )
 
 SET(SRC_FILES
@@ -18,6 +19,7 @@ SET(SRC_FILES
     image_creation.cpp
     precision_evaluator.cpp
     simulator.cpp
+    timer.cpp
 )
 
 ADD_LIBRARY(utils STATIC ${SRC_FILES} ${HEADER_FILES})
