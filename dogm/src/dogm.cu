@@ -292,23 +292,10 @@ void DOGM::initializeNewParticles()
 
     CHECK_ERROR(cudaGetLastError());
 
-    CHECK_ERROR(cudaDeviceSynchronize());
-    thrust::device_ptr<Particle> birth_particles(birth_particle_array);
-    thrust::sort(birth_particles, birth_particles + new_born_particle_count,
-                 GPU_LAMBDA(Particle x, Particle y) { return x.grid_cell_idx < y.grid_cell_idx; });
-
     copyBirthWeightKernel<<<birth_particles_grid, block_dim>>>(birth_particle_array, birth_weight_array,
                                                                new_born_particle_count);
 
     CHECK_ERROR(cudaGetLastError());
-
-    thrust::device_ptr<float> weight(weight_array);
-    float res_max = *thrust::max_element(weight, weight + particle_count);
-    printf("Persistent max: %f\n", res_max);
-
-    thrust::device_ptr<float> birth_weight(birth_weight_array);
-    float res2_max = *thrust::max_element(birth_weight, birth_weight + new_born_particle_count);
-    printf("New born max: %f\n", res2_max);
 }
 
 void DOGM::statisticalMoments()
