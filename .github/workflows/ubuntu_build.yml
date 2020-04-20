@@ -1,9 +1,9 @@
-name: Build Ubuntu 18.04
+name: Build and test on Ubuntu 18.04
 
 on: [push, pull_request]
 
 jobs:
-  build-ubuntu:
+  build-and-test-ubuntu:
 
     runs-on: ubuntu-18.04
 
@@ -23,3 +23,6 @@ jobs:
     - name: Build
       run: cmake --build build
       working-directory: dogm
+    - name: Test
+      run: ./demo/utils/test/utils_spec
+      working-directory: dogm/build

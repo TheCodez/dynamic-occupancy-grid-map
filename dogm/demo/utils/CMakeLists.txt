@@ -29,3 +29,7 @@ TARGET_INCLUDE_DIRECTORIES(utils
     ${OpenCV_INCLUDE_DIRS})
 
 TARGET_LINK_LIBRARIES(utils PRIVATE ${OpenCV_LIBS})
+
+if(BUILD_TESTS)
+    add_subdirectory(test)
+endif()

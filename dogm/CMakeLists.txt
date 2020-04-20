@@ -3,6 +3,8 @@ project(DOGM LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 14)
 
+option(BUILD_TESTS "Build unit tests" ON)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 find_package(OpenGL REQUIRED)
 
@@ -24,6 +26,9 @@ if (NOT GLEW_FOUND)
 	set(GLEW_INCLUDE_DIRS "" CACHE PATH "")
 	set(GLEW_LIBRARIES "" CACHE FILEPATH "" )
 endif()
+
+LIST (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+INCLUDE(GoogleTestDownloadAndBuild)
 
 #if(WIN32)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}d.dll" DESTINATION ${CMAKE_INSTALL_BINARY}/debug CONFIGURATIONS Debug)
