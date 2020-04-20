@@ -235,7 +235,7 @@ void DOGM::gridCellOccupancyUpdate()
 
     gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(
         grid_cell_array, particle_array, weight_array, weight_array_accum, meas_cell_array, born_masses_array,
-        params.birth_prob, params.persistence_prob, grid_cell_count);
+        params.birth_prob, grid_cell_count);
 
     CHECK_ERROR(cudaGetLastError());
 }
