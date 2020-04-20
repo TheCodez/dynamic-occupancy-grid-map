@@ -1,26 +1,7 @@
-/*
-MIT License
+// Copyright (c) 2020 Michael Koesel and respective contributors
+// SPDX-License-Identifier: MIT
+// See accompanying LICENSE file for detailed information
 
-Copyright (c) 2019 Michael Kösel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
 #include "dogm/common.h"
 #include "dogm/cuda_utils.h"
 #include "dogm/dogm_types.h"
@@ -141,8 +122,8 @@ __global__ void initNewParticlesKernel2(ParticleSoA birth_particle_array, const 
         int cell_idx = birth_particle_array.grid_cell_idx[i];
         const GridCell& grid_cell = grid_cell_array[cell_idx];
 
-        float x = cell_idx % grid_size;
-        float y = cell_idx / grid_size;
+        float x = cell_idx % grid_size + 0.5f;
+        float y = cell_idx / grid_size + 0.5f;
         float vel_x = curand_normal(&local_state, 0.0f, velocity);
         float vel_y = curand_normal(&local_state, 0.0f, velocity);
 

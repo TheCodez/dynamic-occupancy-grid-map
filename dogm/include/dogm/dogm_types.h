@@ -1,3 +1,7 @@
+// Copyright (c) 2020 Michael Koesel and respective contributors
+// SPDX-License-Identifier: MIT
+// See accompanying LICENSE file for detailed information
+
 #pragma once
 
 #include "cuda_utils.h"
@@ -62,7 +66,7 @@ struct ParticleSoA
         CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
         CHECK_ERROR(cudaMalloc((void**)&weight, size * sizeof(float)));
         CHECK_ERROR(cudaMalloc((void**)&associated, size * sizeof(bool)));
-        CHECK_ERROR(cudaMalloc((void**)&state, size * sizeof(glm::vec4)));
+        CHECK_ERROR(cudaMallocManaged((void**)&state, size * sizeof(glm::vec4)));
     }
 
     ParticleSoA& operator=(const ParticleSoA& other)

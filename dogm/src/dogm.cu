@@ -1,26 +1,7 @@
-/*
-MIT License
+// Copyright (c) 2020 Michael Koesel and respective contributors
+// SPDX-License-Identifier: MIT
+// See accompanying LICENSE file for detailed information
 
-Copyright (c) 2019 Michael Kösel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
 #include "dogm/common.h"
 #include "dogm/cuda_utils.h"
 #include "dogm/dogm.h"
@@ -180,7 +161,7 @@ void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
     CHECK_ERROR(cudaMemcpy(d_measurements, measurements, num_measurements * sizeof(float), cudaMemcpyHostToDevice));
 
     const int polar_width = num_measurements;
-    const int polar_height = grid_size;
+    const int polar_height = static_cast<int>(laser_params.max_range / laser_params.resolution);
 
     dim3 dim_block(32, 32);
     dim3 grid_dim(divUp(polar_width, dim_block.x), divUp(polar_height, dim_block.y));
@@ -261,9 +242,9 @@ void DOGM::gridCellOccupancyUpdate()
     accumulate(weight_array, weights_accum);
     float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
-    gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(
-        grid_cell_array, particle_array, weight_array, weight_array_accum, meas_cell_array, born_masses_array,
-        params.birth_prob, params.persistence_prob, grid_cell_count);
+    gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(grid_cell_array, particle_array, weight_array,
+                                                                 weight_array_accum, meas_cell_array, born_masses_array,
+                                                                 params.birth_prob, grid_cell_count);
 
     CHECK_ERROR(cudaGetLastError());
 }
@@ -320,21 +301,10 @@ void DOGM::initializeNewParticles()
 
     CHECK_ERROR(cudaGetLastError());
 
-    CHECK_ERROR(cudaDeviceSynchronize());
-    sortParticles(birth_particle_array);
-
     copyBirthWeightKernel<<<birth_particles_grid, block_dim>>>(birth_particle_array, birth_weight_array,
                                                                new_born_particle_count);
 
     CHECK_ERROR(cudaGetLastError());
-
-    thrust::device_ptr<float> weight(weight_array);
-    float res_max = *thrust::max_element(weight, weight + particle_count);
-    printf("Persistent max: %f\n", res_max);
-
-    thrust::device_ptr<float> birth_weight(birth_weight_array);
-    float res2_max = *thrust::max_element(birth_weight, birth_weight + new_born_particle_count);
-    printf("New born max: %f\n", res2_max);
 }
 
 void DOGM::statisticalMoments()
@@ -396,17 +366,6 @@ void DOGM::resampling()
 
     CHECK_ERROR(cudaDeviceSynchronize());
 
-    const int max = particle_count + new_born_particle_count;
-    thrust::device_vector<float> rand_array(particle_count);
-    float* rand_ptr = thrust::raw_pointer_cast(rand_array.data());
-
-    resamplingGenerateRandomNumbersKernel<<<particles_grid, block_dim>>>(rand_ptr, rng_states, max, particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
-
-    thrust::sort(rand_array.begin(), rand_array.end());
-
     thrust::device_ptr<float> persistent_weights(weight_array);
     thrust::device_ptr<float> new_born_weights(birth_weight_array);
 
@@ -417,11 +376,23 @@ void DOGM::resampling()
     thrust::device_vector<float> joint_weight_accum(joint_weight_array.size());
     accumulate(joint_weight_array, joint_weight_accum);
 
+    float joint_max = joint_weight_accum.back();
+
+    thrust::device_vector<float> rand_array(particle_count);
+    float* rand_ptr = thrust::raw_pointer_cast(rand_array.data());
+
+    resamplingGenerateRandomNumbersKernel<<<particles_grid, block_dim>>>(rand_ptr, rng_states, joint_max,
+                                                                         particle_count);
+
+    CHECK_ERROR(cudaGetLastError());
+    CHECK_ERROR(cudaDeviceSynchronize());
+
+    thrust::sort(rand_array.begin(), rand_array.end());
+
     thrust::device_vector<int> idx_resampled(particle_count);
-    calc_resampled_indices(joint_weight_accum, rand_array, idx_resampled);
+    calc_resampled_indices(joint_weight_accum, rand_array, idx_resampled, joint_max);
     int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
-    float joint_max = joint_weight_accum.back();
     float new_weight = joint_max / particle_count;
 
     printf("joint_max: %f\n", joint_max);

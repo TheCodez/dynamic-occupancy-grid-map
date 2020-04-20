@@ -3,6 +3,8 @@ project(DOGM LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 14)
 
+option(BUILD_TESTS "Build unit tests" ON)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 find_package(OpenGL REQUIRED)
 
@@ -17,11 +19,16 @@ if (NOT GLFW3_FOUND)
 	set(GLFW3_LIBRARY "" CACHE FILEPATH "" )
 endif()
 
-find_package(GLEW)
+if (NOT WIN32)
+	find_package(GLEW)
+endif()
 if (NOT GLEW_FOUND)
 	set(GLEW_INCLUDE_DIRS "" CACHE PATH "")
-	set(GLEW_LIBRARY "" CACHE FILEPATH "" )
+	set(GLEW_LIBRARIES "" CACHE FILEPATH "" )
 endif()
+
+LIST (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+INCLUDE(GoogleTestDownloadAndBuild)
 
 #if(WIN32)
 #    install(FILES "${OpenCV_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/bin/opencv_world${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}d.dll" DESTINATION ${CMAKE_INSTALL_BINARY}/debug CONFIGURATIONS Debug)
@@ -97,9 +104,9 @@ set(CUDA_PROPAGATE_HOST_FLAGS ON)
 set_target_properties(dogm PROPERTIES PUBLIC_HEADER "include/dogm.h;include/dogm_types.h")
 
 target_link_libraries(dogm
-	${OPENGL_LIBRARY}
-	${GLFW3_LIBRARY}
-	${GLEW_LIBRARY}
+	PRIVATE ${OPENGL_LIBRARY}
+	PRIVATE ${GLFW3_LIBRARY}
+	PRIVATE ${GLEW_LIBRARIES}
 )
 
 #INSTALL(TARGETS dogm

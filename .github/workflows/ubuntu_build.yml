@@ -1,0 +1,28 @@
+name: Build and test on Ubuntu 18.04
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test-ubuntu:
+
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Update package lists
+      run: sudo apt update
+    - name: Install OpenGL dependencies
+      run: sudo apt install libglfw3-dev libglew-dev libglm-dev
+    - name: Install OpenCV
+      run: sudo apt install libopencv-dev
+    - name: Install CUDA toolkit
+      run: sudo apt install nvidia-cuda-toolkit
+    - name: Configure
+      run: mkdir build && cd build && cmake ..
+      working-directory: dogm
+    - name: Build
+      run: cmake --build build
+      working-directory: dogm
+    - name: Test
+      run: ./demo/utils/test/utils_spec
+      working-directory: dogm/build
