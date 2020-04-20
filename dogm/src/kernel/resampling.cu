@@ -34,16 +34,9 @@ __global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_a
 void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, thrust::device_vector<float>& rand_array,
                             thrust::device_vector<int>& indices, float accum_max)
 {
-    size_t size = joint_weight_accum.size();
-    thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(), joint_weight_accum.begin(),
-                      GPU_LAMBDA(float x) { return x * (size / accum_max); });
-
-    float norm_max = joint_weight_accum.back();
     float rand_max = rand_array.back();
 
-    // printf("Norm: %f, Rand: %f\n", norm_max, rand_max);
-
-    if (norm_max != rand_max)
+    if (accum_max != rand_max)
     {
         joint_weight_accum.back() = rand_max;
     }

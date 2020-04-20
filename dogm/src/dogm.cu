@@ -357,17 +357,6 @@ void DOGM::resampling()
 
     CHECK_ERROR(cudaDeviceSynchronize());
 
-    const int max = particle_count + new_born_particle_count;
-    thrust::device_vector<float> rand_array(particle_count);
-    float* rand_ptr = thrust::raw_pointer_cast(rand_array.data());
-
-    resamplingGenerateRandomNumbersKernel<<<particles_grid, block_dim>>>(rand_ptr, rng_states, max, particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
-
-    thrust::sort(rand_array.begin(), rand_array.end());
-
     thrust::device_ptr<float> persistent_weights(weight_array);
     thrust::device_ptr<float> new_born_weights(birth_weight_array);
 
@@ -379,6 +368,18 @@ void DOGM::resampling()
     accumulate(joint_weight_array, joint_weight_accum);
 
     float joint_max = joint_weight_accum.back();
+
+    thrust::device_vector<float> rand_array(particle_count);
+    float* rand_ptr = thrust::raw_pointer_cast(rand_array.data());
+
+    resamplingGenerateRandomNumbersKernel<<<particles_grid, block_dim>>>(rand_ptr, rng_states, joint_max,
+                                                                         particle_count);
+
+    CHECK_ERROR(cudaGetLastError());
+    CHECK_ERROR(cudaDeviceSynchronize());
+
+    thrust::sort(rand_array.begin(), rand_array.end());
+
     thrust::device_vector<int> idx_resampled(particle_count);
     calc_resampled_indices(joint_weight_accum, rand_array, idx_resampled, joint_max);
     int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
