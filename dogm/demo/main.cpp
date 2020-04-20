@@ -81,7 +81,7 @@ int main(int argc, const char** argv)
         std::cout << "##############################" << std::endl;
 
         const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
-        precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity);
+        // precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity);
 
         // cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
         // cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
@@ -99,7 +99,7 @@ int main(int argc, const char** argv)
         cv::waitKey(1);
     }
 
-    precision_evaluator.printSummary();
+    // precision_evaluator.printSummary();
 
     return 0;
 }

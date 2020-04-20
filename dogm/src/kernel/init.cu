@@ -69,15 +69,15 @@ __global__ void initBirthParticlesKernel(ParticleSoA birth_particle_array, curan
     // global_state[thread_id] = local_state;
 }
 
-__global__ void initGridCellsKernel(GridCell* __restrict__ grid_cell_array,
-                                    MeasurementCell* __restrict__ meas_cell_array, int grid_size, int cell_count)
+__global__ void initGridCellsKernel(GridCellSoA grid_cell_array, MeasurementCell* __restrict__ meas_cell_array,
+                                    int grid_size, int cell_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        grid_cell_array[i].free_mass = 0.0f;
-        grid_cell_array[i].occ_mass = 0.0f;
-        grid_cell_array[i].start_idx = -1;
-        grid_cell_array[i].end_idx = -1;
+        grid_cell_array.free_mass[i] = 0.0f;
+        grid_cell_array.occ_mass[i] = 0.0f;
+        grid_cell_array.start_idx[i] = -1;
+        grid_cell_array.end_idx[i] = -1;
 
         meas_cell_array[i].occ_mass = 0.0f;
         meas_cell_array[i].free_mass = 0.0f;
@@ -86,12 +86,12 @@ __global__ void initGridCellsKernel(GridCell* __restrict__ grid_cell_array,
     }
 }
 
-__global__ void reinitGridParticleIndices(GridCell* __restrict__ grid_cell_array, int cell_count)
+__global__ void reinitGridParticleIndices(GridCellSoA grid_cell_array, int cell_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        grid_cell_array[i].start_idx = -1;
-        grid_cell_array[i].end_idx = -1;
+        grid_cell_array.start_idx[i] = -1;
+        grid_cell_array.end_idx[i] = -1;
     }
 }
 

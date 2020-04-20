@@ -85,7 +85,7 @@ public:
 
     std::unique_ptr<Renderer> renderer;
 
-    GridCell* grid_cell_array;
+    struct GridCellSoA grid_cell_array;
     struct ParticleSoA particle_array;
     struct ParticleSoA particle_array_next;
     struct ParticleSoA birth_particle_array;
