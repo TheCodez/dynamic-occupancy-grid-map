@@ -36,9 +36,9 @@ int main(int argc, const char** argv)
     // Just to init cuda
     cudaDeviceSynchronize();
 
-    Timer init_timer{"DOGM initialization"};
+    Timer initialization_timer{"DOGM initialization"};
     dogm::DOGM grid_map(params, laser_params);
-    init_timer.toc(true);
+    initialization_timer.toc(true);
 
     Simulator simulator(100, laser_params.fov);
 #if 1
