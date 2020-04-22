@@ -49,12 +49,11 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
     dim3 dim(device_prop.multiProcessorCount * blocks_per_sm);
     particles_grid = birth_particles_grid = grid_map_grid = dim;
 
-    CHECK_ERROR(cudaMallocManaged((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
-
     particle_array.init(particle_count);
     particle_array_next.init(particle_count);
     birth_particle_array.init(new_born_particle_count);
 
+    CHECK_ERROR(cudaMallocManaged((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
     CHECK_ERROR(cudaMallocManaged((void**)&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
 
     CHECK_ERROR(cudaMallocManaged((void**)&polar_meas_cell_array, 100 * grid_size * sizeof(MeasurementCell)));
@@ -72,6 +71,10 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
 
 DOGM::~DOGM()
 {
+    particle_array.free();
+    particle_array_next.free();
+    birth_particle_array.free();
+
     CHECK_ERROR(cudaFree(grid_cell_array));
     CHECK_ERROR(cudaFree(meas_cell_array));
 

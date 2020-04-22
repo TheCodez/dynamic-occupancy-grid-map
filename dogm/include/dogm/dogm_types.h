@@ -58,9 +58,7 @@ struct ParticleSoA
 
     ParticleSoA() : size(0) {}
 
-    ParticleSoA(int size) : size(size) {}
-
-    void init(int new_size)
+    __host__ __device__ void init(int new_size)
     {
         size = new_size;
         CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
@@ -69,7 +67,15 @@ struct ParticleSoA
         CHECK_ERROR(cudaMallocManaged((void**)&state, size * sizeof(glm::vec4)));
     }
 
-    ParticleSoA& operator=(const ParticleSoA& other)
+    __host__ __device__ void free()
+    {
+        CHECK_ERROR(cudaFree(grid_cell_idx));
+        CHECK_ERROR(cudaFree(weight));
+        CHECK_ERROR(cudaFree(associated));
+        CHECK_ERROR(cudaFree(state));
+    }
+
+    __host__ __device__ ParticleSoA& operator=(const ParticleSoA& other)
     {
         if (this != &other)
         {
