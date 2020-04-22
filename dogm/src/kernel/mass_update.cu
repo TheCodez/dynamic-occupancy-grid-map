@@ -47,7 +47,7 @@ __device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_
     grid_cell_array[i].occ_mass = m_occ_up;
 }
 
-__device__ void normalize_weights(ParticleSoA particle_array, float* __restrict__ weight_array, int start_idx,
+__device__ void normalize_weights(const ParticlesSoA& particle_array, float* __restrict__ weight_array, int start_idx,
                                   int end_idx, float occ_pred)
 {
     for (int i = start_idx; i < end_idx + 1; i++)
@@ -57,7 +57,7 @@ __device__ void normalize_weights(ParticleSoA particle_array, float* __restrict_
     }
 }
 
-__global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_array, ParticleSoA particle_array,
+__global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_array, ParticlesSoA particle_array,
                                                float* __restrict__ weight_array,
                                                const float* __restrict__ weight_array_accum,
                                                const MeasurementCell* __restrict__ meas_cell_array,

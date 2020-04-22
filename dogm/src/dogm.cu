@@ -110,17 +110,6 @@ void DOGM::initialize()
     CHECK_ERROR(cudaStreamDestroy(grid_stream));
 }
 
-void DOGM::sortParticles(ParticleSoA particles)
-{
-    thrust::device_ptr<int> grid_index_ptr(particles.grid_cell_idx);
-    thrust::device_ptr<float> weight_ptr(particles.weight);
-    thrust::device_ptr<bool> associated_ptr(particles.associated);
-    thrust::device_ptr<glm::vec4> state_ptr(particles.state);
-
-    auto it = thrust::make_zip_iterator(thrust::make_tuple(weight_ptr, associated_ptr, state_ptr));
-    thrust::sort_by_key(grid_index_ptr, grid_index_ptr + particles.size, it);
-}
-
 void DOGM::updateParticleFilter(float dt)
 {
     particlePrediction(dt);
@@ -131,9 +120,6 @@ void DOGM::updateParticleFilter(float dt)
     statisticalMoments();
     resampling();
 
-    //    CHECK_ERROR(
-    //        cudaMemcpy(particle_array, particle_array_next, particle_count * sizeof(Particle),
-    //        cudaMemcpyDeviceToDevice));
     particle_array = particle_array_next;
 
     CHECK_ERROR(cudaDeviceSynchronize());
@@ -229,7 +215,15 @@ void DOGM::particleAssignment()
     CHECK_ERROR(cudaGetLastError());
     CHECK_ERROR(cudaDeviceSynchronize());
 
-    sortParticles(particle_array);
+    // sort particles
+    thrust::device_ptr<int> grid_index_ptr(particle_array.grid_cell_idx);
+    thrust::device_ptr<float> weight_ptr(particle_array.weight);
+    thrust::device_ptr<bool> associated_ptr(particle_array.associated);
+    thrust::device_ptr<glm::vec4> state_ptr(particle_array.state);
+
+    auto it = thrust::make_zip_iterator(thrust::make_tuple(weight_ptr, associated_ptr, state_ptr));
+    thrust::sort_by_key(grid_index_ptr, grid_index_ptr + particle_count, it);
+
     particleToGridKernel<<<particles_grid, block_dim>>>(particle_array, grid_cell_array, weight_array, particle_count);
 
     CHECK_ERROR(cudaGetLastError());

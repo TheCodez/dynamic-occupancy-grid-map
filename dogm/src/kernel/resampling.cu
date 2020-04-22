@@ -46,21 +46,8 @@ void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, th
                         indices.begin());
 }
 
-__device__ Particle copy_particle(const Particle* __restrict__ particle_array, int particle_count,
-                                  const Particle* __restrict__ birth_particle_array, int idx)
-{
-    if (idx < particle_count)
-    {
-        return particle_array[idx];
-    }
-    else
-    {
-        return birth_particle_array[idx - particle_count];
-    }
-}
-
-__global__ void resamplingKernel(const ParticleSoA particle_array, ParticleSoA particle_array_next,
-                                 const ParticleSoA birth_particle_array, const int* __restrict__ idx_array_resampled,
+__global__ void resamplingKernel(const ParticlesSoA particle_array, ParticlesSoA particle_array_next,
+                                 const ParticlesSoA birth_particle_array, const int* __restrict__ idx_array_resampled,
                                  float new_weight, int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
@@ -69,17 +56,11 @@ __global__ void resamplingKernel(const ParticleSoA particle_array, ParticleSoA p
 
         if (idx < particle_count)
         {
-            particle_array_next.grid_cell_idx[i] = particle_array.grid_cell_idx[idx];
-            particle_array_next.weight[i] = particle_array.weight[idx];
-            particle_array_next.associated[i] = particle_array.associated[idx];
-            particle_array_next.state[i] = particle_array.state[idx];
+            particle_array_next.copy(particle_array, i, idx);
         }
         else
         {
-            particle_array_next.grid_cell_idx[i] = birth_particle_array.grid_cell_idx[idx - particle_count];
-            particle_array_next.weight[i] = birth_particle_array.weight[idx - particle_count];
-            particle_array_next.associated[i] = birth_particle_array.associated[idx - particle_count];
-            particle_array_next.state[i] = birth_particle_array.state[idx - particle_count];
+            particle_array_next.copy(birth_particle_array, i, idx - particle_count);
         }
 
         particle_array_next.weight[i] = new_weight;

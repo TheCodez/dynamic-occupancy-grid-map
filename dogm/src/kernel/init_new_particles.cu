@@ -15,13 +15,13 @@
 namespace dogm
 {
 
-__device__ void set_cell_idx_A(ParticleSoA birth_particle_array, int i, int grid_cell_idx)
+__device__ void set_cell_idx_A(const ParticlesSoA& birth_particle_array, int i, int grid_cell_idx)
 {
     birth_particle_array.grid_cell_idx[i] = grid_cell_idx;
     birth_particle_array.associated[i] = true;
 }
 
-__device__ void set_cell_idx_UA(ParticleSoA birth_particle_array, int i, int grid_cell_idx)
+__device__ void set_cell_idx_UA(const ParticlesSoA& birth_particle_array, int i, int grid_cell_idx)
 {
     birth_particle_array.grid_cell_idx[i] = grid_cell_idx;
     birth_particle_array.associated[i] = false;
@@ -76,7 +76,7 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
 __global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
                                         const MeasurementCell* __restrict__ meas_cell_array,
                                         const float* __restrict__ weight_array,
-                                        const float* __restrict__ born_masses_array, ParticleSoA birth_particle_array,
+                                        const float* __restrict__ born_masses_array, ParticlesSoA birth_particle_array,
                                         const float* __restrict__ particle_orders_array_accum, int cell_count)
 {
     for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
@@ -108,7 +108,7 @@ __global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
     }
 }
 
-__global__ void initNewParticlesKernel2(ParticleSoA birth_particle_array, const GridCell* __restrict__ grid_cell_array,
+__global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const GridCell* __restrict__ grid_cell_array,
                                         curandState* __restrict__ global_state, float velocity, int grid_size,
                                         int particle_count)
 {
@@ -144,7 +144,7 @@ __global__ void initNewParticlesKernel2(ParticleSoA birth_particle_array, const 
     global_state[thread_id] = local_state;
 }
 
-__global__ void copyBirthWeightKernel(const ParticleSoA birth_particle_array, float* __restrict__ birth_weight_array,
+__global__ void copyBirthWeightKernel(const ParticlesSoA birth_particle_array, float* __restrict__ birth_weight_array,
                                       int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)

@@ -47,7 +47,7 @@ struct Particle
     glm::vec4 state;
 };
 
-struct ParticleSoA
+struct ParticlesSoA
 {
     int* grid_cell_idx;
     float* weight;
@@ -56,7 +56,7 @@ struct ParticleSoA
 
     int size;
 
-    ParticleSoA() : size(0) {}
+    ParticlesSoA() : size(0) {}
 
     __host__ __device__ void init(int new_size)
     {
@@ -75,7 +75,7 @@ struct ParticleSoA
         CHECK_ERROR(cudaFree(state));
     }
 
-    __host__ __device__ ParticleSoA& operator=(const ParticleSoA& other)
+    __host__ __device__ ParticlesSoA& operator=(const ParticlesSoA& other)
     {
         if (this != &other)
         {
@@ -86,6 +86,14 @@ struct ParticleSoA
         }
 
         return *this;
+    }
+
+    __device__ void copy(const ParticlesSoA& other, int index, int other_index)
+    {
+        grid_cell_idx[index] = other.grid_cell_idx[other_index];
+        weight[index] = other.weight[other_index];
+        associated[index] = other.associated[other_index];
+        state[index] = other.state[other_index];
     }
 };
 

@@ -29,13 +29,13 @@ __device__ void set_normalization_components(GridCell* __restrict__ grid_cell_ar
     grid_cell_array[i].mu_UA = mu_UA;
 }
 
-__device__ float update_unnorm(const ParticleSoA particle_array, int i,
+__device__ float update_unnorm(const ParticlesSoA& particle_array, int i,
                                const MeasurementCell* __restrict__ meas_cell_array)
 {
     return meas_cell_array[particle_array.grid_cell_idx[i]].likelihood * particle_array.weight[i];
 }
 
-__device__ float normalize(const ParticleSoA particle, int i, const GridCell* __restrict__ grid_cell_array,
+__device__ float normalize(const ParticlesSoA& particle, int i, const GridCell* __restrict__ grid_cell_array,
                            const MeasurementCell* __restrict__ meas_cell_array, float weight)
 {
     const GridCell& cell = grid_cell_array[particle.grid_cell_idx[i]];
@@ -44,7 +44,7 @@ __device__ float normalize(const ParticleSoA particle, int i, const GridCell* __
     return meas_cell.p_A * cell.mu_A * weight + (1.0 - meas_cell.p_A) * cell.mu_UA * particle.weight[i];
 }
 
-__global__ void updatePersistentParticlesKernel1(const ParticleSoA particle_array,
+__global__ void updatePersistentParticlesKernel1(const ParticlesSoA particle_array,
                                                  const MeasurementCell* __restrict__ meas_cell_array,
                                                  float* __restrict__ weight_array, int particle_count)
 {
@@ -74,7 +74,7 @@ __global__ void updatePersistentParticlesKernel2(GridCell* __restrict__ grid_cel
     }
 }
 
-__global__ void updatePersistentParticlesKernel3(const ParticleSoA particle_array,
+__global__ void updatePersistentParticlesKernel3(const ParticlesSoA particle_array,
                                                  const MeasurementCell* __restrict__ meas_cell_array,
                                                  const GridCell* __restrict__ grid_cell_array,
                                                  float* __restrict__ weight_array, int particle_count)
