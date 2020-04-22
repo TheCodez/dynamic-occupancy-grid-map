@@ -165,9 +165,8 @@ cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
     cv::Mat particles_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
     for (int i = 0; i < grid_map.particle_count; i++)
     {
-        const dogm::Particle& part = grid_map.particle_array[i];
-        float x = part.state[0];
-        float y = part.state[1];
+        float x = grid_map.particle_array.state[i][0];
+        float y = grid_map.particle_array.state[i][1];
 
         if ((x >= 0 && x < grid_map.getGridSize()) && (y >= 0 && y < grid_map.getGridSize()))
         {

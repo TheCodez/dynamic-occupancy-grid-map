@@ -55,17 +55,17 @@ __device__ void store(GridCell* __restrict__ grid_cell_array, int j, float mean_
     grid_cell_array[j].covar_xy_vel = covar_xy_vel;
 }
 
-__global__ void statisticalMomentsKernel1(const Particle* __restrict__ particle_array,
-                                          const float* __restrict__ weight_array, float* __restrict__ vel_x_array,
-                                          float* __restrict__ vel_y_array, float* __restrict__ vel_x_squared_array,
+__global__ void statisticalMomentsKernel1(const ParticlesSoA particle_array, const float* __restrict__ weight_array,
+                                          float* __restrict__ vel_x_array, float* __restrict__ vel_y_array,
+                                          float* __restrict__ vel_x_squared_array,
                                           float* __restrict__ vel_y_squared_array, float* __restrict__ vel_xy_array,
                                           int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
     {
         float weight = weight_array[i];
-        float vel_x = particle_array[i].state[2];
-        float vel_y = particle_array[i].state[3];
+        float vel_x = particle_array.state[i][2];
+        float vel_y = particle_array.state[i][3];
         vel_x_array[i] = weight * vel_x;
         vel_y_array[i] = weight * vel_y;
         vel_x_squared_array[i] = weight * vel_x * vel_x;

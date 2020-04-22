@@ -12,9 +12,9 @@ namespace dogm
 struct GridCell;
 struct Particle;
 
-__global__ void statisticalMomentsKernel1(const Particle* __restrict__ particle_array,
-                                          const float* __restrict__ weight_array, float* __restrict__ vel_x_array,
-                                          float* __restrict__ vel_y_array, float* __restrict__ vel_x_squared_array,
+__global__ void statisticalMomentsKernel1(const ParticlesSoA particle_array, const float* __restrict__ weight_array,
+                                          float* __restrict__ vel_x_array, float* __restrict__ vel_y_array,
+                                          float* __restrict__ vel_x_squared_array,
                                           float* __restrict__ vel_y_squared_array, float* __restrict__ vel_xy_array,
                                           int particle_count);
 

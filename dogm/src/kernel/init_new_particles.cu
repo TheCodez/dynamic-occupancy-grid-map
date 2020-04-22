@@ -15,16 +15,16 @@
 namespace dogm
 {
 
-__device__ void set_cell_idx_A(Particle* __restrict__ birth_particle_array, int i, int grid_cell_idx)
+__device__ void set_cell_idx_A(const ParticlesSoA& birth_particle_array, int i, int grid_cell_idx)
 {
-    birth_particle_array[i].grid_cell_idx = grid_cell_idx;
-    birth_particle_array[i].associated = true;
+    birth_particle_array.grid_cell_idx[i] = grid_cell_idx;
+    birth_particle_array.associated[i] = true;
 }
 
-__device__ void set_cell_idx_UA(Particle* __restrict__ birth_particle_array, int i, int grid_cell_idx)
+__device__ void set_cell_idx_UA(const ParticlesSoA& birth_particle_array, int i, int grid_cell_idx)
 {
-    birth_particle_array[i].grid_cell_idx = grid_cell_idx;
-    birth_particle_array[i].associated = false;
+    birth_particle_array.grid_cell_idx[i] = grid_cell_idx;
+    birth_particle_array.associated[i] = false;
 }
 
 __device__ int calc_start_idx(const float* __restrict__ particle_orders_array_accum, int index)
@@ -76,8 +76,7 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
 __global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
                                         const MeasurementCell* __restrict__ meas_cell_array,
                                         const float* __restrict__ weight_array,
-                                        const float* __restrict__ born_masses_array,
-                                        Particle* __restrict__ birth_particle_array,
+                                        const float* __restrict__ born_masses_array, ParticlesSoA birth_particle_array,
                                         const float* __restrict__ particle_orders_array_accum, int cell_count)
 {
     for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
@@ -109,8 +108,7 @@ __global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
     }
 }
 
-__global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_array,
-                                        const GridCell* __restrict__ grid_cell_array,
+__global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const GridCell* __restrict__ grid_cell_array,
                                         curandState* __restrict__ global_state, float velocity, int grid_size,
                                         int particle_count)
 {
@@ -121,7 +119,7 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
 
     for (int i = thread_id; i < particle_count; i += stride)
     {
-        int cell_idx = birth_particle_array[i].grid_cell_idx;
+        int cell_idx = birth_particle_array.grid_cell_idx[i];
         const GridCell& grid_cell = grid_cell_array[cell_idx];
 
         float x = cell_idx % grid_size + 0.5f;
@@ -129,29 +127,29 @@ __global__ void initNewParticlesKernel2(Particle* __restrict__ birth_particle_ar
         float vel_x = curand_normal(&local_state, 0.0f, velocity);
         float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
-        bool associated = birth_particle_array[i].associated;
+        bool associated = birth_particle_array.associated[i];
         // TODO: Use correct distribution
         if (associated)
         {
-            birth_particle_array[i].weight = grid_cell.w_A;
-            birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
+            birth_particle_array.weight[i] = grid_cell.w_A;
+            birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
         }
         else
         {
-            birth_particle_array[i].weight = grid_cell.w_UA;
-            birth_particle_array[i].state = glm::vec4(x, y, vel_x, vel_y);
+            birth_particle_array.weight[i] = grid_cell.w_UA;
+            birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
         }
     }
 
     global_state[thread_id] = local_state;
 }
 
-__global__ void copyBirthWeightKernel(const Particle* __restrict__ birth_particle_array,
-                                      float* __restrict__ birth_weight_array, int particle_count)
+__global__ void copyBirthWeightKernel(const ParticlesSoA birth_particle_array, float* __restrict__ birth_weight_array,
+                                      int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
     {
-        birth_weight_array[i] = birth_particle_array[i].weight;
+        birth_weight_array[i] = birth_particle_array.weight[i];
     }
 }
 

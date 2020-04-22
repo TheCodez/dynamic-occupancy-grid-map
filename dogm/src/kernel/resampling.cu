@@ -46,29 +46,24 @@ void calc_resampled_indices(thrust::device_vector<float>& joint_weight_accum, th
                         indices.begin());
 }
 
-__device__ Particle copy_particle(const Particle* __restrict__ particle_array, int particle_count,
-                                  const Particle* __restrict__ birth_particle_array, int idx)
-{
-    if (idx < particle_count)
-    {
-        return particle_array[idx];
-    }
-    else
-    {
-        return birth_particle_array[idx - particle_count];
-    }
-}
-
-__global__ void resamplingKernel(const Particle* __restrict__ particle_array,
-                                 Particle* __restrict__ particle_array_next,
-                                 const Particle* __restrict__ birth_particle_array,
-                                 const int* __restrict__ idx_array_resampled, float new_weight, int particle_count)
+__global__ void resamplingKernel(const ParticlesSoA particle_array, ParticlesSoA particle_array_next,
+                                 const ParticlesSoA birth_particle_array, const int* __restrict__ idx_array_resampled,
+                                 float new_weight, int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
     {
-        particle_array_next[i] =
-            copy_particle(particle_array, particle_count, birth_particle_array, idx_array_resampled[i]);
-        particle_array_next[i].weight = new_weight;
+        int idx = idx_array_resampled[i];
+
+        if (idx < particle_count)
+        {
+            particle_array_next.copy(particle_array, i, idx);
+        }
+        else
+        {
+            particle_array_next.copy(birth_particle_array, i, idx - particle_count);
+        }
+
+        particle_array_next.weight[i] = new_weight;
     }
 }
 

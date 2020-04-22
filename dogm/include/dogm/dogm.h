@@ -4,12 +4,13 @@
 
 #pragma once
 
-#include <memory>
+#include "dogm_types.h"
 
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
+#include <memory>
 
 #include <vector>
 
@@ -17,10 +18,6 @@ class Renderer;
 
 namespace dogm
 {
-
-struct GridCell;
-struct MeasurementCell;
-struct Particle;
 
 struct GridParams
 {
@@ -81,9 +78,9 @@ public:
     std::unique_ptr<Renderer> renderer;
 
     GridCell* grid_cell_array;
-    Particle* particle_array;
-    Particle* particle_array_next;
-    Particle* birth_particle_array;
+    ParticlesSoA particle_array;
+    ParticlesSoA particle_array_next;
+    ParticlesSoA birth_particle_array;
 
     MeasurementCell* polar_meas_cell_array;
     MeasurementCell* meas_cell_array;
