@@ -48,7 +48,7 @@ public:
 
     void updateMeasurementGridFromArray(const std::vector<float2>& measurements);
 
-    void updateMeasurementGrid(float* measurements, int num_measurements);
+    void updateMeasurementGrid(const std::vector<float>& measurements);
     void updateParticleFilter(float dt);
 
     int getGridSize() const { return grid_size; }

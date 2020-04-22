@@ -20,7 +20,8 @@ static float pignistic_transformation(float free_mass, float occ_mass)
     return occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
 }
 
-std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& grid_map, float occ_tresh, float m_tresh)
+std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& grid_map, float min_occupancy_threshold,
+                                                            float min_velocity_threshold)
 {
     std::vector<Point<dogm::GridCell>> cells_with_velocity;
     for (int y = 0; y < grid_map.getGridSize(); y++)
@@ -31,19 +32,20 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
 
             const dogm::GridCell& cell = grid_map.grid_cell_array[index];
             float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
-            cv::Mat vel_img(2, 1, CV_32FC1);
-            vel_img.at<float>(0) = cell.mean_x_vel;
-            vel_img.at<float>(1) = cell.mean_y_vel;
+            cv::Mat velocity_mean(2, 1, CV_32FC1);
+            velocity_mean.at<float>(0) = cell.mean_x_vel;
+            velocity_mean.at<float>(1) = cell.mean_y_vel;
 
-            cv::Mat covar_img(2, 2, CV_32FC1);
-            covar_img.at<float>(0, 0) = cell.var_x_vel;
-            covar_img.at<float>(1, 0) = cell.covar_xy_vel;
-            covar_img.at<float>(0, 1) = cell.covar_xy_vel;
-            covar_img.at<float>(1, 1) = cell.var_y_vel;
+            cv::Mat velocity_covar(2, 2, CV_32FC1);
+            velocity_covar.at<float>(0, 0) = cell.var_x_vel;
+            velocity_covar.at<float>(1, 0) = cell.covar_xy_vel;
+            velocity_covar.at<float>(0, 1) = cell.covar_xy_vel;
+            velocity_covar.at<float>(1, 1) = cell.var_y_vel;
 
-            cv::Mat mdist = vel_img.t() * covar_img.inv() * vel_img;
+            cv::Mat velocity_normalized_by_variance = velocity_mean.t() * velocity_covar.inv() * velocity_mean;
 
-            if (occ >= occ_tresh && mdist.at<float>(0, 0) >= m_tresh)
+            if (occ >= min_occupancy_threshold &&
+                velocity_normalized_by_variance.at<float>(0, 0) >= min_velocity_threshold)
             {
                 Point<dogm::GridCell> point;
                 point.x = x;

@@ -29,6 +29,8 @@
 
 #include <cuda_runtime.h>
 
+#include <vector>
+
 namespace dogm
 {
 
@@ -141,13 +143,15 @@ void DOGM::updateMeasurementGridFromArray(const std::vector<float2>& measurement
     CHECK_ERROR(cudaDeviceSynchronize());
 }
 
-void DOGM::updateMeasurementGrid(float* measurements, int num_measurements)
+void DOGM::updateMeasurementGrid(const std::vector<float>& measurements)
 {
     // std::cout << "DOGM::updateMeasurementGrid" << std::endl;
 
+    const int num_measurements = measurements.size();
     float* d_measurements;
     CHECK_ERROR(cudaMalloc(&d_measurements, num_measurements * sizeof(float)));
-    CHECK_ERROR(cudaMemcpy(d_measurements, measurements, num_measurements * sizeof(float), cudaMemcpyHostToDevice));
+    CHECK_ERROR(
+        cudaMemcpy(d_measurements, measurements.data(), num_measurements * sizeof(float), cudaMemcpyHostToDevice));
 
     const int polar_width = num_measurements;
     const int polar_height = static_cast<int>(laser_params.max_range / laser_params.resolution);
