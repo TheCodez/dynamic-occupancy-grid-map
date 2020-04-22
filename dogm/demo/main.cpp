@@ -36,7 +36,7 @@ int main(int argc, const char** argv)
 
     // Simulator parameters
     const int simulation_steps = 14;
-    const float simulation_step_period = 0.1f;  // TODO use units instead of plain float
+    const float simulation_step_period = 0.1f;
 
     // Evaluator parameters
     const float minimum_occupancy_threshold = 0.7f;
