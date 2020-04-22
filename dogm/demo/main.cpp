@@ -59,7 +59,7 @@ int main(int argc, const char** argv)
 
     for (int i = 0; i < sim_data.size(); i++)
     {
-        grid_map.updateMeasurementGrid(sim_data[i].measurements.data(), sim_data[i].measurements.size());
+        grid_map.updateMeasurementGrid(sim_data[i].measurements);
 
         cycle_timer.tic();
         // Run Particle filter
