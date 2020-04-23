@@ -16,31 +16,40 @@
 
 int main(int argc, const char** argv)
 {
-    dogm::GridParams params;
-    params.size = 50.0f;
-    params.resolution = 0.2f;
-    params.particle_count = 3 * static_cast<int>(10e5);
-    params.new_born_particle_count = 3 * static_cast<int>(10e4);
-    params.persistence_prob = 0.99f;
-    params.process_noise_position = 0.1f;
-    params.process_noise_velocity = 1.0f;
-    params.birth_prob = 0.02f;
-    params.velocity_persistent = 30.0f;
-    params.velocity_birth = 30.0f;
+    dogm::GridParams grid_params;
+    grid_params.size = 50.0f;
+    grid_params.resolution = 0.2f;
+    grid_params.particle_count = 3 * static_cast<int>(10e5);
+    grid_params.new_born_particle_count = 3 * static_cast<int>(10e4);
+    grid_params.persistence_prob = 0.99f;
+    grid_params.process_noise_position = 0.1f;
+    grid_params.process_noise_velocity = 1.0f;
+    grid_params.birth_prob = 0.02f;
+    grid_params.velocity_persistent = 30.0f;
+    grid_params.velocity_birth = 30.0f;
 
     dogm::LaserSensorParams laser_params;
     laser_params.fov = 120.0f;
     laser_params.max_range = 50.0f;
     laser_params.resolution = 0.2f;
+    const int sensor_horizontal_scan_points = 100;
+
+    // Simulator parameters
+    const int simulation_steps = 14;
+    const float simulation_step_period = 0.1f;
+
+    // Evaluator parameters
+    const float minimum_occupancy_threshold = 0.7f;
+    const float minimum_velocity_threshold = 4.0f;
 
     // Just to init cuda
     cudaDeviceSynchronize();
 
     Timer initialization_timer{"DOGM initialization"};
-    dogm::DOGM grid_map(params, laser_params);
+    dogm::DOGM grid_map(grid_params, laser_params);
     initialization_timer.toc(true);
 
-    Simulator simulator(100, laser_params.fov);
+    Simulator simulator(sensor_horizontal_scan_points, laser_params.fov);
 #if 1
     simulator.addVehicle(Vehicle(3, glm::vec2(30, 20), glm::vec2(0, 6)));
     simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(15, 0)));
@@ -52,37 +61,37 @@ int main(int argc, const char** argv)
     simulator.addVehicle(Vehicle(3, glm::vec2(68, 15), glm::vec2(-12, 0)));
 #endif
 
-    float delta_time = 0.1f;
-    SimulationData sim_data = simulator.update(14, delta_time);
-    PrecisionEvaluator precision_evaluator{sim_data, params.resolution};
+    SimulationData sim_data = simulator.update(simulation_steps, simulation_step_period);
+    PrecisionEvaluator precision_evaluator{sim_data, grid_params.resolution};
     Timer cycle_timer{"DOGM cycle"};
 
-    for (int i = 0; i < sim_data.size(); i++)
+    for (int step = 0; step < simulation_steps; ++step)
     {
-        grid_map.updateMeasurementGrid(sim_data[i].measurements.data(), sim_data[i].measurements.size());
+        grid_map.updateMeasurementGrid(sim_data[step].measurements);
 
         cycle_timer.tic();
         // Run Particle filter
-        grid_map.updateParticleFilter(delta_time);
+        grid_map.updateParticleFilter(simulation_step_period);
 
         cycle_timer.toc(true);
         std::cout << "######  Saving result  #######" << std::endl;
         std::cout << "##############################" << std::endl << std::endl;
 
-        const auto cells_with_velocity = computeCellsWithVelocity(grid_map, 0.7f, 4.0f);
-        precision_evaluator.evaluateAndStoreStep(i, cells_with_velocity);
+        const auto cells_with_velocity =
+            computeCellsWithVelocity(grid_map, minimum_occupancy_threshold, minimum_velocity_threshold);
+        precision_evaluator.evaluateAndStoreStep(step, cells_with_velocity);
 
         // cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
         // cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
 
         cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
-        cv::imwrite(cv::format("raw_grid_iter-%d.png", i + 1), raw_meas_grid_img);
+        cv::imwrite(cv::format("raw_grid_iter-%d.png", step + 1), raw_meas_grid_img);
 
         cv::Mat dogm_img = compute_dogm_image(grid_map, cells_with_velocity);
-        cv::imwrite(cv::format("dogm_iter-%d.png", i + 1), dogm_img);
+        cv::imwrite(cv::format("dogm_iter-%d.png", step + 1), dogm_img);
 
         cv::Mat particle_img = compute_particles_image(grid_map);
-        cv::imwrite(cv::format("particles_iter-%d.png", i + 1), particle_img);
+        cv::imwrite(cv::format("particles_iter-%d.png", step + 1), particle_img);
 
         cv::imshow("dogm", dogm_img);
         cv::waitKey(1);

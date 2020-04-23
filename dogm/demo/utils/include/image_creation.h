@@ -12,8 +12,9 @@
 
 #include <vector>
 
-std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& grid_map, float occ_tresh = 0.7f,
-                                                            float m_tresh = 4.0f);
+std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& grid_map,
+                                                            float min_occupancy_threshold = 0.7f,
+                                                            float min_velocity_threshold = 4.0f);
 
 cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map);
 cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map);
