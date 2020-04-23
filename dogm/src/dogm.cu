@@ -213,7 +213,7 @@ void DOGM::particleAssignment()
     reinitGridParticleIndices<<<grid_map_grid, block_dim>>>(grid_cell_array, grid_cell_count);
 
     CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
+    // CHECK_ERROR(cudaDeviceSynchronize());
 
     // sort particles
     thrust::device_ptr<int> grid_index_ptr(particle_array.grid_cell_idx);
@@ -233,7 +233,7 @@ void DOGM::gridCellOccupancyUpdate()
 {
     // std::cout << "DOGM::gridCellOccupancyUpdate" << std::endl;
 
-    CHECK_ERROR(cudaDeviceSynchronize());
+    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_vector<float> weights_accum(particle_count);
     accumulate(weight_array, weights_accum);
@@ -254,7 +254,7 @@ void DOGM::updatePersistentParticles()
                                                                     particle_count);
 
     CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
+    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_vector<float> weights_accum(particle_count);
     accumulate(weight_array, weights_accum);
@@ -279,7 +279,7 @@ void DOGM::initializeNewParticles()
         birth_particle_array, rng_states, params.velocity_birth, grid_size, new_born_particle_count);
 
     CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
+    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_vector<float> particle_orders_accum(grid_cell_count);
     accumulate(born_masses_array, particle_orders_accum);
@@ -328,7 +328,7 @@ void DOGM::statisticalMoments()
                                                              particle_count);
 
     CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
+    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_vector<float> vel_x_accum(particle_count);
     accumulate(vel_x_array, vel_x_accum);
@@ -361,7 +361,7 @@ void DOGM::resampling()
 {
     // std::cout << "DOGM::resampling" << std::endl;
 
-    CHECK_ERROR(cudaDeviceSynchronize());
+    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_ptr<float> persistent_weights(weight_array);
     thrust::device_ptr<float> new_born_weights(birth_weight_array);
@@ -382,7 +382,7 @@ void DOGM::resampling()
                                                                          particle_count);
 
     CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
+    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::sort(rand_array.begin(), rand_array.end());
 
