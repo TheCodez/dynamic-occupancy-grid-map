@@ -32,7 +32,10 @@ You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this proje
 <details>
 <summary>Ubuntu 18.04</summary>
   
-- OpenCV: recommended to compile from source following the [official instructions](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html).
+- OpenCV:
+    ```console
+    sudo apt install libopencv-dev
+    ```
 - GLFW3, GLEW, GLM:
     ```console
     sudo apt install libglfw3-dev libglew-dev libglm-dev
