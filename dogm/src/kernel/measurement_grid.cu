@@ -38,10 +38,10 @@ __device__ float pFree(int i, float p_min, float p_max, int max_range)
     return p_min + i * (p_max - p_min) / max_range;
 }
 
-__device__ float pOcc(int r, float zk, int index)
+__device__ float pOcc(int r, float zk, int index, float resolution)
 {
     float occ_max = 0.95f;
-    float delta = 3.0f;
+    float delta = 0.6f / resolution;
 
     return occ_max * exp(-0.5f * (index - r) * (index - r) / (delta * delta));
 }
@@ -55,7 +55,7 @@ __device__ float2 inverse_sensor_model(int i, float resolution, float zk, float 
     if (isfinite(zk))
     {
         const int r = static_cast<int>(zk / resolution);
-        const float occ = pOcc(r, zk, i);
+        const float occ = pOcc(r, zk, i, resolution);
 
         if (i <= r)
         {
