@@ -62,7 +62,7 @@ struct ParticlesSoA
     {
         size = new_size;
         CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
-        CHECK_ERROR(cudaMalloc((void**)&weight, size * sizeof(float)));
+        CHECK_ERROR(cudaMallocManaged((void**)&weight, size * sizeof(float)));
         CHECK_ERROR(cudaMalloc((void**)&associated, size * sizeof(bool)));
         CHECK_ERROR(cudaMallocManaged((void**)&state, size * sizeof(glm::vec4)));
     }

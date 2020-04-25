@@ -116,3 +116,7 @@ target_link_libraries(dogm
 #)
 
 add_subdirectory(demo)
+
+if(BUILD_TESTS)
+    add_subdirectory(test)
+endif()
