@@ -26,6 +26,3 @@ jobs:
     - name: Test Utils
       run: ./demo/utils/test/utils_spec
       working-directory: dogm/build
-    - name: Test DOGM
-      run: ./test/dogm_spec
-      working-directory: dogm/build
