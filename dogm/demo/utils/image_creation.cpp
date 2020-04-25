@@ -179,6 +179,17 @@ cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
     return particles_img;
 }
 
+static void add_text(const std::string& text, const float relative_horizontal_position, cv::Mat& img)
+{
+    int fontFace = cv::FONT_HERSHEY_DUPLEX;
+    double fontScale = 1;
+    int thickness = 1;
+    int baseline{0};
+    cv::Size textSize = cv::getTextSize(text, fontFace, fontScale, thickness, &baseline);
+    cv::Point textOrg((img.cols - textSize.width) * relative_horizontal_position, (img.rows + textSize.height) * 0.5f);
+    cv::putText(img, text, textOrg, fontFace, fontScale, cv::Scalar::all(255), thickness, 8);
+}
+
 void computeAndSaveResultImages(const dogm::DOGM& grid_map,
                                 const std::vector<Point<dogm::GridCell>>& cells_with_velocity, const int step,
                                 const bool concatenate_images, const bool show_during_execution)
@@ -192,13 +203,20 @@ void computeAndSaveResultImages(const dogm::DOGM& grid_map,
     {
         cv::hconcat(dogm_img, particle_img, image_to_show);
         cv::hconcat(image_to_show, raw_meas_grid_img, image_to_show);
-        cv::imwrite(cv::format("outputs_iter-%d.png", step + 1), image_to_show);
+
+        cv::Mat subtitles(image_to_show.rows * 0.2f, image_to_show.cols, image_to_show.type(), cv::Scalar::all(30));
+        add_text("Grid", 0.13f, subtitles);
+        add_text("Particles", 0.5f, subtitles);
+        add_text("Measurement", 0.96f, subtitles);
+        cv::vconcat(image_to_show, subtitles, image_to_show);
+
+        cv::imwrite(cv::format("outputs_step_%d.png", step + 1), image_to_show);
     }
     else
     {
-        cv::imwrite(cv::format("raw_grid_iter-%d.png", step + 1), raw_meas_grid_img);
-        cv::imwrite(cv::format("particles_iter-%d.png", step + 1), particle_img);
-        cv::imwrite(cv::format("dogm_iter-%d.png", step + 1), dogm_img);
+        cv::imwrite(cv::format("raw_grid_step_%d.png", step + 1), raw_meas_grid_img);
+        cv::imwrite(cv::format("particles_step_%d.png", step + 1), particle_img);
+        cv::imwrite(cv::format("dogm_step_%d.png", step + 1), dogm_img);
         image_to_show = dogm_img;
     }
 
