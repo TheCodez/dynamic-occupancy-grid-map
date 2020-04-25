@@ -178,3 +178,33 @@ cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
 
     return particles_img;
 }
+
+void computeAndSaveResultImages(const dogm::DOGM& grid_map,
+                                const std::vector<Point<dogm::GridCell>>& cells_with_velocity, const int step,
+                                const bool concatenate_images, const bool show_during_execution)
+{
+    cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
+    cv::Mat particle_img = compute_particles_image(grid_map);
+    cv::Mat dogm_img = compute_dogm_image(grid_map, cells_with_velocity);
+
+    cv::Mat image_to_show{};
+    if (concatenate_images)
+    {
+        cv::hconcat(dogm_img, particle_img, image_to_show);
+        cv::hconcat(image_to_show, raw_meas_grid_img, image_to_show);
+        cv::imwrite(cv::format("outputs_iter-%d.png", step + 1), image_to_show);
+    }
+    else
+    {
+        cv::imwrite(cv::format("raw_grid_iter-%d.png", step + 1), raw_meas_grid_img);
+        cv::imwrite(cv::format("particles_iter-%d.png", step + 1), particle_img);
+        cv::imwrite(cv::format("dogm_iter-%d.png", step + 1), dogm_img);
+        image_to_show = dogm_img;
+    }
+
+    if (show_during_execution)
+    {
+        cv::imshow("dogm", image_to_show);
+        cv::waitKey(1);
+    }
+}

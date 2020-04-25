@@ -22,4 +22,7 @@ cv::Mat compute_raw_polar_measurement_grid_image(const dogm::DOGM& grid_map);
 cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, const std::vector<Point<dogm::GridCell>>& cells_with_velocity);
 cv::Mat compute_particles_image(const dogm::DOGM& grid_map);
 
+void computeAndSaveResultImages(const dogm::DOGM& grid_map,
+                                const std::vector<Point<dogm::GridCell>>& cells_with_velocity, const int step,
+                                const bool concatenate_images = true, const bool show_during_execution = true);
 #endif  // IMAGE_CREATION_H
