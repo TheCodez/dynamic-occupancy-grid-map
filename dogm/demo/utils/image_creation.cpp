@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
 static float pignistic_transformation(float free_mass, float occ_mass)
@@ -170,11 +171,83 @@ cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
         float x = grid_map.particle_array.state[i][0];
         float y = grid_map.particle_array.state[i][1];
 
+        // TODO normalize this to the maximum particle count found in a cell. Currently, does not depict if more than
+        // 3*256 particles accumulate in one cell
         if ((x >= 0 && x < grid_map.getGridSize()) && (y >= 0 && y < grid_map.getGridSize()))
         {
-            particles_img.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x)) = cv::Vec3b(0, 0, 255);
+            auto& cell = particles_img.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x));
+            if (cell[1] == 255 && cell[2] == 255)
+            {
+                cell += cv::Vec3b(1, 0, 0);
+            }
+            else
+            {
+                if (cell[2] == 255)
+                {
+                    cell += cv::Vec3b(0, 1, 0);
+                }
+                else
+                {
+                    cell += cv::Vec3b(0, 0, 1);
+                }
+            }
         }
     }
 
     return particles_img;
+}
+
+static void addTextToCenter(const std::string& text, cv::Mat& img)
+{
+    int fontFace = cv::FONT_HERSHEY_DUPLEX;
+    double fontScale = 1;
+    int thickness = 1;
+    int baseline{0};
+    cv::Size textSize = cv::getTextSize(text, fontFace, fontScale, thickness, &baseline);
+    cv::Point textOrg((img.cols - textSize.width) / 2, (img.rows + textSize.height) / 2);
+    cv::putText(img, text, textOrg, fontFace, fontScale, cv::Scalar::all(255), thickness, 8);
+}
+
+static void addSubtitle(const std::string& subtitle, cv::Mat& img)
+{
+    cv::Mat subtitle_image(img.rows * 0.2f, img.cols, img.type(), cv::Scalar::all(30));
+    addTextToCenter(subtitle, subtitle_image);
+    cv::vconcat(img, subtitle_image, img);
+}
+
+void computeAndSaveResultImages(const dogm::DOGM& grid_map,
+                                const std::vector<Point<dogm::GridCell>>& cells_with_velocity, const int step,
+                                const bool concatenate_images, const bool show_during_execution)
+{
+    cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
+    cv::Mat particle_img = compute_particles_image(grid_map);
+    cv::Mat dogm_img = compute_dogm_image(grid_map, cells_with_velocity);
+
+    cv::Mat image_to_show{};
+    if (concatenate_images)
+    {
+        addSubtitle("Grid", dogm_img);
+        addSubtitle("Particles", particle_img);
+        addSubtitle("Measurement", raw_meas_grid_img);
+
+        cv::hconcat(dogm_img, particle_img, image_to_show);
+        cv::hconcat(image_to_show, raw_meas_grid_img, image_to_show);
+
+        cv::imwrite(cv::format("outputs_step_%d.png", step + 1), image_to_show);
+    }
+    else
+    {
+        cv::imwrite(cv::format("raw_grid_step_%d.png", step + 1), raw_meas_grid_img);
+        cv::imwrite(cv::format("particles_step_%d.png", step + 1), particle_img);
+        cv::imwrite(cv::format("dogm_step_%d.png", step + 1), dogm_img);
+        image_to_show = dogm_img;
+    }
+
+    if (show_during_execution)
+    {
+        cv::namedWindow("DOGM", CV_WINDOW_NORMAL);
+        cv::resizeWindow("DOGM", image_to_show.cols * 2, image_to_show.rows * 2);
+        cv::imshow("DOGM", image_to_show);
+        cv::waitKey(1);
+    }
 }
