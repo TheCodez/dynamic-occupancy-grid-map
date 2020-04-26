@@ -16,11 +16,12 @@ jobs:
       shell: powershell
     - name: Install CURL
       run: choco install -y curl
+    - name: Download CUDA
+      run: curl --retry 3 -kLO http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_441.22_win10.exe
     - name: Install CUDA
-      run: |
-        curl --retry 3 -kLO http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_441.22_win10.exe
-        cuda_10.2.89_441.22_win10.exe -s
-        dir "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/"
+      run: cuda_10.2.89_441.22_win10.exe -s
+    - name: Check CUDA
+      run: dir "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA"
     - name: Install OpenGL dependencies
       run: vcpkg install glew glfw3 glm
       shell: powershell
