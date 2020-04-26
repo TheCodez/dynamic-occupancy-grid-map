@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 static float pignistic_transformation(float free_mass, float occ_mass)
