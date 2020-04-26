@@ -170,9 +170,26 @@ cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
         float x = grid_map.particle_array.state[i][0];
         float y = grid_map.particle_array.state[i][1];
 
+        // TODO normalize this to the maximum particle count found in a cell. Currently, does not depict if more than
+        // 3*256 particles accumulate in one cell
         if ((x >= 0 && x < grid_map.getGridSize()) && (y >= 0 && y < grid_map.getGridSize()))
         {
-            particles_img.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x)) = cv::Vec3b(0, 0, 255);
+            auto& cell = particles_img.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x));
+            if (cell[1] == 255 && cell[2] == 255)
+            {
+                cell += cv::Vec3b(1, 0, 0);
+            }
+            else
+            {
+                if (cell[2] == 255)
+                {
+                    cell += cv::Vec3b(0, 1, 0);
+                }
+                else
+                {
+                    cell += cv::Vec3b(0, 0, 1);
+                }
+            }
         }
     }
 
