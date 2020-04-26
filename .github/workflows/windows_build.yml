@@ -17,7 +17,7 @@ jobs:
     - name: Install CURL
       run: choco install -y curl
     - name: Download CUDA
-      run: curl --retry 3 -kLO http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_441.22_win10.exe
+      run: curl http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_441.22_win10.exe --output cuda_10.2.89_441.22_win10.exe
     - name: Install CUDA
       run: cuda_10.2.89_441.22_win10.exe -s
     - name: Check CUDA
