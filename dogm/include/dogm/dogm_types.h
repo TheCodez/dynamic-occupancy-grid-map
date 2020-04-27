@@ -49,10 +49,10 @@ struct Particle
 
 struct ParticlesSoA
 {
+    glm::vec4* state;
     int* grid_cell_idx;
     float* weight;
     bool* associated;
-    glm::vec4* state;
 
     int size;
 
@@ -61,18 +61,18 @@ struct ParticlesSoA
     void init(int new_size)
     {
         size = new_size;
+        CHECK_ERROR(cudaMallocManaged((void**)&state, size * sizeof(glm::vec4)));
         CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
         CHECK_ERROR(cudaMallocManaged((void**)&weight, size * sizeof(float)));
         CHECK_ERROR(cudaMalloc((void**)&associated, size * sizeof(bool)));
-        CHECK_ERROR(cudaMallocManaged((void**)&state, size * sizeof(glm::vec4)));
     }
 
     void free()
     {
+        CHECK_ERROR(cudaFree(state));
         CHECK_ERROR(cudaFree(grid_cell_idx));
         CHECK_ERROR(cudaFree(weight));
         CHECK_ERROR(cudaFree(associated));
-        CHECK_ERROR(cudaFree(state));
     }
 
     ParticlesSoA& operator=(const ParticlesSoA& other)

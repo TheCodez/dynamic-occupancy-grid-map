@@ -55,10 +55,8 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
     particle_array_next.init(particle_count);
     birth_particle_array.init(new_born_particle_count);
 
-    CHECK_ERROR(cudaMallocManaged((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
-    CHECK_ERROR(cudaMallocManaged((void**)&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
-
-    CHECK_ERROR(cudaMallocManaged((void**)&polar_meas_cell_array, 100 * grid_size * sizeof(MeasurementCell)));
+    CHECK_ERROR(cudaMalloc((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
+    CHECK_ERROR(cudaMalloc((void**)&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
 
     CHECK_ERROR(cudaMalloc(&weight_array, particle_count * sizeof(float)));
     CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
@@ -79,8 +77,6 @@ DOGM::~DOGM()
 
     CHECK_ERROR(cudaFree(grid_cell_array));
     CHECK_ERROR(cudaFree(meas_cell_array));
-
-    CHECK_ERROR(cudaFree(polar_meas_cell_array));
 
     CHECK_ERROR(cudaFree(weight_array));
     CHECK_ERROR(cudaFree(birth_weight_array));
@@ -129,6 +125,25 @@ void DOGM::updateParticleFilter(float dt)
     iteration++;
 }
 
+GridCell* DOGM::getGridCells() const
+{
+    GridCell* grid_cells = (GridCell*)malloc(grid_cell_count * sizeof(GridCell));
+
+    CHECK_ERROR(cudaMemcpy(grid_cells, grid_cell_array, grid_cell_count * sizeof(GridCell), cudaMemcpyDeviceToHost));
+
+    return grid_cells;
+}
+
+MeasurementCell* DOGM::getMeasurementCells() const
+{
+    MeasurementCell* meas_cells = (MeasurementCell*)malloc(grid_cell_count * sizeof(MeasurementCell));
+
+    CHECK_ERROR(
+        cudaMemcpy(meas_cells, meas_cell_array, grid_cell_count * sizeof(MeasurementCell), cudaMemcpyDeviceToHost));
+
+    return meas_cells;
+}
+
 void DOGM::updateMeasurementGridFromArray(const std::vector<float2>& measurements)
 {
     thrust::device_vector<float2> d_measurements(measurements);
@@ -166,7 +181,7 @@ void DOGM::updateMeasurementGrid(const std::vector<float>& measurements)
 
     // create polar texture
     polar_texture.beginCudaAccess(&polar_surface);
-    createPolarGridTextureKernel2<<<grid_dim, dim_block>>>(polar_surface, polar_meas_cell_array, d_measurements,
+    createPolarGridTextureKernel<<<grid_dim, dim_block>>>(polar_surface, d_measurements,
                                                            polar_width, polar_height, params.resolution);
 
     CHECK_ERROR(cudaGetLastError());

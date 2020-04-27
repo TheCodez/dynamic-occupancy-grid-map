@@ -51,7 +51,13 @@ public:
     void updateMeasurementGrid(const std::vector<float>& measurements);
     void updateParticleFilter(float dt);
 
-    int getGridSize() const { return grid_size; }
+    GridCell* getGridCells() const;
+    MeasurementCell* getMeasurementCells() const;
+
+        int getGridSize() const
+    {
+        return grid_size;
+    }
     float getResolution() const { return params.resolution; }
 
     float getPositionX() const { return 0.0f; }
@@ -81,8 +87,6 @@ public:
     ParticlesSoA particle_array;
     ParticlesSoA particle_array_next;
     ParticlesSoA birth_particle_array;
-
-    MeasurementCell* polar_meas_cell_array;
     MeasurementCell* meas_cell_array;
 
     float* weight_array;

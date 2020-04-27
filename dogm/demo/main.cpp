@@ -52,7 +52,7 @@ int main(int argc, const char** argv)
     Simulator simulator(sensor_horizontal_scan_points, laser_params.fov);
 #if 1
     simulator.addVehicle(Vehicle(3, glm::vec2(30, 20), glm::vec2(0, 6)));
-    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(15, 0)));
+    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(10, 0)));
     simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
     simulator.addVehicle(Vehicle(2, glm::vec2(68, 15), glm::vec2(0, 0)));
 #else
