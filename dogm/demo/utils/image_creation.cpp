@@ -245,7 +245,7 @@ void computeAndSaveResultImages(const dogm::DOGM& grid_map,
 
     if (show_during_execution)
     {
-        cv::namedWindow("DOGM", CV_WINDOW_NORMAL);
+        cv::namedWindow("DOGM", cv::WINDOW_NORMAL);
         cv::resizeWindow("DOGM", image_to_show.cols * 2, image_to_show.rows * 2);
         cv::imshow("DOGM", image_to_show);
         cv::waitKey(1);
