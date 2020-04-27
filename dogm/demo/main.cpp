@@ -81,20 +81,7 @@ int main(int argc, const char** argv)
             computeCellsWithVelocity(grid_map, minimum_occupancy_threshold, minimum_velocity_threshold);
         precision_evaluator.evaluateAndStoreStep(step, cells_with_velocity);
 
-        // cv::Mat meas_grid_img = compute_measurement_grid_image(grid_map);
-        // cv::imwrite(cv::format("meas_grid_iter-%d.png", i + 1), meas_grid_img);
-
-        cv::Mat raw_meas_grid_img = compute_raw_measurement_grid_image(grid_map);
-        cv::imwrite(cv::format("raw_grid_iter-%d.png", step + 1), raw_meas_grid_img);
-
-        cv::Mat dogm_img = compute_dogm_image(grid_map, cells_with_velocity);
-        cv::imwrite(cv::format("dogm_iter-%d.png", step + 1), dogm_img);
-
-        cv::Mat particle_img = compute_particles_image(grid_map);
-        cv::imwrite(cv::format("particles_iter-%d.png", step + 1), particle_img);
-
-        cv::imshow("dogm", dogm_img);
-        cv::waitKey(1);
+        computeAndSaveResultImages(grid_map, cells_with_velocity, step);
     }
 
     cycle_timer.printStatsMs();
