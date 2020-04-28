@@ -31,13 +31,17 @@ TEST(DOGM, Predict)
     dogm::DOGM dogm(grid_params, laser_params);
     cudaDeviceSynchronize();
 
-    glm::vec4 old_state = dogm.particle_array.state[0];
-    glm::vec4 pred_state = old_state + glm::vec4(old_state[2] * delta_time, old_state[3] * delta_time, 0, 0);
-    float old_weight = dogm.particle_array.weight[0];
+    dogm::ParticlesSoA particles = dogm.getParticles();
+
+    glm::vec4 old_state = particles.state[0];
+    glm::vec4 pred_state = old_state + delta_time * glm::vec4(old_state[2], old_state[3], 0, 0);
+    float old_weight = particles.weight[0];
 
     dogm.particlePrediction(delta_time);
     cudaDeviceSynchronize();
 
-    EXPECT_EQ(pred_state, dogm.particle_array.state[0]);
-    EXPECT_EQ(old_weight * grid_params.persistence_prob, dogm.particle_array.weight[0]);
+    dogm::ParticlesSoA new_particles = dogm.getParticles();
+
+    EXPECT_EQ(pred_state, new_particles.state[0]);
+    EXPECT_EQ(old_weight * grid_params.persistence_prob, new_particles.weight[0]);
 }

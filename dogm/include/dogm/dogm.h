@@ -54,6 +54,8 @@ public:
     GridCell* getGridCells() const;
     MeasurementCell* getMeasurementCells() const;
 
+    ParticlesSoA getParticles() const;
+
     int getGridSize() const { return grid_size; }
     float getResolution() const { return params.resolution; }
 

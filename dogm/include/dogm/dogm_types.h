@@ -55,34 +55,63 @@ struct ParticlesSoA
     bool* associated;
 
     int size;
+    bool device;
 
-    ParticlesSoA() : size(0) {}
+    ParticlesSoA() : size(0), device(true) {}
 
-    void init(int new_size)
+    ParticlesSoA(int new_size, bool is_device) { init(new_size, is_device); }
+
+    void init(int new_size, bool is_device)
     {
         size = new_size;
-        CHECK_ERROR(cudaMallocManaged((void**)&state, size * sizeof(glm::vec4)));
-        CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
-        CHECK_ERROR(cudaMallocManaged((void**)&weight, size * sizeof(float)));
-        CHECK_ERROR(cudaMalloc((void**)&associated, size * sizeof(bool)));
+        device = is_device;
+        if (device)
+        {
+            CHECK_ERROR(cudaMalloc((void**)&state, size * sizeof(glm::vec4)));
+            CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
+            CHECK_ERROR(cudaMalloc((void**)&weight, size * sizeof(float)));
+            CHECK_ERROR(cudaMalloc((void**)&associated, size * sizeof(bool)));
+        }
+        else
+        {
+            state = (glm::vec4*)malloc(size * sizeof(glm::vec4));
+            grid_cell_idx = (int*)malloc(size * sizeof(int));
+            weight = (float*)malloc(size * sizeof(float));
+            associated = (bool*)malloc(size * sizeof(bool));
+        }
     }
 
     void free()
     {
-        CHECK_ERROR(cudaFree(state));
-        CHECK_ERROR(cudaFree(grid_cell_idx));
-        CHECK_ERROR(cudaFree(weight));
-        CHECK_ERROR(cudaFree(associated));
+        if (device)
+        {
+            CHECK_ERROR(cudaFree(state));
+            CHECK_ERROR(cudaFree(grid_cell_idx));
+            CHECK_ERROR(cudaFree(weight));
+            CHECK_ERROR(cudaFree(associated));
+        }
+        else
+        {
+            ::free(state);
+            ::free(grid_cell_idx);
+            ::free(weight);
+            ::free(associated);
+        }
+    }
+
+    void copy(const ParticlesSoA& other, cudaMemcpyKind kind)
+    {
+        CHECK_ERROR(cudaMemcpy(grid_cell_idx, other.grid_cell_idx, size * sizeof(int), kind));
+        CHECK_ERROR(cudaMemcpy(weight, other.weight, size * sizeof(float), kind));
+        CHECK_ERROR(cudaMemcpy(associated, other.associated, size * sizeof(bool), kind));
+        CHECK_ERROR(cudaMemcpy(state, other.state, size * sizeof(glm::vec4), kind));
     }
 
     ParticlesSoA& operator=(const ParticlesSoA& other)
     {
         if (this != &other)
         {
-            CHECK_ERROR(cudaMemcpy(grid_cell_idx, other.grid_cell_idx, size * sizeof(int), cudaMemcpyDeviceToDevice));
-            CHECK_ERROR(cudaMemcpy(weight, other.weight, size * sizeof(float), cudaMemcpyDeviceToDevice));
-            CHECK_ERROR(cudaMemcpy(associated, other.associated, size * sizeof(bool), cudaMemcpyDeviceToDevice));
-            CHECK_ERROR(cudaMemcpy(state, other.state, size * sizeof(glm::vec4), cudaMemcpyDeviceToDevice));
+            copy(other, cudaMemcpyDeviceToDevice);
         }
 
         return *this;

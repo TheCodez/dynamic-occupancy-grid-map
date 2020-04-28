@@ -51,9 +51,9 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
     dim3 dim(device_prop.multiProcessorCount * blocks_per_sm);
     particles_grid = birth_particles_grid = grid_map_grid = dim;
 
-    particle_array.init(particle_count);
-    particle_array_next.init(particle_count);
-    birth_particle_array.init(new_born_particle_count);
+    particle_array.init(particle_count, true);
+    particle_array_next.init(particle_count, true);
+    birth_particle_array.init(new_born_particle_count, true);
 
     CHECK_ERROR(cudaMalloc((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
     CHECK_ERROR(cudaMalloc((void**)&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
@@ -156,6 +156,14 @@ MeasurementCell* DOGM::getMeasurementCells() const
         cudaMemcpy(meas_cells, meas_cell_array, grid_cell_count * sizeof(MeasurementCell), cudaMemcpyDeviceToHost));
 
     return meas_cells;
+}
+
+ParticlesSoA DOGM::getParticles() const
+{
+    ParticlesSoA particles(particle_count, false);
+    particles.copy(particle_array, cudaMemcpyDeviceToHost);
+
+    return particles;
 }
 
 void DOGM::updateMeasurementGridFromArray(const std::vector<float2>& measurements)

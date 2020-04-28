@@ -156,11 +156,12 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, const std::vector<Point<d
 
 cv::Mat compute_particles_image(const dogm::DOGM& grid_map)
 {
+    dogm::ParticlesSoA particles = grid_map.getParticles();
     cv::Mat particles_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3, cv::Scalar(0, 0, 0));
     for (int i = 0; i < grid_map.particle_count; i++)
     {
-        float x = grid_map.particle_array.state[i][0];
-        float y = grid_map.particle_array.state[i][1];
+        float x = particles.state[i][0];
+        float y = particles.state[i][1];
 
         // TODO normalize this to the maximum particle count found in a cell. Currently, does not depict if more than
         // 3*256 particles accumulate in one cell
