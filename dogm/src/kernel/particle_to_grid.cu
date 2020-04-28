@@ -14,22 +14,22 @@
 namespace dogm
 {
 
-__device__ bool is_first_particle(const ParticlesSoA& particle_array, int i)
+__device__ bool is_first_particle(ParticlesSoA& particle_array, int i)
 {
-    return i == 0 || particle_array.grid_cell_idx[i] != particle_array.grid_cell_idx[i - 1];
+    return i == 0 || particle_array[i].grid_cell_idx != particle_array[i - 1].grid_cell_idx;
 }
 
-__device__ bool is_last_particle(const ParticlesSoA& particle_array, int particle_count, int i)
+__device__ bool is_last_particle(ParticlesSoA& particle_array, int particle_count, int i)
 {
-    return i == particle_count - 1 || particle_array.grid_cell_idx[i] != particle_array.grid_cell_idx[i + 1];
+    return i == particle_count - 1 || particle_array[i].grid_cell_idx != particle_array[i + 1].grid_cell_idx;
 }
 
-__global__ void particleToGridKernel(const ParticlesSoA particle_array, GridCell* __restrict__ grid_cell_array,
+__global__ void particleToGridKernel(ParticlesSoA particle_array, GridCell* __restrict__ grid_cell_array,
                                      float* __restrict__ weight_array, int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
     {
-        int j = particle_array.grid_cell_idx[i];
+        int j = particle_array[i].grid_cell_idx;
 
         if (is_first_particle(particle_array, i))
         {
@@ -42,7 +42,7 @@ __global__ void particleToGridKernel(const ParticlesSoA particle_array, GridCell
 
         // printf("Cell: %d, Start idx: %d, End idx: %d\n", j, grid_cell_array[j].start_idx,
         // grid_cell_array[j].end_idx);
-        weight_array[i] = particle_array.weight[i];
+        weight_array[i] = particle_array[i].weight;
     }
 }
 

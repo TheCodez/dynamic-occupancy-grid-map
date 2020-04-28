@@ -33,15 +33,15 @@ TEST(DOGM, Predict)
 
     dogm::ParticlesSoA particles = dogm.getParticles();
 
-    glm::vec4 old_state = particles.state[0];
+    glm::vec4 old_state = particles[0].state;
     glm::vec4 pred_state = old_state + delta_time * glm::vec4(old_state[2], old_state[3], 0, 0);
-    float old_weight = particles.weight[0];
+    float old_weight = particles[0].weight;
 
     dogm.particlePrediction(delta_time);
     cudaDeviceSynchronize();
 
     dogm::ParticlesSoA new_particles = dogm.getParticles();
 
-    EXPECT_EQ(pred_state, new_particles.state[0]);
-    EXPECT_EQ(old_weight * grid_params.persistence_prob, new_particles.weight[0]);
+    EXPECT_EQ(pred_state, new_particles[0].state);
+    EXPECT_EQ(old_weight * grid_params.persistence_prob, new_particles[0].weight);
 }

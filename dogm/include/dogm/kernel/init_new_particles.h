@@ -26,7 +26,7 @@ __global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const
                                         curandState* __restrict__ global_state, float velocity, int grid_size,
                                         int particle_count);
 
-__global__ void copyBirthWeightKernel(const ParticlesSoA birth_particle_array, float* __restrict__ birth_weight_array,
+__global__ void copyBirthWeightKernel(ParticlesSoA birth_particle_array, float* __restrict__ birth_weight_array,
                                       int particle_count);
 
 } /* namespace dogm */
