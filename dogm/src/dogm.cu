@@ -384,12 +384,13 @@ void DOGM::resampling()
     CHECK_ERROR(cudaGetLastError());
     // CHECK_ERROR(cudaDeviceSynchronize());
 
-    thrust::device_vector<float> rand_array(rand_array, rand_array + particle_count);
+    thrust::device_ptr<float> rand_ptr(rand_array);
+    thrust::device_vector<float> rand_vector(rand_ptr, rand_ptr + particle_count);
 
-    thrust::sort(rand_array.begin(), rand_array.end());
+    thrust::sort(rand_vector.begin(), rand_vector.end());
 
     thrust::device_vector<int> idx_resampled(particle_count);
-    calc_resampled_indices(joint_weight_accum, rand_array, idx_resampled, joint_max);
+    calc_resampled_indices(joint_weight_accum, rand_vector, idx_resampled, joint_max);
     int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
     float new_weight = joint_max / particle_count;
