@@ -63,7 +63,7 @@ __global__ void resamplingKernel(const ParticlesSoA particle_array, ParticlesSoA
             particle_array_next.copy(birth_particle_array, i, idx - particle_count);
         }
 
-        particle_array_next.weight[i] = new_weight;
+        particle_array_next[i].weight = new_weight;
     }
 }
 

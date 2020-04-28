@@ -30,21 +30,21 @@ __global__ void predictKernel(ParticlesSoA particle_array, curandState* __restri
         float noise_vel_y = curand_normal(&local_state, 0.0f, process_noise_velocity);
         glm::vec4 process_noise(noise_pos_x, noise_pos_y, noise_vel_x, noise_vel_y);
 
-        particle_array.state[i] = transition_matrix * particle_array.state[i] + process_noise;
-        particle_array.weight[i] = p_S * particle_array.weight[i];
+        particle_array[i].state = transition_matrix * particle_array[i].state + process_noise;
+        particle_array[i].weight = p_S * particle_array[i].weight;
 
-        float x = particle_array.state[i][0];
-        float y = particle_array.state[i][1];
+        float x = particle_array[i].state[0];
+        float y = particle_array[i].state[1];
 
         // Particle out of grid so decrease its chance of being resampled
         if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
         {
-            particle_array.weight[i] = 0.0f;
+            particle_array[i].weight = 0.0f;
         }
 
         int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
         int pos_y = clamp(static_cast<int>(y), 0, grid_size - 1);
-        particle_array.grid_cell_idx[i] = pos_x + grid_size * pos_y;
+        particle_array[i].grid_cell_idx = pos_x + grid_size * pos_y;
 
         // printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
     }

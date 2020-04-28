@@ -41,10 +41,10 @@ struct MeasurementCell
 
 struct Particle
 {
-    int grid_cell_idx;
-    float weight;
-    bool associated;
-    glm::vec4 state;
+    glm::vec4& state;
+    int& grid_cell_idx;
+    float& weight;
+    bool& associated;
 };
 
 struct ParticlesSoA
@@ -117,7 +117,12 @@ struct ParticlesSoA
         return *this;
     }
 
-    __device__ void copy(const ParticlesSoA& other, int index, int other_index)
+    __host__ __device__ Particle operator[](std::size_t index)
+    {
+        return Particle{state[index], grid_cell_idx[index], weight[index], associated[index]};
+    }
+
+    __host__ __device__ void copy(const ParticlesSoA& other, int index, int other_index)
     {
         grid_cell_idx[index] = other.grid_cell_idx[other_index];
         weight[index] = other.weight[other_index];

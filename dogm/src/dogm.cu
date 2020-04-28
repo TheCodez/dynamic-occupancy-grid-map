@@ -262,8 +262,8 @@ void DOGM::particleAssignment()
     thrust::device_ptr<bool> associated_ptr(particle_array.associated);
     thrust::device_ptr<glm::vec4> state_ptr(particle_array.state);
 
-    auto it = thrust::make_zip_iterator(thrust::make_tuple(weight_ptr, associated_ptr, state_ptr));
-    thrust::sort_by_key(grid_index_ptr, grid_index_ptr + particle_count, it);
+    auto iter = thrust::make_zip_iterator(thrust::make_tuple(state_ptr, weight_ptr, associated_ptr));
+    thrust::sort_by_key(grid_index_ptr, grid_index_ptr + particle_count, iter);
 
     particleToGridKernel<<<particles_grid, block_dim>>>(particle_array, grid_cell_array, weight_array, particle_count);
 
