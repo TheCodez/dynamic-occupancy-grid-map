@@ -33,8 +33,9 @@ __global__ void predictKernel(ParticlesSoA particle_array, curandState* __restri
         particle_array.state[i] = transition_matrix * particle_array.state[i] + process_noise;
         particle_array.weight[i] = p_S * particle_array.weight[i];
 
-        float x = particle_array.state[i][0];
-        float y = particle_array.state[i][1];
+        glm::vec4 state = particle_array.state[i];
+        float x = state[0];
+        float y = state[1];
 
         // Particle out of grid so decrease its chance of being resampled
         if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))

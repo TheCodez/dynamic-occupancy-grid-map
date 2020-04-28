@@ -55,8 +55,8 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
     particle_array_next.init(particle_count, true);
     birth_particle_array.init(new_born_particle_count, true);
 
-    CHECK_ERROR(cudaMalloc((void**)&grid_cell_array, grid_cell_count * sizeof(GridCell)));
-    CHECK_ERROR(cudaMalloc((void**)&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
+    CHECK_ERROR(cudaMalloc(&grid_cell_array, grid_cell_count * sizeof(GridCell)));
+    CHECK_ERROR(cudaMalloc(&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
 
     CHECK_ERROR(cudaMalloc(&weight_array, particle_count * sizeof(float)));
     CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
@@ -338,11 +338,6 @@ void DOGM::initializeNewParticles()
         birth_particle_array, grid_cell_array, rng_states, params.velocity_birth, grid_size, new_born_particle_count);
 
     CHECK_ERROR(cudaGetLastError());
-
-    copyBirthWeightKernel<<<birth_particles_grid, block_dim>>>(birth_particle_array, birth_weight_array,
-                                                               new_born_particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
 }
 
 void DOGM::statisticalMoments()
@@ -390,7 +385,7 @@ void DOGM::resampling()
     // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_ptr<float> persistent_weights(weight_array);
-    thrust::device_ptr<float> new_born_weights(birth_weight_array);
+    thrust::device_ptr<float> new_born_weights(birth_particle_array.weight);
 
     thrust::device_vector<float> joint_weight_array;
     joint_weight_array.insert(joint_weight_array.end(), persistent_weights, persistent_weights + particle_count);

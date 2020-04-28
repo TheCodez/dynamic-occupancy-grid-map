@@ -85,11 +85,10 @@ __global__ void statisticalMomentsKernel2(GridCell* __restrict__ grid_cell_array
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        float rho_p = grid_cell_array[i].pers_occ_mass;
-        // printf("rho p: %f\n", rho_p);
-
         int start_idx = grid_cell_array[i].start_idx;
         int end_idx = grid_cell_array[i].end_idx;
+        float rho_p = grid_cell_array[i].pers_occ_mass;
+        // printf("rho p: %f\n", rho_p);
 
         if (start_idx != -1)
         {
