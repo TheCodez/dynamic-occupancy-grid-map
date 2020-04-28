@@ -62,6 +62,14 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
     CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
     CHECK_ERROR(cudaMalloc(&born_masses_array, grid_cell_count * sizeof(float)));
 
+    CHECK_ERROR(cudaMalloc(&vel_x_array, particle_count * sizeof(float)));
+    CHECK_ERROR(cudaMalloc(&vel_y_array, particle_count * sizeof(float)));
+    CHECK_ERROR(cudaMalloc(&vel_x_squared_array, particle_count * sizeof(float)));
+    CHECK_ERROR(cudaMalloc(&vel_y_squared_array, particle_count * sizeof(float)));
+    CHECK_ERROR(cudaMalloc(&vel_xy_array, particle_count * sizeof(float)));
+
+    CHECK_ERROR(cudaMalloc(&rand_array, particle_count * sizeof(float)));
+
     CHECK_ERROR(cudaMalloc(&rng_states, particles_grid.x * block_dim.x * sizeof(curandState)));
 
     renderer = std::make_unique<Renderer>(grid_size, laser_params.fov, params.size, laser_params.max_range);
@@ -81,6 +89,12 @@ DOGM::~DOGM()
     CHECK_ERROR(cudaFree(weight_array));
     CHECK_ERROR(cudaFree(birth_weight_array));
     CHECK_ERROR(cudaFree(born_masses_array));
+
+    CHECK_ERROR(cudaFree(vel_x_array));
+    CHECK_ERROR(cudaFree(vel_y_array));
+    CHECK_ERROR(cudaFree(vel_x_squared_array));
+    CHECK_ERROR(cudaFree(vel_y_squared_array));
+    CHECK_ERROR(cudaFree(vel_xy_array));
 
     CHECK_ERROR(cudaFree(rng_states));
 }
@@ -181,8 +195,8 @@ void DOGM::updateMeasurementGrid(const std::vector<float>& measurements)
 
     // create polar texture
     polar_texture.beginCudaAccess(&polar_surface);
-    createPolarGridTextureKernel<<<grid_dim, dim_block>>>(polar_surface, d_measurements,
-                                                           polar_width, polar_height, params.resolution);
+    createPolarGridTextureKernel<<<grid_dim, dim_block>>>(polar_surface, d_measurements, polar_width, polar_height,
+                                                          params.resolution);
 
     CHECK_ERROR(cudaGetLastError());
     polar_texture.endCudaAccess(polar_surface);
@@ -327,21 +341,6 @@ void DOGM::statisticalMoments()
 {
     // std::cout << "DOGM::statisticalMoments" << std::endl;
 
-    thrust::device_vector<float> vel_x(particle_count);
-    float* vel_x_array = thrust::raw_pointer_cast(vel_x.data());
-
-    thrust::device_vector<float> vel_y(particle_count);
-    float* vel_y_array = thrust::raw_pointer_cast(vel_y.data());
-
-    thrust::device_vector<float> vel_x_squared(particle_count);
-    float* vel_x_squared_array = thrust::raw_pointer_cast(vel_x_squared.data());
-
-    thrust::device_vector<float> vel_y_squared(particle_count);
-    float* vel_y_squared_array = thrust::raw_pointer_cast(vel_y_squared.data());
-
-    thrust::device_vector<float> vel_xy(particle_count);
-    float* vel_xy_array = thrust::raw_pointer_cast(vel_xy.data());
-
     statisticalMomentsKernel1<<<particles_grid, block_dim>>>(particle_array, weight_array, vel_x_array, vel_y_array,
                                                              vel_x_squared_array, vel_y_squared_array, vel_xy_array,
                                                              particle_count);
@@ -394,19 +393,19 @@ void DOGM::resampling()
 
     float joint_max = joint_weight_accum.back();
 
-    thrust::device_vector<float> rand_array(particle_count);
-    float* rand_ptr = thrust::raw_pointer_cast(rand_array.data());
-
-    resamplingGenerateRandomNumbersKernel<<<particles_grid, block_dim>>>(rand_ptr, rng_states, joint_max,
+    resamplingGenerateRandomNumbersKernel<<<particles_grid, block_dim>>>(rand_array, rng_states, joint_max,
                                                                          particle_count);
 
     CHECK_ERROR(cudaGetLastError());
     // CHECK_ERROR(cudaDeviceSynchronize());
 
-    thrust::sort(rand_array.begin(), rand_array.end());
+    thrust::device_ptr<float> rand_ptr(rand_array);
+    thrust::device_vector<float> rand_vector(rand_ptr, rand_ptr + particle_count);
+
+    thrust::sort(rand_vector.begin(), rand_vector.end());
 
     thrust::device_vector<int> idx_resampled(particle_count);
-    calc_resampled_indices(joint_weight_accum, rand_array, idx_resampled, joint_max);
+    calc_resampled_indices(joint_weight_accum, rand_vector, idx_resampled, joint_max);
     int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
     float new_weight = joint_max / particle_count;

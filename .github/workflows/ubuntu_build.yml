@@ -23,6 +23,6 @@ jobs:
     - name: Build
       run: cmake --build build
       working-directory: dogm
-    - name: Test
+    - name: Test Utils
       run: ./demo/utils/test/utils_spec
       working-directory: dogm/build
