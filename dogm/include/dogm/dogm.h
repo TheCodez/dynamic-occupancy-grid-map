@@ -89,6 +89,15 @@ public:
     float* birth_weight_array;
     float* born_masses_array;
 
+    float* vel_x_array;
+    float* vel_y_array;
+
+    float* vel_x_squared_array;
+    float* vel_y_squared_array;
+    float* vel_xy_array;
+
+    float* rand_array;
+
     curandState* rng_states;
 
     int grid_size;
