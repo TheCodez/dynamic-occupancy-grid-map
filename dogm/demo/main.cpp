@@ -32,7 +32,10 @@ int main(int argc, const char** argv)
     laser_params.fov = 120.0f;
     laser_params.max_range = 50.0f;
     laser_params.resolution = 0.2f;
-    const int sensor_horizontal_scan_points = 100;
+    const int sensor_horizontal_scan_points =
+        50;  // velocity on grid is still dependent on this variable! Position
+             // also, slightly. Width should also be dependent
+             // Issue must be in further processing of msmt. Simulator works now as expected.
 
     // Simulator parameters
     const int simulation_steps = 14;
@@ -49,12 +52,13 @@ int main(int argc, const char** argv)
     dogm::DOGM grid_map(grid_params, laser_params);
     initialization_timer.toc(true);
 
-    Simulator simulator(sensor_horizontal_scan_points, laser_params.fov);
+    CoordinateSystemMapper mapper{grid_params.size, grid_params.resolution};
+    Simulator simulator(sensor_horizontal_scan_points, laser_params.fov, mapper);
 #if 1
-    simulator.addVehicle(Vehicle(3, glm::vec2(30, 20), glm::vec2(0, 6)));
-    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(15, 0)));
-    simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
-    simulator.addVehicle(Vehicle(2, glm::vec2(68, 15), glm::vec2(0, 0)));
+    simulator.addVehicle(Vehicle(3, glm::vec2(20, 25), glm::vec2(10, 0)));
+    // simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(15, 0)));
+    // simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
+    // simulator.addVehicle(Vehicle(2, glm::vec2(68, 15), glm::vec2(0, 0)));
 #else
     simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(10, -8)));
     simulator.addVehicle(Vehicle(6, glm::vec2(60, 30), glm::vec2(-8, 6)));
@@ -79,7 +83,7 @@ int main(int argc, const char** argv)
 
         const auto cells_with_velocity =
             computeCellsWithVelocity(grid_map, minimum_occupancy_threshold, minimum_velocity_threshold);
-        precision_evaluator.evaluateAndStoreStep(step, cells_with_velocity);
+        precision_evaluator.evaluateAndStoreStep(step, cells_with_velocity, true);
 
         computeAndSaveResultImages(grid_map, cells_with_velocity, step);
     }
