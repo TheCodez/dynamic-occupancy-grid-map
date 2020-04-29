@@ -8,6 +8,24 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+class CoordinateSystemMapper
+{
+public:
+    CoordinateSystemMapper(const float grid_size, const float grid_resolution)
+        : grid_size{grid_size}, grid_resolution{grid_resolution}
+    {
+    }
+
+    float mapAbsoluteGridPositionToRelativePosition(const float position_in_meters)
+    {
+        return position_in_meters / grid_size;
+    }
+
+private:
+    float grid_size;
+    float grid_resolution;
+};
+
 struct Vehicle
 {
     // Construct a vehicle from the perspective of a sensor. Vehicles do not have bounding boxes, but are represented

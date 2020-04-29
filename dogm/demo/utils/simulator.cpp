@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <glm/glm.hpp>
+#include <iostream>
 #include <vector>
 
 std::vector<glm::vec2> Vehicle::getPointsOnFacingSide(const float resolution) const
