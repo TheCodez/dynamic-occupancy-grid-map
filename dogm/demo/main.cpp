@@ -33,9 +33,9 @@ int main(int argc, const char** argv)
     laser_params.max_range = 50.0f;
     laser_params.resolution = 0.2f;
     const int sensor_horizontal_scan_points =
-        50;  // velocity on grid is still dependent on this variable! Position
-             // also, slightly. Width should also be dependent
-             // Issue must be in further processing of msmt. Simulator works now as expected.
+        100;  // velocity on grid is still dependent on this variable! Position
+              // also, slightly. Width should also be dependent
+              // Issue must be in further processing of msmt. Simulator works now as expected.
 
     // Simulator parameters
     const int simulation_steps = 14;
@@ -55,7 +55,7 @@ int main(int argc, const char** argv)
     CoordinateSystemMapper mapper{grid_params.size, grid_params.resolution};
     Simulator simulator(sensor_horizontal_scan_points, laser_params.fov, mapper);
 #if 1
-    simulator.addVehicle(Vehicle(3, glm::vec2(20, 25), glm::vec2(10, 0)));
+    simulator.addVehicle(Vehicle(3, glm::vec2(25, 25), glm::vec2(0, 10)));
     // simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(15, 0)));
     // simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
     // simulator.addVehicle(Vehicle(2, glm::vec2(68, 15), glm::vec2(0, 0)));

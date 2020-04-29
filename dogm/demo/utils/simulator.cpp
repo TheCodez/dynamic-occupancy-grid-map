@@ -58,11 +58,14 @@ void Simulator::addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::v
 
     const float supersampling = 20.0f;
     const int num_sample_points = vehicle.width * static_cast<int>(supersampling);
-    for (int point_on_vehicle = 0; point_on_vehicle < num_sample_points; ++point_on_vehicle)
+    for (int point_on_vehicle = -num_sample_points / 2;
+         point_on_vehicle < num_sample_points / 2;  // centering around vehicle position
+         ++point_on_vehicle)
     {
-        const float x =
-            mapper.mapAbsoluteGridPositionToRelativePosition(vehicle.pos.x) * float(num_horizontal_scan_points) +
-            static_cast<float>(point_on_vehicle) / supersampling - sensor_position_x;
+        const float x = mapper.mapAbsoluteGridPositionToRelativePosition(
+                            vehicle.pos.x + static_cast<float>(point_on_vehicle) / supersampling) *
+                            float(num_horizontal_scan_points) -
+                        sensor_position_x;
         const float radius = sqrtf(powf(x, 2) + powf(vehicle.pos.y, 2));
 
         const float angle = M_PI - atan2(vehicle.pos.y, x);
