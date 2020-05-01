@@ -22,14 +22,12 @@
 #include "dogm/opengl/renderer.h"
 #include "dogm/opengl/texture.h"
 
-#include <thrust/device_ptr.h>
-#include <thrust/extrema.h>
-#include <thrust/random.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
 
 #include <cuda_runtime.h>
 
+#include <cmath>
 #include <vector>
 
 namespace dogm
