@@ -51,14 +51,14 @@ int main(int argc, const char** argv)
 
     Simulator simulator(sensor_horizontal_scan_points, laser_params.fov, grid_params.size);
 #if 1
-    simulator.addVehicle(Vehicle(3, glm::vec2(25, 25), glm::vec2(10, 0)));
-    simulator.addVehicle(Vehicle(4, glm::vec2(10, 30), glm::vec2(15, 0)));
-    simulator.addVehicle(Vehicle(4, glm::vec2(15, 30), glm::vec2(0, -8)));
-    simulator.addVehicle(Vehicle(2, glm::vec2(35, 15), glm::vec2(0, 0)));
+    simulator.addVehicle(Vehicle(3.5, glm::vec2(10, 30), glm::vec2(15, 0)));
+    simulator.addVehicle(Vehicle(3.0, glm::vec2(10, 20), glm::vec2(0, 5)));
+    simulator.addVehicle(Vehicle(4.0, glm::vec2(35, 35), glm::vec2(0, -10)));
+    simulator.addVehicle(Vehicle(1.8, glm::vec2(45, 15), glm::vec2(0, 0)));
 #else
-    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(10, -8)));
-    simulator.addVehicle(Vehicle(6, glm::vec2(60, 30), glm::vec2(-8, 6)));
-    simulator.addVehicle(Vehicle(3, glm::vec2(68, 15), glm::vec2(-12, 0)));
+    simulator.addVehicle(Vehicle(4.0, glm::vec2(10, 25), glm::vec2(10, -8)));
+    simulator.addVehicle(Vehicle(6.0, glm::vec2(40, 30), glm::vec2(-8, 6)));
+    simulator.addVehicle(Vehicle(3.0, glm::vec2(48, 15), glm::vec2(-12, 0)));
 #endif
 
     SimulationData sim_data = simulator.update(num_simulation_steps, simulation_step_period);
