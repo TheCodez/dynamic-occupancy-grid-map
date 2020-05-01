@@ -8,33 +8,27 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-class CoordinateSystemMapper
-{
-public:
-    CoordinateSystemMapper(const float grid_size, const float grid_resolution)
-        : grid_size{grid_size}, grid_resolution{grid_resolution}
-    {
-    }
-
-    float mapAbsoluteGridPositionToRelativePosition(const float position_in_meters)
-    {
-        return position_in_meters / grid_size;
-    }
-
-private:
-    float grid_size;
-    float grid_resolution;
-};
-
 struct Vehicle
 {
-    Vehicle(const int width, const glm::vec2& pos, const glm::vec2& vel) : width(width), pos(pos), vel(vel) {}
+    // Construct a vehicle from the perspective of a sensor. Vehicles do not have bounding boxes, but are represented
+    // only by one facing side. This facing side has a width [m] and a 2D position [m]. Position is in the center of the
+    // facing side. 2D Velocity is given in [m/s].
+    Vehicle(const int width, const glm::vec2& position, const glm::vec2& velocity)
+        : width(width), pos(position), vel(velocity)
+    {
+    }
 
     void move(float dt) { pos += vel * dt; }
 
-    int width;
+    /// brief Gets points on facing side
+    /// param resolution [m] defines in which resolution points shall be sampled
+    std::vector<glm::vec2> getPointsOnFacingSide(const float resolution) const;
+
     glm::vec2 pos;
     glm::vec2 vel;
+
+private:
+    float width;
 };
 
 struct SimulationStep
@@ -45,10 +39,11 @@ struct SimulationStep
 
 using SimulationData = std::vector<SimulationStep>;
 
-struct Simulator
+class Simulator
 {
-    Simulator(int _num_horizontal_scan_points, const float _field_of_view, CoordinateSystemMapper& mapper)
-        : num_horizontal_scan_points(_num_horizontal_scan_points), field_of_view(_field_of_view), mapper{mapper}
+public:
+    Simulator(int _num_horizontal_scan_points, const float _field_of_view, const float grid_size)
+        : num_horizontal_scan_points(_num_horizontal_scan_points), field_of_view(_field_of_view), grid_size{grid_size}
     {
     }
 
@@ -60,7 +55,9 @@ struct Simulator
     int num_horizontal_scan_points;
     float field_of_view;
     std::vector<Vehicle> vehicles;
-    CoordinateSystemMapper& mapper;
+
+private:
+    float grid_size;
 };
 
 #endif  // SIMULATOR_H

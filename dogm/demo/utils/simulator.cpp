@@ -9,6 +9,20 @@
 #include <iostream>
 #include <vector>
 
+std::vector<glm::vec2> Vehicle::getPointsOnFacingSide(const float resolution) const
+{
+    assert(resolution > 0.0f);
+    std::vector<glm::vec2> points_on_facing_side{};
+    const auto leftmost_point_on_facing_side = pos.x - width * 0.5f;
+    const auto rightmost_point_on_facing_side = pos.x + width * 0.5f;
+    for (float point_on_facing_side = leftmost_point_on_facing_side;
+         point_on_facing_side < rightmost_point_on_facing_side; point_on_facing_side += resolution)
+    {
+        points_on_facing_side.push_back(glm::vec2{point_on_facing_side, pos.y});
+    }
+    return points_on_facing_side;
+}
+
 static float regressAngleOffset(float angle_difference)
 {
     // TODO find a final solution for this. The current regression is only an approximation to the true,
@@ -51,27 +65,22 @@ SimulationData Simulator::update(int steps, float dt)
 void Simulator::addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::vector<float>& measurement) const
 {
     const float max_field_of_view = 180.0f;
-    const float sensor_position_x = num_horizontal_scan_points / 2;
+    const glm::vec2 sensor_position{grid_size * 0.5f, 0.0f};
     const float factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (max_field_of_view / field_of_view);
     const float angle_offset =
         num_horizontal_scan_points * (regressAngleOffset(max_field_of_view - field_of_view) / max_field_of_view);
 
-    const float supersampling = 20.0f;
-    const int num_sample_points = vehicle.width * static_cast<int>(supersampling);
-    for (int point_on_vehicle = -num_sample_points / 2;
-         point_on_vehicle < num_sample_points / 2;  // centering around vehicle position
-         ++point_on_vehicle)
+    const auto points_on_facing_side = vehicle.getPointsOnFacingSide(grid_size / (20.0f * num_horizontal_scan_points));
+    for (const auto& point_on_facing_side : points_on_facing_side)
     {
-        const float x = mapper.mapAbsoluteGridPositionToRelativePosition(
-                            vehicle.pos.x + static_cast<float>(point_on_vehicle) / supersampling) *
-                            float(num_horizontal_scan_points) -
-                        sensor_position_x;
-        const float radius = sqrtf(powf(x, 2) + powf(vehicle.pos.y, 2));
+        const auto point_relative_to_sensor = point_on_facing_side - sensor_position;
 
-        const float angle = M_PI - atan2(vehicle.pos.y, x);
+        const float radius = sqrtf(powf(point_relative_to_sensor.x, 2) + powf(vehicle.pos.y, 2));
+        const float angle = M_PI - atan2(point_relative_to_sensor.y, point_relative_to_sensor.x);
+
         const float angle_normalized_to_measurement_vector = (angle * factor_angle_to_grid) - angle_offset;
-
         int index = static_cast<int>(angle_normalized_to_measurement_vector);
+
         if (0 <= index && index <= measurement.size())
             measurement[index] = radius;
     }
