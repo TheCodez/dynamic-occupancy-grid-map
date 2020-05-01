@@ -43,18 +43,17 @@ class Simulator
 {
 public:
     Simulator(int _num_horizontal_scan_points, const float _field_of_view, const float grid_size);
-
     void addVehicle(const Vehicle& vehicle) { vehicles.push_back(vehicle); }
     SimulationData update(int steps, float dt);
-    void addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::vector<float>& measurement) const;
-
-    int num_horizontal_scan_points;
-    float field_of_view;
-    std::vector<Vehicle> vehicles;
 
 private:
-    float grid_size;
+    void addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::vector<float>& measurement) const;
     int computeMeasurementVectorIndexFromAngle(const float angle) const;
+
+    float field_of_view;
+    int num_horizontal_scan_points;
+    std::vector<Vehicle> vehicles;
+    float grid_size;
     float factor_angle_to_grid;
     float angle_offset;
     glm::vec2 sensor_position;
