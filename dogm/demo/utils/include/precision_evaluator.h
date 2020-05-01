@@ -22,7 +22,7 @@ struct PointWithVelocity
 class PrecisionEvaluator
 {
 public:
-    PrecisionEvaluator(const SimulationData _sim_data, const float _resolution);
+    PrecisionEvaluator(const SimulationData sim_data, const float resolution, const float grid_size);
     void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
                               bool print_current_precision = false);
     void printSummary();
@@ -33,6 +33,7 @@ private:
 
     SimulationData sim_data;
     float resolution;
+    float grid_size;
     PointWithVelocity cumulative_error;
     int number_of_detections;
     int number_of_unassigned_detections;

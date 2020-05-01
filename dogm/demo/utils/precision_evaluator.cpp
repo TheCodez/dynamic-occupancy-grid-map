@@ -32,8 +32,8 @@ static Clusters<dogm::GridCell> computeDbscanClusters(const std::vector<Point<do
     return dbscan.cluster(cells_with_velocity);
 }
 
-PrecisionEvaluator::PrecisionEvaluator(const SimulationData _sim_data, const float _resolution)
-    : sim_data{_sim_data}, resolution{_resolution}
+PrecisionEvaluator::PrecisionEvaluator(const SimulationData _sim_data, const float _resolution, const float _grid_size)
+    : sim_data{_sim_data}, resolution{_resolution}, grid_size{_grid_size}
 {
     number_of_detections = 0;
     number_of_unassigned_detections = 0;
@@ -98,6 +98,7 @@ void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
 
 PointWithVelocity PrecisionEvaluator::computeClusterMean(const Cluster<dogm::GridCell>& cluster)
 {
+    // TODO check if median is more precise than mean
     PointWithVelocity cluster_mean;
     for (auto& point : cluster)
     {
@@ -110,12 +111,13 @@ PointWithVelocity PrecisionEvaluator::computeClusterMean(const Cluster<dogm::Gri
     cluster_mean.x = (cluster_mean.x / cluster.size()) * resolution;
     cluster_mean.y = (cluster_mean.y / cluster.size()) * resolution;
     cluster_mean.v_x = (cluster_mean.v_x / cluster.size()) * resolution;
-    cluster_mean.v_y = -(cluster_mean.v_y / cluster.size()) * resolution;
+    cluster_mean.v_y = (cluster_mean.v_y / cluster.size()) * resolution;
 
-    const float x_offset = 22.0f;                            // motivated by numerical experiments
-    const float y_offset = 2.0f * (25.0f - cluster_mean.y);  // motivated by numerical experiments
-    cluster_mean.x += x_offset;
-    cluster_mean.y += y_offset;
+    // y as grid index is pointing downwards from top left corner.
+    // y in world coordinates is pointing upwards from bottom left corner.
+    // Therefore, vectors (velocity) just needs to be inverted. Positions (mean) must be inverted and translated.
+    cluster_mean.v_y = -cluster_mean.v_y;
+    cluster_mean.y = grid_size - cluster_mean.y;
 
     return cluster_mean;
 }

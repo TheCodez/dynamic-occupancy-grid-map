@@ -31,11 +31,11 @@ int main(int argc, const char** argv)
     dogm::LaserSensorParams laser_params;
     laser_params.fov = 120.0f;
     laser_params.max_range = 50.0f;
-    laser_params.resolution = 0.2f;
+    laser_params.resolution = grid_params.resolution;  // TODO make independent of grid_params.resolution
     const int sensor_horizontal_scan_points = 100;
 
     // Simulator parameters
-    const int simulation_steps = 14;
+    const int num_simulation_steps = 14;
     const float simulation_step_period = 0.1f;
 
     // Evaluator parameters
@@ -49,33 +49,29 @@ int main(int argc, const char** argv)
     dogm::DOGM grid_map(grid_params, laser_params);
     initialization_timer.toc(true);
 
-    Simulator simulator(sensor_horizontal_scan_points, laser_params.fov);
+    Simulator simulator(sensor_horizontal_scan_points, laser_params.fov, grid_params.size);
 #if 1
-    simulator.addVehicle(Vehicle(3, glm::vec2(30, 20), glm::vec2(0, 6)));
-    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(15, 0)));
-    simulator.addVehicle(Vehicle(4, glm::vec2(60, 30), glm::vec2(0, -8)));
-    simulator.addVehicle(Vehicle(2, glm::vec2(68, 15), glm::vec2(0, 0)));
+    simulator.addVehicle(Vehicle(3.5, glm::vec2(10, 30), glm::vec2(15, 0)));
+    simulator.addVehicle(Vehicle(3.0, glm::vec2(10, 20), glm::vec2(0, 5)));
+    simulator.addVehicle(Vehicle(4.0, glm::vec2(35, 35), glm::vec2(0, -10)));
+    simulator.addVehicle(Vehicle(1.8, glm::vec2(45, 15), glm::vec2(0, 0)));
 #else
-    simulator.addVehicle(Vehicle(4, glm::vec2(30, 30), glm::vec2(10, -8)));
-    simulator.addVehicle(Vehicle(6, glm::vec2(60, 30), glm::vec2(-8, 6)));
-    simulator.addVehicle(Vehicle(3, glm::vec2(68, 15), glm::vec2(-12, 0)));
+    simulator.addVehicle(Vehicle(4.0, glm::vec2(10, 25), glm::vec2(10, -8)));
+    simulator.addVehicle(Vehicle(6.0, glm::vec2(40, 30), glm::vec2(-8, 6)));
+    simulator.addVehicle(Vehicle(3.0, glm::vec2(48, 15), glm::vec2(-12, 0)));
 #endif
 
-    SimulationData sim_data = simulator.update(simulation_steps, simulation_step_period);
-    PrecisionEvaluator precision_evaluator{sim_data, grid_params.resolution};
+    SimulationData sim_data = simulator.update(num_simulation_steps, simulation_step_period);
+    PrecisionEvaluator precision_evaluator{sim_data, grid_params.resolution, grid_params.size};
     Timer cycle_timer{"DOGM cycle"};
 
-    for (int step = 0; step < simulation_steps; ++step)
+    for (int step = 0; step < num_simulation_steps; ++step)
     {
         grid_map.updateMeasurementGrid(sim_data[step].measurements);
 
         cycle_timer.tic();
-        // Run Particle filter
         grid_map.updateParticleFilter(simulation_step_period);
-
         cycle_timer.toc(true);
-        std::cout << "######  Saving result  #######" << std::endl;
-        std::cout << "##############################" << std::endl << std::endl;
 
         const auto cells_with_velocity =
             computeCellsWithVelocity(grid_map, minimum_occupancy_threshold, minimum_velocity_threshold);

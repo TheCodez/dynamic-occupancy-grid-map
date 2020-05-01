@@ -413,7 +413,7 @@ void DOGM::resampling()
 
     float new_weight = joint_max / particle_count;
 
-    printf("joint_max: %f\n", joint_max);
+    // printf("joint_max: %f\n", joint_max);
 
     resamplingKernel<<<particles_grid, block_dim>>>(particle_array, particle_array_next, birth_particle_array,
                                                     idx_array_resampled, new_weight, particle_count);

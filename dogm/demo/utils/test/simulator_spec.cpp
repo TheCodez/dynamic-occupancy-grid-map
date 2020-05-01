@@ -15,7 +15,6 @@ TEST(Vehicle, Constructor)
 
     Vehicle unit{width, position, velocity};
 
-    EXPECT_EQ(width, unit.width);
     EXPECT_EQ(position, unit.pos);
     EXPECT_EQ(velocity, unit.vel);
 }

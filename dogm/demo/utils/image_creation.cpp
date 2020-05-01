@@ -50,8 +50,10 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
                 velocity_normalized_by_variance.at<float>(0, 0) >= min_velocity_threshold)
             {
                 Point<dogm::GridCell> point;
-                point.x = x;
-                point.y = y;
+
+                // Storing the point as grid index to be consistent with cell.mean_x_vel and cell.mean_y_vel
+                point.x = static_cast<float>(x);
+                point.y = static_cast<float>(y);
                 point.data = cell;
                 point.cluster_id = UNCLASSIFIED;
 
