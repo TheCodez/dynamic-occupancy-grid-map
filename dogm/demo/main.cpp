@@ -75,7 +75,7 @@ int main(int argc, const char** argv)
 
         const auto cells_with_velocity =
             computeCellsWithVelocity(grid_map, minimum_occupancy_threshold, minimum_velocity_threshold);
-        precision_evaluator.evaluateAndStoreStep(step, cells_with_velocity, true);
+        precision_evaluator.evaluateAndStoreStep(step, cells_with_velocity);
 
         computeAndSaveResultImages(grid_map, cells_with_velocity, step);
     }
