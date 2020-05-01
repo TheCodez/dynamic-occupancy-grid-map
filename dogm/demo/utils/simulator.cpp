@@ -39,6 +39,16 @@ static float regressAngleOffset(float angle_difference)
            66.6564 * angle_difference - 0.3819;
 }
 
+Simulator::Simulator(int _num_horizontal_scan_points, const float _field_of_view, const float grid_size)
+    : num_horizontal_scan_points(_num_horizontal_scan_points), field_of_view(_field_of_view), grid_size{grid_size}
+{
+    const float max_field_of_view = 180.0f;
+    factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (max_field_of_view / field_of_view);
+    angle_offset =
+        num_horizontal_scan_points * (regressAngleOffset(max_field_of_view - field_of_view) / max_field_of_view);
+    sensor_position = glm::vec2{grid_size * 0.5f, 0.0f};
+}
+
 SimulationData Simulator::update(int steps, float dt)
 {
     SimulationData sim_data;
@@ -64,12 +74,6 @@ SimulationData Simulator::update(int steps, float dt)
 
 void Simulator::addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::vector<float>& measurement) const
 {
-    const float max_field_of_view = 180.0f;
-    const glm::vec2 sensor_position{grid_size * 0.5f, 0.0f};
-    const float factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (max_field_of_view / field_of_view);
-    const float angle_offset =
-        num_horizontal_scan_points * (regressAngleOffset(max_field_of_view - field_of_view) / max_field_of_view);
-
     const auto points_on_facing_side = vehicle.getPointsOnFacingSide(grid_size / (20.0f * num_horizontal_scan_points));
     for (const auto& point_on_facing_side : points_on_facing_side)
     {
@@ -77,11 +81,15 @@ void Simulator::addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::v
 
         const float radius = sqrtf(powf(point_relative_to_sensor.x, 2) + powf(vehicle.pos.y, 2));
         const float angle = M_PI - atan2(point_relative_to_sensor.y, point_relative_to_sensor.x);
-
-        const float angle_normalized_to_measurement_vector = (angle * factor_angle_to_grid) - angle_offset;
-        int index = static_cast<int>(angle_normalized_to_measurement_vector);
+        const auto index = computeMeasurementVectorIndexFromAngle(angle);
 
         if (0 <= index && index <= measurement.size())
             measurement[index] = radius;
     }
+}
+
+int Simulator::computeMeasurementVectorIndexFromAngle(const float angle) const
+{
+    const float angle_normalized_to_measurement_vector = (angle * factor_angle_to_grid) - angle_offset;
+    return static_cast<int>(angle_normalized_to_measurement_vector);
 }
