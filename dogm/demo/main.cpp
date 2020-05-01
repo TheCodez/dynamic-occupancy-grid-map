@@ -31,7 +31,7 @@ int main(int argc, const char** argv)
     dogm::LaserSensorParams laser_params;
     laser_params.fov = 120.0f;
     laser_params.max_range = 50.0f;
-    laser_params.resolution = 0.2f;
+    laser_params.resolution = grid_params.resolution;  // TODO make independent of grid_params.resolution
     const int sensor_horizontal_scan_points = 100;
 
     // Simulator parameters
