@@ -193,7 +193,7 @@ void DOGM::updatePose(float new_x, float new_y)
         const float x_diff = new_x - position_x;
         const float y_diff = new_y - position_y;
 
-        if (std::fabsf(x_diff) > params.resolution || std::fabsf(y_diff) > params.resolution)
+        if (fabsf(x_diff) > params.resolution || fabsf(y_diff) > params.resolution)
         {
             const int x_move = -static_cast<int>(x_diff / params.resolution);
             const int y_move = -static_cast<int>(y_diff / params.resolution);
