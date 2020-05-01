@@ -98,6 +98,7 @@ void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
 
 PointWithVelocity PrecisionEvaluator::computeClusterMean(const Cluster<dogm::GridCell>& cluster)
 {
+    // TODO check if median is more precise than mean
     PointWithVelocity cluster_mean;
     for (auto& point : cluster)
     {
