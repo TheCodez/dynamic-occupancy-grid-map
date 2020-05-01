@@ -20,8 +20,7 @@ struct Vehicle
 
     void move(float dt) { pos += vel * dt; }
 
-    /// brief Gets points on facing side
-    /// param resolution [m] defines in which resolution points shall be sampled
+    // Gets points on facing side. Resolution [m] defines in which resolution points shall be sampled
     std::vector<glm::vec2> getPointsOnFacingSide(const float resolution) const;
 
     glm::vec2 pos;
