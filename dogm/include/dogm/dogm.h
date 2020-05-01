@@ -48,6 +48,7 @@ public:
 
     void updateMeasurementGridFromArray(const std::vector<float2>& measurements);
 
+    void updatePose(float new_x, float new_y);
     void updateMeasurementGrid(const std::vector<float>& measurements);
     void updateParticleFilter(float dt);
 
@@ -59,8 +60,8 @@ public:
     int getGridSize() const { return grid_size; }
     float getResolution() const { return params.resolution; }
 
-    float getPositionX() const { return 0.0f; }
-    float getPositionY() const { return 0.0f; }
+    float getPositionX() const { return position_x; }
+    float getPositionY() const { return position_y; }
 
     int getIteration() const { return iteration; }
 
@@ -114,7 +115,12 @@ public:
     dim3 birth_particles_grid;
     dim3 grid_map_grid;
 
+private:
     int iteration;
+
+    float first_pose_received;
+    float position_x;
+    float position_y;
 };
 
 } /* namespace dogm */

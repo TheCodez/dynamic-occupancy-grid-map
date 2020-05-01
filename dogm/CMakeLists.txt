@@ -58,6 +58,7 @@ set(HEADER_FILES
 	include/dogm/kernel/resampling.h
 	include/dogm/kernel/statistical_moments.h
 	include/dogm/kernel/update_persistent_particles.h
+	include/dogm/kernel/ego_motion_compensation.h
 	include/dogm/common.h
 	include/dogm/cuda_utils.h
 	include/dogm/dogm.h
@@ -81,6 +82,7 @@ set(SRC_FILES
 	src/kernel/resampling.cu
 	src/kernel/statistical_moments.cu
 	src/kernel/update_persistent_particles.cu
+	src/kernel/ego_motion_compensation.cu
 	src/dogm.cu
 )
 

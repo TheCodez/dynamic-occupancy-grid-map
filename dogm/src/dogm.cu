@@ -7,6 +7,7 @@
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 
+#include "dogm/kernel/ego_motion_compensation.h"
 #include "dogm/kernel/init.h"
 #include "dogm/kernel/init_new_particles.h"
 #include "dogm/kernel/mass_update.h"
@@ -39,7 +40,8 @@ constexpr int BLOCK_SIZE = 256;
 DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
     : params(params), laser_params(laser_params), grid_size(static_cast<int>(params.size / params.resolution)),
       particle_count(params.particle_count), grid_cell_count(grid_size * grid_size),
-      new_born_particle_count(params.new_born_particle_count), block_dim(BLOCK_SIZE)
+      new_born_particle_count(params.new_born_particle_count), block_dim(BLOCK_SIZE), first_pose_received(false),
+      position_x(0.0f), position_y(0.0f)
 {
     int device;
     CHECK_ERROR(cudaGetDevice(&device));
@@ -178,6 +180,48 @@ void DOGM::updateMeasurementGridFromArray(const std::vector<float2>& measurement
 
     CHECK_ERROR(cudaGetLastError());
     CHECK_ERROR(cudaDeviceSynchronize());
+}
+
+void DOGM::updatePose(float new_x, float new_y)
+{
+    if (!first_pose_received)
+    {
+        position_x = new_x;
+        position_y = new_y;
+        first_pose_received = true;
+    }
+    else
+    {
+        const float x_diff = new_x - position_x;
+        const float y_diff = new_y - position_y;
+
+        if (std::fabsf(x_diff) > params.resolution || std::fabsf(y_diff) > params.resolution)
+        {
+            const int x_move = -static_cast<int>(x_diff / params.resolution);
+            const int y_move = -static_cast<int>(y_diff / params.resolution);
+
+            GridCell* old_grid_cell_array;
+            CHECK_ERROR(cudaMalloc(&old_grid_cell_array, grid_cell_count * sizeof(GridCell)));
+
+            CHECK_ERROR(cudaMemcpy(old_grid_cell_array, grid_cell_array, grid_cell_count * sizeof(GridCell),
+                                   cudaMemcpyDeviceToDevice));
+            CHECK_ERROR(cudaMemset(grid_cell_array, 0, grid_cell_count * sizeof(GridCell)));
+
+            dim3 dim_block(32, 32);
+            dim3 grid_dim(divUp(grid_size, dim_block.x), divUp(grid_size, dim_block.y));
+
+            moveParticlesKernel<<<particles_grid, block_dim>>>(particle_array, x_move, y_move, particle_count);
+            CHECK_ERROR(cudaGetLastError());
+
+            moveMapKernel<<<grid_dim, dim_block>>>(grid_cell_array, old_grid_cell_array, x_move, y_move, grid_size);
+            CHECK_ERROR(cudaGetLastError());
+
+            CHECK_ERROR(cudaFree(old_grid_cell_array));
+
+            position_x = new_x;
+            position_y = new_y;
+        }
+    }
 }
 
 void DOGM::updateMeasurementGrid(const std::vector<float>& measurements)
