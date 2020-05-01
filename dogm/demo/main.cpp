@@ -35,7 +35,7 @@ int main(int argc, const char** argv)
     const int sensor_horizontal_scan_points = 100;
 
     // Simulator parameters
-    const int simulation_steps = 14;
+    const int num_simulation_steps = 14;
     const float simulation_step_period = 0.1f;
 
     // Evaluator parameters
@@ -65,21 +65,17 @@ int main(int argc, const char** argv)
     PrecisionEvaluator precision_evaluator{sim_data, grid_params.resolution};
     Timer cycle_timer{"DOGM cycle"};
 
-    for (int step = 0; step < simulation_steps; ++step)
+    for (int step = 0; step < num_simulation_steps; ++step)
     {
         grid_map.updateMeasurementGrid(sim_data[step].measurements);
 
         cycle_timer.tic();
-        // Run Particle filter
         grid_map.updateParticleFilter(simulation_step_period);
-
         cycle_timer.toc(true);
-        std::cout << "######  Saving result  #######" << std::endl;
-        std::cout << "##############################" << std::endl << std::endl;
 
         const auto cells_with_velocity =
             computeCellsWithVelocity(grid_map, minimum_occupancy_threshold, minimum_velocity_threshold);
-        precision_evaluator.evaluateAndStoreStep(step, cells_with_velocity, true);
+        precision_evaluator.evaluateAndStoreStep(step, cells_with_velocity);
 
         computeAndSaveResultImages(grid_map, cells_with_velocity, step);
     }
