@@ -8,13 +8,17 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-class VehicleSpec : public ::testing::Test
+class VehicleSpecBase
 {
 protected:
     const float m_width{3.5};
-    const glm::vec2 m_position{-10, 20};
+    const glm::vec2 m_position{-12.3, 20.2};
     const glm::vec2 m_velocity{5, -10};
     Vehicle m_unit{m_width, m_position, m_velocity};
+};
+
+class VehicleSpec : public ::testing::Test, public VehicleSpecBase
+{
 };
 
 TEST_F(VehicleSpec, Constructor)
@@ -32,13 +36,8 @@ TEST_F(VehicleSpec, GetFacingSide)
     EXPECT_EQ(expected_points, m_unit.getPointsOnFacingSide(resolution));
 }
 
-class VehicleSpecParametrized : public ::testing::TestWithParam<float>
+class VehicleSpecParametrized : public ::testing::TestWithParam<float>, public VehicleSpecBase
 {
-protected:
-    const float m_width{3.5};
-    const glm::vec2 m_position{-12.3, 20.2};
-    const glm::vec2 m_velocity{5, -10};
-    Vehicle m_unit{m_width, m_position, m_velocity};
 };
 
 TEST_P(VehicleSpecParametrized, Move)
