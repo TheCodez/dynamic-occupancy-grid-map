@@ -1,12 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  ![alt text](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
-![Build Ubuntu 18.04](https://github.com/TheCodez/dynamic-occupancy-grid-map/workflows/Build%20Ubuntu%2018.04/badge.svg)
+![Build and test on Ubuntu 18.04](https://github.com/TheCodez/dynamic-occupancy-grid-map/workflows/Build%20and%20test%20on%20Ubuntu%2018.04/badge.svg)
 
-# DISCLAIMER
-
-This repository is still WIP and in a pretty early stage. Contributions are kindly appreciated :)
-
-
-# [WIP] A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
+# A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
 
 Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application](https://arxiv.org/abs/1605.02406)
 
@@ -15,11 +10,15 @@ Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps 
   <img src="./docs/videos/dogm4.gif">
 </p>
 
+## Note
+
+This repository is fast moving and we currently guarentee no backwards compatibility.
+
 ## Performance
 
 |             | Particle count | Birth particle count | Grid cell count* |  Time  |          GPU**         |
 |-------------|:--------------:|:--------------------:|:----------------:|:------:|:----------------------:|
-|     Ours    |     3 * 10⁵    |        3 * 10⁴       |    6.25 * 10⁴    |  91 ms | NVIDIA GTX 1050 Mobile |
+|     Ours    |     3 * 10⁵    |        3 * 10⁴       |    6.25 * 10⁴    |  79 ms | NVIDIA GTX 1050 Mobile |
 | Nuss et al. |     2 * 10⁶    |        2 * 10⁵       |    1.44 * 10⁶    |  50 ms |    NVIDIA GTX 980      |
 
 \* increasing the grid cell count to 1.44 * 10⁶ increases the runtime by only ~20ms
