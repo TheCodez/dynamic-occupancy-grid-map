@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-set -e
-set -u
-set -o pipefail
+set -eou pipefail
 
 CLEAN_BUILD=false
 BUILD_DEBUG=""
@@ -20,7 +18,8 @@ while [[ $# -gt 0 ]]; do
         ;;
         -h|--help)
         printf "Usage: $0 [-c] [-d] \n
-This scripts configures, builds, and executes the dogm library, unit tests, and the demo.\n
+This scripts configures, builds, and executes the dogm library, unit tests, and the demo.
+You can use the following flags:\n
 -c      Clean build (removes previous build files)
 -d      Debug build\n"
         exit 0
@@ -33,15 +32,10 @@ This scripts configures, builds, and executes the dogm library, unit tests, and 
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-
-mkdir -p build
-cd build
+find dogm/demo dogm/include dogm/src dogm/test -iname '*.h' -o -iname '*.cpp' -o -iname '*.cu' | xargs clang-format -i
+mkdir -p build && cd build
 if [ "$CLEAN_BUILD" = true ]; then rm -rf *; fi
-cmake ../dogm  "${BUILD_DEBUG}"
-cmake --build build
-
-# Run unit tests
+cmake "${BUILD_DEBUG}" ../dogm
+make -j $(nproc)
 ctest . -j $(nproc)
-
-# Run demo application
 ./demo/demo
