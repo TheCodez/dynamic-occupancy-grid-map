@@ -17,8 +17,8 @@ __global__ void moveParticlesKernel(ParticlesSoA particle_array, int x_move, int
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
     {
-        particle_array.state[i][0] += x_move;
-        particle_array.state[i][1] += y_move;
+        particle_array.state[i][0] -= x_move;
+        particle_array.state[i][1] -= y_move;
     }
 }
 
