@@ -84,13 +84,13 @@ Use CMake to build the project:
 <details>
 <summary>Ubuntu 18.04</summary>
 
+Use the [local pipeline](/local_pipeline_ubuntu.sh) to configure, build and execute the project:
+
 ```
-cd dogm
-mkdir build
-cd build
-cmake ..
-make
+./local_pipeline_ubuntu.sh
 ```
+
+The pipeline creates folder `build` and compiles executables into that folder. Call the pipeline with `-h` to get an overview of optional flags.
 </details>
 
 <details>
@@ -107,13 +107,7 @@ Afterwards open the generated ```.sln``` in Visual Studio 17/19 and compile it.
 
 ## Contributing
 
-Contributions are welcome. Please make sure to apply `clang-format` to your code, e.g. by manually executing
-
-```console
-find dogm/include dogm/src dogm/demo -iname '*.h' -o -iname '*.cpp' -o -iname '*.cu' | xargs clang-format -i
-```
-
-or including this formatting in your editor/IDE.
+Contributions are welcome. Please make sure to apply `clang-format` to your code, e.g. by letting [local_pipeline_ubuntu.sh](/local_pipeline_ubuntu.sh) check and fix formatting for you. We also recommend to include formatting with clang-format in your editor/IDE.
 
 ## References
 

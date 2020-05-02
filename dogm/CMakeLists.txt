@@ -117,8 +117,9 @@ target_link_libraries(dogm
 #        PUBLIC_HEADER DESTINATION include/dogm
 #)
 
-add_subdirectory(demo)
-
 if(BUILD_TESTS)
+    enable_testing()
     add_subdirectory(test)
 endif()
+
+add_subdirectory(demo)
