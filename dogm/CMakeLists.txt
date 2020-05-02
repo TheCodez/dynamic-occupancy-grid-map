@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 14)
 
 option(BUILD_TESTS "Build unit tests" ON)
 
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 find_package(OpenGL REQUIRED)
 
@@ -118,7 +123,3 @@ target_link_libraries(dogm
 #)
 
 add_subdirectory(demo)
-
-if(BUILD_TESTS)
-    add_subdirectory(test)
-endif()
