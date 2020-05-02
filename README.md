@@ -90,7 +90,7 @@ Use the [local pipeline](/local_pipeline_ubuntu.sh) to configure, build and exec
 ./local_pipeline_ubuntu.sh
 ```
 
-The pipeline compiles executables into folder `build`. Call the pipeline with `-h` to get an overview of optional flags.
+The pipeline creates folder `build` and compiles executables into that folder. Call the pipeline with `-h` to get an overview of optional flags.
 </details>
 
 <details>
