@@ -34,6 +34,7 @@ struct SimulationStep
 {
     std::vector<Vehicle> vehicles;
     std::vector<float> measurements;
+    glm::vec2 ego_pose;
 };
 
 using SimulationData = std::vector<SimulationStep>;
@@ -41,7 +42,8 @@ using SimulationData = std::vector<SimulationStep>;
 class Simulator
 {
 public:
-    Simulator(int _num_horizontal_scan_points, const float _field_of_view, const float grid_size);
+    Simulator(int _num_horizontal_scan_points, const float _field_of_view, const float grid_size,
+              glm::vec2 ego_velocity);
     void addVehicle(const Vehicle& vehicle) { vehicles.push_back(vehicle); }
     SimulationData update(int steps, float dt);
 
@@ -56,6 +58,8 @@ private:
     float factor_angle_to_grid;
     float angle_offset;
     glm::vec2 sensor_position;
+    glm::vec2 ego_velocity;
+    glm::vec2 ego_position;
 };
 
 #endif  // SIMULATOR_H
