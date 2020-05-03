@@ -13,7 +13,7 @@ struct Vehicle
     // Construct a vehicle from the perspective of a sensor. Vehicles do not have bounding boxes, but are represented
     // only by one facing side. This facing side has a width [m] and a 2D position [m]. Position is in the center of the
     // facing side. 2D Velocity is given in [m/s].
-    Vehicle(const int width, const glm::vec2& position, const glm::vec2& velocity)
+    Vehicle(const float width, const glm::vec2& position, const glm::vec2& velocity)
         : width(width), pos(position), vel(velocity)
     {
     }
