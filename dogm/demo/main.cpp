@@ -70,7 +70,7 @@ int main(int argc, const char** argv)
         grid_map.updateMeasurementGrid(sim_data[step].measurements);
 
         cycle_timer.tic();
-        grid_map.updateParticleFilter(simulation_step_period);
+        grid_map.updateGrid(simulation_step_period);
         cycle_timer.toc(true);
 
         const auto cells_with_velocity =

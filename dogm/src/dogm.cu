@@ -122,7 +122,7 @@ void DOGM::initialize()
     CHECK_ERROR(cudaStreamDestroy(grid_stream));
 }
 
-void DOGM::updateParticleFilter(float dt)
+void DOGM::updateGrid(float dt)
 {
     particlePrediction(dt);
     particleAssignment();

@@ -50,7 +50,7 @@ public:
 
     void updatePose(float new_x, float new_y);
     void updateMeasurementGrid(const std::vector<float>& measurements);
-    void updateParticleFilter(float dt);
+    void updateGrid(float dt);
 
     GridCell* getGridCells() const;
     MeasurementCell* getMeasurementCells() const;
