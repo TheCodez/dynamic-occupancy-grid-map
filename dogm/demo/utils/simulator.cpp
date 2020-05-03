@@ -41,14 +41,13 @@ static float regressAngleOffset(float angle_difference)
 Simulator::Simulator(int _num_horizontal_scan_points, const float _field_of_view, const float grid_size,
                      glm::vec2 ego_velocity)
     : num_horizontal_scan_points(_num_horizontal_scan_points),
-      field_of_view(_field_of_view), grid_size{grid_size}, ego_velocity{ego_velocity}
+      field_of_view(_field_of_view), grid_size{grid_size}, ego_vehicle{5.0f, glm::vec2{0.0f, 0.0f}, ego_velocity}
 {
     const float max_field_of_view = 180.0f;
     factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (max_field_of_view / field_of_view);
     angle_offset =
         num_horizontal_scan_points * (regressAngleOffset(max_field_of_view - field_of_view) / max_field_of_view);
     sensor_position = glm::vec2{grid_size * 0.5f, 0.0f};
-    ego_position = glm::vec2{0.0f, 0.0f};
 }
 
 SimulationData Simulator::update(int steps, float dt)
@@ -59,20 +58,20 @@ SimulationData Simulator::update(int steps, float dt)
     {
         std::vector<float> measurement(num_horizontal_scan_points, INFINITY);
 
-        ego_position += ego_velocity * dt;
+        ego_vehicle.move(dt);
 
         for (auto& vehicle : vehicles)
         {
             vehicle.move(dt);
             // adjust vehicle pos depending on ego motion
-            vehicle.pos -= ego_velocity * dt;
+            vehicle.pos -= ego_vehicle.vel * dt;
             addVehicleDetectionsToMeasurement(vehicle, measurement);
         }
 
         SimulationStep step;
         step.measurements = measurement;
         step.vehicles = vehicles;
-        step.ego_pose = ego_position;
+        step.ego_pose = ego_vehicle.pos;
         sim_data.push_back(step);
     }
 

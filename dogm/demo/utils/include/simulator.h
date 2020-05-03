@@ -58,8 +58,7 @@ private:
     float factor_angle_to_grid;
     float angle_offset;
     glm::vec2 sensor_position;
-    glm::vec2 ego_velocity;
-    glm::vec2 ego_position;
+    Vehicle ego_vehicle;
 };
 
 #endif  // SIMULATOR_H
