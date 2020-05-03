@@ -49,4 +49,4 @@ TEST_P(VehicleSpecParametrized, Move)
     EXPECT_EQ(m_velocity, m_unit.vel);
 }
 
-INSTANTIATE_TEST_CASE_P(VehcileMoveTests, VehicleSpecParametrized, ::testing::Values(-3.2f, 0.0f, 3.4f, 10.5f));
+INSTANTIATE_TEST_CASE_P(VehicleMoveTests, VehicleSpecParametrized, ::testing::Values(-3.2f, 0.0f, 3.4f, 10.5f));
