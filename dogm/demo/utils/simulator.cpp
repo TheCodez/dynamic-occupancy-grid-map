@@ -38,8 +38,10 @@ static float regressAngleOffset(float angle_difference)
            66.6564 * angle_difference - 0.3819;
 }
 
-Simulator::Simulator(int _num_horizontal_scan_points, const float _field_of_view, const float grid_size)
-    : num_horizontal_scan_points(_num_horizontal_scan_points), field_of_view(_field_of_view), grid_size{grid_size}
+Simulator::Simulator(int _num_horizontal_scan_points, const float _field_of_view, const float grid_size,
+                     glm::vec2 ego_velocity)
+    : num_horizontal_scan_points(_num_horizontal_scan_points),
+      field_of_view(_field_of_view), grid_size{grid_size}, ego_vehicle{5.0f, glm::vec2{0.0f, 0.0f}, ego_velocity}
 {
     const float max_field_of_view = 180.0f;
     factor_angle_to_grid = (num_horizontal_scan_points / M_PI) * (max_field_of_view / field_of_view);
@@ -56,15 +58,20 @@ SimulationData Simulator::update(int steps, float dt)
     {
         std::vector<float> measurement(num_horizontal_scan_points, INFINITY);
 
+        ego_vehicle.move(dt);
+
         for (auto& vehicle : vehicles)
         {
             vehicle.move(dt);
+            // adjust vehicle pos depending on ego motion
+            vehicle.pos -= ego_vehicle.vel * dt;
             addVehicleDetectionsToMeasurement(vehicle, measurement);
         }
 
         SimulationStep step;
         step.measurements = measurement;
         step.vehicles = vehicles;
+        step.ego_pose = ego_vehicle.pos;
         sim_data.push_back(step);
     }
 
@@ -82,8 +89,10 @@ void Simulator::addVehicleDetectionsToMeasurement(const Vehicle& vehicle, std::v
         const float angle = M_PI - atan2(point_relative_to_sensor.y, point_relative_to_sensor.x);
         const auto index = computeMeasurementVectorIndexFromAngle(angle);
 
-        if (0 <= index && index <= measurement.size())
+        if (index >= 0 && index < measurement.size())
+        {
             measurement[index] = radius;
+        }
     }
 }
 

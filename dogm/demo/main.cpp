@@ -37,6 +37,7 @@ int main(int argc, const char** argv)
     // Simulator parameters
     const int num_simulation_steps = 14;
     const float simulation_step_period = 0.1f;
+    const glm::vec2 ego_velocity{0.0f, 4.0f};
 
     // Evaluator parameters
     const float minimum_occupancy_threshold = 0.7f;
@@ -49,7 +50,7 @@ int main(int argc, const char** argv)
     dogm::DOGM grid_map(grid_params, laser_params);
     initialization_timer.toc(true);
 
-    Simulator simulator(sensor_horizontal_scan_points, laser_params.fov, grid_params.size);
+    Simulator simulator(sensor_horizontal_scan_points, laser_params.fov, grid_params.size, ego_velocity);
 #if 1
     simulator.addVehicle(Vehicle(3.5, glm::vec2(10, 30), glm::vec2(15, 0)));
     simulator.addVehicle(Vehicle(3.0, glm::vec2(10, 20), glm::vec2(0, 5)));
@@ -67,6 +68,7 @@ int main(int argc, const char** argv)
 
     for (int step = 0; step < num_simulation_steps; ++step)
     {
+        grid_map.updatePose(sim_data[step].ego_pose.x, sim_data[step].ego_pose.y);
         grid_map.updateMeasurementGrid(sim_data[step].measurements);
 
         cycle_timer.tic();
