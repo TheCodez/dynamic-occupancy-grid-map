@@ -16,7 +16,7 @@
 
 int main(int argc, const char** argv)
 {
-    dogm::GridParams grid_params;
+    dogm::DOGM::Params grid_params;
     grid_params.size = 50.0f;
     grid_params.resolution = 0.2f;
     grid_params.particle_count = 3 * static_cast<int>(10e5);

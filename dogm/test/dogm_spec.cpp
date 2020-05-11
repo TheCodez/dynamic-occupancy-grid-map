@@ -9,7 +9,7 @@
 
 TEST(DOGM, EgoMotionCompensation)
 {
-    dogm::GridParams grid_params;
+    dogm::DOGM::Params grid_params;
     grid_params.size = 10.0f;
     grid_params.resolution = 1.0f;
     grid_params.particle_count = 2;
@@ -68,7 +68,7 @@ TEST(DOGM, EgoMotionCompensation)
 
 TEST(DOGM, Predict)
 {
-    dogm::GridParams grid_params;
+    dogm::DOGM::Params grid_params;
     grid_params.size = 10.0f;
     grid_params.resolution = 1.0f;
     grid_params.particle_count = 2;

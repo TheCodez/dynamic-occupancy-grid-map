@@ -19,20 +19,6 @@ class Renderer;
 namespace dogm
 {
 
-struct GridParams
-{
-    float size;
-    float resolution;
-    int particle_count;
-    int new_born_particle_count;
-    float persistence_prob;
-    float process_noise_position;
-    float process_noise_velocity;
-    float birth_prob;
-    float velocity_persistent;
-    float velocity_birth;
-};
-
 struct LaserSensorParams
 {
     float max_range;
@@ -43,7 +29,21 @@ struct LaserSensorParams
 class DOGM
 {
 public:
-    DOGM(const GridParams& params, const LaserSensorParams& laser_params);
+    struct Params
+    {
+        float size;
+        float resolution;
+        int particle_count;
+        int new_born_particle_count;
+        float persistence_prob;
+        float process_noise_position;
+        float process_noise_velocity;
+        float birth_prob;
+        float velocity_persistent;
+        float velocity_birth;
+    };
+
+    DOGM(const Params& params, const LaserSensorParams& laser_params);
     ~DOGM();
 
     void updateMeasurementGridFromArray(const std::vector<float2>& measurements);
@@ -78,7 +78,7 @@ public:
     void resampling();
 
 public:
-    GridParams params;
+    Params params;
     LaserSensorParams laser_params;
 
     std::unique_ptr<Renderer> renderer;

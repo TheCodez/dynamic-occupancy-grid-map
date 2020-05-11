@@ -35,7 +35,7 @@ namespace dogm
 
 constexpr int BLOCK_SIZE = 256;
 
-DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
+DOGM::DOGM(const Params& params, const LaserSensorParams& laser_params)
     : params(params), laser_params(laser_params), grid_size(static_cast<int>(params.size / params.resolution)),
       particle_count(params.particle_count), grid_cell_count(grid_size * grid_size),
       new_born_particle_count(params.new_born_particle_count), block_dim(BLOCK_SIZE), first_pose_received(false),
