@@ -1,3 +1,7 @@
+// Copyright (c) 2020 Michael Koesel and respective contributors
+// SPDX-License-Identifier: MIT
+// See accompanying LICENSE file for detailed information
+
 #include "mapping/laser_to_meas_grid.h"
 #include "mapping/opengl/renderer.h"
 
