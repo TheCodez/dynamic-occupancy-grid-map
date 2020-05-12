@@ -6,8 +6,8 @@
 Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application](https://arxiv.org/abs/1605.02406)
 
 <p align="center">
-  <img src="./docs/videos/dogm3.gif">
-  <img src="./docs/videos/dogm4.gif">
+  <img src="./docs/videos/dogm_plot1.gif">
+  <img src="./docs/videos/dogm_plot2.gif">
 </p>
 
 ## Note
