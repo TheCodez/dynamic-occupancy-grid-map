@@ -7,8 +7,8 @@
 
 #include "dogm/dogm_types.h"
 #include "mapping/opengl/renderer.h"
-#include <vector>
 #include <memory>
+#include <vector>
 
 class LaserMeasurementGrid
 {

@@ -38,7 +38,7 @@ public:
     ~DOGM();
 
     void updatePose(float new_x, float new_y);
-    void addMeasurementGrid(MeasurementCell* measurement_grid, bool device);    
+    void addMeasurementGrid(MeasurementCell* measurement_grid, bool device);
     void updateGrid(float dt);
 
     GridCell* getGridCells() const;

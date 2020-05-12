@@ -4,10 +4,10 @@
 #include "mapping/kernel/measurement_grid.h"
 
 LaserMeasurementGrid::LaserMeasurementGrid(const Params& params, float grid_length, float resolution)
-    : grid_size(static_cast<int>(grid_length / resolution))
+    : grid_size(static_cast<int>(grid_length / resolution)), params(params)
 {
     int grid_cell_count = grid_size * grid_size;
-   
+
     CHECK_ERROR(cudaMalloc(&meas_grid, grid_cell_count * sizeof(dogm::MeasurementCell)));
 
     renderer = std::make_unique<Renderer>(grid_size, params.fov, grid_length, params.max_range);
@@ -21,6 +21,7 @@ LaserMeasurementGrid::~LaserMeasurementGrid()
 dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<float>& measurements)
 {
     const int num_measurements = measurements.size();
+
     float* d_measurements;
     CHECK_ERROR(cudaMalloc(&d_measurements, num_measurements * sizeof(float)));
     CHECK_ERROR(

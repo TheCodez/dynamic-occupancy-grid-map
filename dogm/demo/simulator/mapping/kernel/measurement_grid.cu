@@ -113,8 +113,7 @@ __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const floa
 }
 
 __global__ void cartesianGridToMeasurementGridKernel(dogm::MeasurementCell* __restrict__ meas_grid,
-                                                     cudaSurfaceObject_t cart,
-                                                     int grid_size)
+                                                     cudaSurfaceObject_t cart, int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
