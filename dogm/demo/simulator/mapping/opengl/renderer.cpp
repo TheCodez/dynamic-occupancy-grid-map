@@ -4,8 +4,7 @@
 
 #include "mapping/opengl/renderer.h"
 
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 
 Renderer::Renderer(int grid_size, float fov, float grid_range, float max_range) : grid_size(grid_size)
 {
