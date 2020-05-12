@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // See accompanying LICENSE file for detailed information
 
-#include "dogm/opengl/framebuffer.h"
+#include "mapping/opengl/framebuffer.h"
 #include "dogm/cuda_utils.h"
 
 #include <cstdio>

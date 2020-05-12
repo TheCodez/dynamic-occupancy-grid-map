@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // See accompanying LICENSE file for detailed information
 
-#include "dogm/opengl/shader.h"
+#include "mapping/opengl/shader.h"
 #include <iostream>
 
 const char* vertex_source = R"glsl(

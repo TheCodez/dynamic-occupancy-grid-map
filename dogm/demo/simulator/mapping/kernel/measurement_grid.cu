@@ -3,15 +3,12 @@
 // See accompanying LICENSE file for detailed information
 
 #include "dogm/dogm_types.h"
-#include "dogm/kernel/measurement_grid.h"
+#include "mapping/kernel/measurement_grid.h"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
 #define PI 3.14159265358979323846f
-
-namespace dogm
-{
 
 __device__ float2 combine_masses(float2 prior, float2 meas)
 {
@@ -91,31 +88,6 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, const fl
     }
 }
 
-__global__ void createPolarGridTextureKernel2(cudaSurfaceObject_t polar, MeasurementCell* __restrict__ polar_meas_grid,
-                                              const float* __restrict__ measurements, int width, int height,
-                                              float resolution)
-{
-    const int theta = blockIdx.x * blockDim.x + threadIdx.x;
-    const int range = blockIdx.y * blockDim.y + threadIdx.y;
-
-    if (theta < width && range < height)
-    {
-        const float epsilon = 0.00001f;
-        const float zk = measurements[theta];
-
-        float2 masses = inverse_sensor_model(range, resolution, zk, height);
-        masses.x = max(epsilon, min(1.0f - epsilon, masses.x));
-        masses.y = max(epsilon, min(1.0f - epsilon, masses.y));
-
-        surf2Dwrite(masses, polar, theta * sizeof(float2), range);
-
-        const int index = (height - range - 1) * width + theta;
-
-        polar_meas_grid[index].occ_mass = masses.x;
-        polar_meas_grid[index].free_mass = masses.y;
-    }
-}
-
 __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements, int width,
                                            int height, float resolution)
 {
@@ -140,7 +112,8 @@ __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const floa
     }
 }
 
-__global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* __restrict__ meas_grid, cudaSurfaceObject_t cart,
+__global__ void cartesianGridToMeasurementGridKernel(dogm::MeasurementCell* __restrict__ meas_grid,
+                                                     cudaSurfaceObject_t cart,
                                                      int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -159,7 +132,7 @@ __global__ void cartesianGridToMeasurementGridKernel(MeasurementCell* __restrict
     }
 }
 
-__global__ void gridArrayToMeasurementGridKernel(MeasurementCell* __restrict__ meas_grid,
+__global__ void gridArrayToMeasurementGridKernel(dogm::MeasurementCell* __restrict__ meas_grid,
                                                  const float2* __restrict__ grid, int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -177,5 +150,3 @@ __global__ void gridArrayToMeasurementGridKernel(MeasurementCell* __restrict__ m
         meas_grid[index].p_A = 1.0f;
     }
 }
-
-} /* namespace dogm */

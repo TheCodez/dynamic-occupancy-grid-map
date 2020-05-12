@@ -14,17 +14,8 @@
 
 #include <vector>
 
-class Renderer;
-
 namespace dogm
 {
-
-struct LaserSensorParams
-{
-    float max_range;
-    float resolution;
-    float fov;
-};
 
 class DOGM
 {
@@ -43,13 +34,11 @@ public:
         float velocity_birth;
     };
 
-    DOGM(const Params& params, const LaserSensorParams& laser_params);
+    DOGM(const Params& params);
     ~DOGM();
 
-    void updateMeasurementGridFromArray(const std::vector<float2>& measurements);
-
     void updatePose(float new_x, float new_y);
-    void updateMeasurementGrid(const std::vector<float>& measurements);
+    void addMeasurementGrid(MeasurementCell* measurement_grid, bool device);    
     void updateGrid(float dt);
 
     GridCell* getGridCells() const;
@@ -79,9 +68,6 @@ public:
 
 public:
     Params params;
-    LaserSensorParams laser_params;
-
-    std::unique_ptr<Renderer> renderer;
 
     GridCell* grid_cell_array;
     ParticlesSoA particle_array;

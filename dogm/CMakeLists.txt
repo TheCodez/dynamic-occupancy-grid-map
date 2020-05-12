@@ -44,15 +44,9 @@ include_directories(
 )
 
 set(HEADER_FILES
-	include/dogm/opengl/texture.h
-	include/dogm/opengl/framebuffer.h
-	include/dogm/opengl/polygon.h
-	include/dogm/opengl/renderer.h
-	include/dogm/opengl/shader.h
 	include/dogm/kernel/init.h
 	include/dogm/kernel/init_new_particles.h
 	include/dogm/kernel/mass_update.h
-	include/dogm/kernel/measurement_grid.h
 	include/dogm/kernel/particle_to_grid.h
 	include/dogm/kernel/predict.h
 	include/dogm/kernel/resampling.h
@@ -68,15 +62,9 @@ set(HEADER_FILES
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES})
 
 set(SRC_FILES
-	src/opengl/texture.cpp
-	src/opengl/framebuffer.cpp
-	src/opengl/polygon.cpp
-	src/opengl/renderer.cpp
-	src/opengl/shader.cpp
 	src/kernel/init.cu
 	src/kernel/init_new_particles.cu
 	src/kernel/mass_update.cu
-	src/kernel/measurement_grid.cu
 	src/kernel/particle_to_grid.cu
 	src/kernel/predict.cu
 	src/kernel/resampling.cu

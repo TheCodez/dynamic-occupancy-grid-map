@@ -15,7 +15,7 @@ target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR}
 target_link_libraries(demo
 	dogm
 	utils
-        simulator
+	simulator
 	${OpenCV_LIBS}
 )
 
