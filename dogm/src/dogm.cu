@@ -11,16 +11,11 @@
 #include "dogm/kernel/init.h"
 #include "dogm/kernel/init_new_particles.h"
 #include "dogm/kernel/mass_update.h"
-#include "dogm/kernel/measurement_grid.h"
 #include "dogm/kernel/particle_to_grid.h"
 #include "dogm/kernel/predict.h"
 #include "dogm/kernel/resampling.h"
 #include "dogm/kernel/statistical_moments.h"
 #include "dogm/kernel/update_persistent_particles.h"
-
-#include "dogm/opengl/framebuffer.h"
-#include "dogm/opengl/renderer.h"
-#include "dogm/opengl/texture.h"
 
 #include <thrust/sort.h>
 #include <thrust/transform.h>
@@ -35,8 +30,8 @@ namespace dogm
 
 constexpr int BLOCK_SIZE = 256;
 
-DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
-    : params(params), laser_params(laser_params), grid_size(static_cast<int>(params.size / params.resolution)),
+DOGM::DOGM(const Params& params)
+    : params(params), grid_size(static_cast<int>(params.size / params.resolution)),
       particle_count(params.particle_count), grid_cell_count(grid_size * grid_size),
       new_born_particle_count(params.new_born_particle_count), block_dim(BLOCK_SIZE), first_pose_received(false),
       position_x(0.0f), position_y(0.0f)
@@ -71,8 +66,6 @@ DOGM::DOGM(const GridParams& params, const LaserSensorParams& laser_params)
     CHECK_ERROR(cudaMalloc(&rand_array, particle_count * sizeof(float)));
 
     CHECK_ERROR(cudaMalloc(&rng_states, particles_grid.x * block_dim.x * sizeof(curandState)));
-
-    renderer = std::make_unique<Renderer>(grid_size, laser_params.fov, params.size, laser_params.max_range);
 
     initialize();
 }
@@ -166,20 +159,6 @@ ParticlesSoA DOGM::getParticles() const
     return particles;
 }
 
-void DOGM::updateMeasurementGridFromArray(const std::vector<float2>& measurements)
-{
-    thrust::device_vector<float2> d_measurements(measurements);
-    float2* d_measurements_array = thrust::raw_pointer_cast(d_measurements.data());
-
-    dim3 dim_block(32, 32);
-    dim3 cart_grid_dim(divUp(grid_size, dim_block.x), divUp(grid_size, dim_block.y));
-
-    gridArrayToMeasurementGridKernel<<<cart_grid_dim, dim_block>>>(meas_cell_array, d_measurements_array, grid_size);
-
-    CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
-}
-
 void DOGM::updatePose(float new_x, float new_y)
 {
     if (!first_pose_received)
@@ -222,50 +201,10 @@ void DOGM::updatePose(float new_x, float new_y)
     }
 }
 
-void DOGM::updateMeasurementGrid(const std::vector<float>& measurements)
+void DOGM::addMeasurementGrid(MeasurementCell* measurement_grid, bool device)
 {
-    // std::cout << "DOGM::updateMeasurementGrid" << std::endl;
-
-    const int num_measurements = measurements.size();
-    float* d_measurements;
-    CHECK_ERROR(cudaMalloc(&d_measurements, num_measurements * sizeof(float)));
-    CHECK_ERROR(
-        cudaMemcpy(d_measurements, measurements.data(), num_measurements * sizeof(float), cudaMemcpyHostToDevice));
-
-    const int polar_width = num_measurements;
-    const int polar_height = static_cast<int>(laser_params.max_range / laser_params.resolution);
-
-    dim3 dim_block(32, 32);
-    dim3 grid_dim(divUp(polar_width, dim_block.x), divUp(polar_height, dim_block.y));
-    dim3 cart_grid_dim(divUp(grid_size, dim_block.x), divUp(grid_size, dim_block.y));
-
-    const float anisotropy_level = 16.0f;
-    Texture polar_texture(polar_width, polar_height, anisotropy_level);
-    cudaSurfaceObject_t polar_surface;
-
-    // create polar texture
-    polar_texture.beginCudaAccess(&polar_surface);
-    createPolarGridTextureKernel<<<grid_dim, dim_block>>>(polar_surface, d_measurements, polar_width, polar_height,
-                                                          params.resolution);
-
-    CHECK_ERROR(cudaGetLastError());
-    polar_texture.endCudaAccess(polar_surface);
-
-    // render cartesian image to texture using polar texture
-    renderer->renderToTexture(polar_texture);
-
-    Framebuffer* framebuffer = renderer->getFrameBuffer();
-    cudaSurfaceObject_t cartesian_surface;
-
-    framebuffer->beginCudaAccess(&cartesian_surface);
-    // transform RGBA texture to measurement grid
-    cartesianGridToMeasurementGridKernel<<<cart_grid_dim, dim_block>>>(meas_cell_array, cartesian_surface, grid_size);
-
-    CHECK_ERROR(cudaGetLastError());
-    framebuffer->endCudaAccess(cartesian_surface);
-
-    CHECK_ERROR(cudaFree(d_measurements));
-    CHECK_ERROR(cudaDeviceSynchronize());
+    cudaMemcpyKind kind = device ? cudaMemcpyDeviceToDevice : cudaMemcpyHostToDevice;
+    CHECK_ERROR(cudaMemcpy(meas_cell_array, measurement_grid, grid_cell_count * sizeof(MeasurementCell), kind));
 }
 
 void DOGM::particlePrediction(float dt)

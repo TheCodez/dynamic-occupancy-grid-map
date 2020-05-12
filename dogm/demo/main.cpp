@@ -5,6 +5,7 @@
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 #include "image_creation.h"
+#include "mapping/laser_to_meas_grid.h"
 #include "precision_evaluator.h"
 #include "simulator.h"
 #include "timer.h"
@@ -16,7 +17,7 @@
 
 int main(int argc, const char** argv)
 {
-    dogm::GridParams grid_params;
+    dogm::DOGM::Params grid_params;
     grid_params.size = 50.0f;
     grid_params.resolution = 0.2f;
     grid_params.particle_count = 3 * static_cast<int>(10e5);
@@ -28,10 +29,12 @@ int main(int argc, const char** argv)
     grid_params.velocity_persistent = 30.0f;
     grid_params.velocity_birth = 30.0f;
 
-    dogm::LaserSensorParams laser_params;
+    LaserMeasurementGrid::Params laser_params;
     laser_params.fov = 120.0f;
     laser_params.max_range = 50.0f;
     laser_params.resolution = grid_params.resolution;  // TODO make independent of grid_params.resolution
+    LaserMeasurementGrid grid_generator(laser_params, grid_params.size, grid_params.resolution);
+
     const int sensor_horizontal_scan_points = 100;
 
     // Simulator parameters
@@ -47,7 +50,7 @@ int main(int argc, const char** argv)
     cudaDeviceSynchronize();
 
     Timer initialization_timer{"DOGM initialization"};
-    dogm::DOGM grid_map(grid_params, laser_params);
+    dogm::DOGM grid_map(grid_params);
     initialization_timer.toc(true);
 
     Simulator simulator(sensor_horizontal_scan_points, laser_params.fov, grid_params.size, ego_velocity);
@@ -72,7 +75,9 @@ int main(int argc, const char** argv)
     for (int step = 0; step < num_simulation_steps; ++step)
     {
         grid_map.updatePose(sim_data[step].ego_pose.x, sim_data[step].ego_pose.y);
-        grid_map.updateMeasurementGrid(sim_data[step].measurements);
+
+        dogm::MeasurementCell* meas_grid = grid_generator.generateGrid(sim_data[step].measurements);
+        grid_map.addMeasurementGrid(meas_grid, true);
 
         cycle_timer.tic();
         grid_map.updateGrid(simulation_step_period);

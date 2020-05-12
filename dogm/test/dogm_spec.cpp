@@ -9,7 +9,7 @@
 
 TEST(DOGM, EgoMotionCompensation)
 {
-    dogm::GridParams grid_params;
+    dogm::DOGM::Params grid_params;
     grid_params.size = 10.0f;
     grid_params.resolution = 1.0f;
     grid_params.particle_count = 2;
@@ -21,8 +21,7 @@ TEST(DOGM, EgoMotionCompensation)
     grid_params.velocity_persistent = 10.0f;
     grid_params.velocity_birth = 10.0f;
 
-    dogm::LaserSensorParams laser_params;
-    dogm::DOGM dogm(grid_params, laser_params);
+    dogm::DOGM dogm(grid_params);
     cudaDeviceSynchronize();
 
     dogm::ParticlesSoA particles = dogm.getParticles();
@@ -68,7 +67,7 @@ TEST(DOGM, EgoMotionCompensation)
 
 TEST(DOGM, Predict)
 {
-    dogm::GridParams grid_params;
+    dogm::DOGM::Params grid_params;
     grid_params.size = 10.0f;
     grid_params.resolution = 1.0f;
     grid_params.particle_count = 2;
@@ -80,14 +79,9 @@ TEST(DOGM, Predict)
     grid_params.velocity_persistent = 10.0f;
     grid_params.velocity_birth = 10.0f;
 
-    dogm::LaserSensorParams laser_params;
-    laser_params.fov = 120.0f;
-    laser_params.max_range = 1.0f;
-    laser_params.resolution = 1.0f;
-
     float delta_time = 0.1f;
 
-    dogm::DOGM dogm(grid_params, laser_params);
+    dogm::DOGM dogm(grid_params);
     cudaDeviceSynchronize();
 
     dogm::ParticlesSoA particles = dogm.getParticles();

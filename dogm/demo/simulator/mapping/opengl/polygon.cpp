@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // See accompanying LICENSE file for detailed information
 
-#include "dogm/opengl/polygon.h"
+#include "mapping/opengl/polygon.h"
 
 #include <cstddef>
 
