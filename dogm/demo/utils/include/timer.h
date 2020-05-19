@@ -14,7 +14,7 @@ class Timer
 public:
     Timer(const std::string& name) : m_name{name} { tic(); }
     void tic();
-    void toc(const bool print_me = false);
+    void toc(const bool print_split = false);
     int getLastSplitMs() const;
     void printLastSplitMs() const;
     void printStatsMs() const;
