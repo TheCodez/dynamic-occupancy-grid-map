@@ -6,6 +6,7 @@
 #include "dogm/dogm_types.h"
 #include "image_creation.h"
 #include "mapping/laser_to_meas_grid.h"
+#include "metrics.h"
 #include "precision_evaluator.h"
 #include "simulator.h"
 #include "timer.h"
@@ -70,6 +71,8 @@ int main(int argc, const char** argv)
 
     SimulationData sim_data = simulator.update(num_simulation_steps, simulation_step_period);
     PrecisionEvaluator precision_evaluator{sim_data, grid_params.resolution, grid_params.size};
+    precision_evaluator.registerMetric("Mean squared error (MSE)", new MeanSquaredError());
+
     Timer cycle_timer{"DOGM cycle"};
 
     for (int step = 0; step < num_simulation_steps; ++step)

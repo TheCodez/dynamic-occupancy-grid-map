@@ -10,21 +10,12 @@
 #include <vector>
 
 #include "dbscan.h"
+#include "metrics.h"
 #include "precision_evaluator.h"
 
 const float kMaximumAssignmentDistance = 5.0f;
 const float kMaximumDbscanNeighborDistance = 3.0f;
 const int kMinimumNumberOfNeighbors = 5;
-
-static PointWithVelocity computeError(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
-{
-    PointWithVelocity error{};
-    error.x += cluster_mean.x - vehicle.pos[0];
-    error.y += cluster_mean.y - vehicle.pos[1];
-    error.v_x += cluster_mean.v_x - vehicle.vel[0];
-    error.v_y += cluster_mean.v_y - vehicle.vel[1];
-    return error;
-}
 
 static Clusters<dogm::GridCell> computeDbscanClusters(const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
 {
@@ -37,6 +28,11 @@ PrecisionEvaluator::PrecisionEvaluator(const SimulationData _sim_data, const flo
 {
     number_of_detections = 0;
     number_of_unassigned_detections = 0;
+}
+
+void PrecisionEvaluator::registerMetric(const std::string& name, Metric* metric)
+{
+    metrics.emplace(name, std::unique_ptr<Metric>(metric));
 }
 
 void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
@@ -80,17 +76,18 @@ void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
 
             const auto closest_vehicle = matching_groundtruth_vehicles[0];
 
-            const auto error = computeError(cluster_mean, closest_vehicle);
-
-            accumulateErrors(error);
-
-            if (print_current_precision)
+            for (auto& metric : metrics)
             {
-                std::cout << std::setprecision(2);
-                std::cout << "\nCluster ID=" << cluster_id << "\n";
-                std::cout << "Vel. Err.: " << error.v_x << " " << error.v_y << ", Pos. Err.: " << error.x << " "
-                          << error.y << "\n";
+                metric.second->update(cluster_mean, closest_vehicle);
             }
+
+            // if (print_current_precision)
+            //{
+            //    std::cout << std::setprecision(2);
+            //    std::cout << "\nCluster ID=" << cluster_id << "\n";
+            //    std::cout << "Vel. Err.: " << error.v_x << " " << error.v_y << ", Pos. Err.: " << error.x << " "
+            //              << error.y << "\n";
+            //}
             cluster_id++;
         }
     }
@@ -122,22 +119,15 @@ PointWithVelocity PrecisionEvaluator::computeClusterMean(const Cluster<dogm::Gri
     return cluster_mean;
 }
 
-void PrecisionEvaluator::accumulateErrors(const PointWithVelocity& error)
-{
-    cumulative_error.x += std::abs(error.x);
-    cumulative_error.y += std::abs(error.y);
-    cumulative_error.v_x += std::abs(error.v_x);
-    cumulative_error.v_y += std::abs(error.v_y);
-    ++number_of_detections;
-}
-
 void PrecisionEvaluator::printSummary()
 {
-    std::cout << "\nMean absolute errors (x,y): \n";
-    std::cout << "Position: " << cumulative_error.x / number_of_detections << " "
-              << cumulative_error.y / number_of_detections << "\n";
-    std::cout << "Velocity: " << cumulative_error.v_x / number_of_detections << " "
-              << cumulative_error.v_y / number_of_detections << "\n\n";
+    for (auto& metric : metrics)
+    {
+        std::cout << "\n" << metric.first << ": \n";
+        metric.second->compute();
+        std::cout << "\n";
+    }
+
     std::cout << "Detections unassigned by evaluator: " << number_of_unassigned_detections << "\n";
     std::cout << "Maximum possible detections: " << sim_data[0].vehicles.size() * sim_data.size() << "\n";
 }

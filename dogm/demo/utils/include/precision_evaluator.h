@@ -9,7 +9,12 @@
 #include "dogm/dogm_types.h"
 #include "simulator.h"
 
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
+
+class Metric;
 
 struct PointWithVelocity
 {
@@ -23,20 +28,23 @@ class PrecisionEvaluator
 {
 public:
     PrecisionEvaluator(const SimulationData sim_data, const float resolution, const float grid_size);
+
+    void registerMetric(const std::string& name, Metric* metric);
+
     void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
                               bool print_current_precision = false);
     void printSummary();
 
 private:
-    void accumulateErrors(const PointWithVelocity& error);
     PointWithVelocity computeClusterMean(const Cluster<dogm::GridCell>& cluster);
 
     SimulationData sim_data;
     float resolution;
     float grid_size;
-    PointWithVelocity cumulative_error;
     int number_of_detections;
     int number_of_unassigned_detections;
+
+    std::map<std::string, std::unique_ptr<Metric>> metrics;
 };
 
 #endif  // PRECISION_EVALUATOR_H
