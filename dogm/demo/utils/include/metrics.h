@@ -5,7 +5,8 @@
 #ifndef METRICS_H
 #define METRICS_H
 
-#include "precision_evaluator.h"
+#include "simulator.h"
+#include "types.h"
 
 class Metric
 {

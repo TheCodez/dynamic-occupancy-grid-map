@@ -11,6 +11,7 @@ SET(HEADER_FILES
     include/metrics.h
     include/precision_evaluator.h
     include/timer.h
+    include/types.h
 )
 
 SET(SRC_FILES

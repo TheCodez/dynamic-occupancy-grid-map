@@ -8,6 +8,7 @@
 #include "dbscan.h"
 #include "dogm/dogm_types.h"
 #include "simulator.h"
+#include "types.h"
 
 #include <map>
 #include <memory>
@@ -15,14 +16,6 @@
 #include <vector>
 
 class Metric;
-
-struct PointWithVelocity
-{
-    float x{0.0f};
-    float y{0.0f};
-    float v_x{0.0f};
-    float v_y{0.0f};
-};
 
 class PrecisionEvaluator
 {
