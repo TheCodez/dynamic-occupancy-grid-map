@@ -10,12 +10,16 @@
 class Metric
 {
 public:
-    Metric() {}
+    Metric() : cumulative_error{}, number_of_detections(0) {}
     virtual ~Metric(){};
 
-    virtual void reset() {}
-    virtual void update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) {}
-    virtual void compute() {}
+    virtual void reset()
+    {
+        cumulative_error = {};
+        number_of_detections = 0;
+    }
+    virtual PointWithVelocity update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) { return {}; }
+    virtual PointWithVelocity compute() { return {}; }
 
 protected:
     PointWithVelocity computeError(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
@@ -28,20 +32,29 @@ protected:
 
         return error;
     }
-};
 
-class MeanSquaredError : public Metric
-{
-public:
-    MeanSquaredError();
-    virtual ~MeanSquaredError(){};
-
-    virtual void update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) override;
-    virtual void compute() override;
-
-private:
     PointWithVelocity cumulative_error;
     int number_of_detections;
+};
+
+class MAE : public Metric
+{
+public:
+    MAE(){};
+    virtual ~MAE(){};
+
+    virtual PointWithVelocity update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) override;
+    virtual PointWithVelocity compute() override;
+};
+
+class RMSE : public Metric
+{
+public:
+    RMSE(){};
+    virtual ~RMSE(){};
+
+    virtual PointWithVelocity update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) override;
+    virtual PointWithVelocity compute() override;
 };
 
 #endif  // METRICS_H

@@ -29,7 +29,7 @@ class PrecisionEvaluator
 public:
     PrecisionEvaluator(const SimulationData sim_data, const float resolution, const float grid_size);
 
-    void registerMetric(const std::string& name, Metric* metric);
+    void registerMetric(const std::string& name, std::shared_ptr<Metric> metric);
 
     void evaluateAndStoreStep(int simulation_step_index, const std::vector<Point<dogm::GridCell>>& cells_with_velocity,
                               bool print_current_precision = false);
@@ -44,7 +44,7 @@ private:
     int number_of_detections;
     int number_of_unassigned_detections;
 
-    std::map<std::string, std::unique_ptr<Metric>> metrics;
+    std::map<std::string, std::shared_ptr<Metric>> metrics;
 };
 
 #endif  // PRECISION_EVALUATOR_H

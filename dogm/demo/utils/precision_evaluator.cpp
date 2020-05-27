@@ -30,9 +30,9 @@ PrecisionEvaluator::PrecisionEvaluator(const SimulationData _sim_data, const flo
     number_of_unassigned_detections = 0;
 }
 
-void PrecisionEvaluator::registerMetric(const std::string& name, Metric* metric)
+void PrecisionEvaluator::registerMetric(const std::string& name, std::shared_ptr<Metric> metric)
 {
-    metrics.emplace(name, std::unique_ptr<Metric>(metric));
+    metrics.emplace(name, metric);
 }
 
 void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
@@ -76,18 +76,21 @@ void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
 
             const auto closest_vehicle = matching_groundtruth_vehicles[0];
 
+            PointWithVelocity current_error{};
+
             for (auto& metric : metrics)
             {
-                metric.second->update(cluster_mean, closest_vehicle);
+                // error should be the same for all metrics
+                current_error = metric.second->update(cluster_mean, closest_vehicle);
             }
 
-            // if (print_current_precision)
-            //{
-            //    std::cout << std::setprecision(2);
-            //    std::cout << "\nCluster ID=" << cluster_id << "\n";
-            //    std::cout << "Vel. Err.: " << error.v_x << " " << error.v_y << ", Pos. Err.: " << error.x << " "
-            //              << error.y << "\n";
-            //}
+            if (print_current_precision)
+            {
+                std::cout << std::setprecision(2);
+                std::cout << "\nCluster ID=" << cluster_id << "\n";
+                std::cout << "Vel. Err.: " << current_error.v_x << " " << current_error.v_y
+                          << ", Pos. Err.: " << current_error.x << " " << current_error.y << "\n";
+            }
             cluster_id++;
         }
     }
@@ -124,7 +127,11 @@ void PrecisionEvaluator::printSummary()
     for (auto& metric : metrics)
     {
         std::cout << "\n" << metric.first << ": \n";
-        metric.second->compute();
+        PointWithVelocity error = metric.second->compute();
+
+        std::cout << "Position: " << error.x << " " << error.y << "\n";
+        std::cout << "Velocity: " << error.v_x << " " << error.v_y << "\n";
+
         std::cout << "\n";
     }
 
