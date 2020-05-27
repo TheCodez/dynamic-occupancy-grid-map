@@ -38,13 +38,14 @@ __device__ float separate_newborn_part(float m_occ_pred, float m_occ_up, float p
     return (m_occ_up * p_B * (1.0 - m_occ_pred)) / (m_occ_pred + p_B * (1.0 - m_occ_pred));
 }
 
-__device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_occ_up,
+__device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_occ_up, float m_occ_pred,
                              GridCell* __restrict__ grid_cell_array, int i)
 {
     grid_cell_array[i].pers_occ_mass = rho_p;
     grid_cell_array[i].new_born_occ_mass = rho_b;
     grid_cell_array[i].free_mass = m_free_up;
     grid_cell_array[i].occ_mass = m_occ_up;
+    grid_cell_array[i].pred_occ_mass = m_occ_pred;
 }
 
 __device__ void normalize_weights(const ParticlesSoA& particle_array, float* __restrict__ weight_array, int start_idx,
@@ -87,7 +88,7 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
 
             // printf("Rho B: %f\n", rho_b);
 
-            store_values(rho_b, rho_p, masses_up.y, masses_up.x, grid_cell_array, i);
+            store_values(rho_b, rho_p, masses_up.y, masses_up.x, m_occ_pred, grid_cell_array, i);
         }
         else
         {
@@ -95,7 +96,7 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
             float m_free = predict_free_mass(grid_cell_array[i], m_occ);
             float2 masses_up = update_masses(m_occ, m_free, meas_cell_array[i]);
             born_masses_array[i] = 0.0f;
-            store_values(0.0f, masses_up.x, masses_up.y, masses_up.x, grid_cell_array, i);
+            store_values(0.0f, masses_up.x, masses_up.y, masses_up.x, 0.0f, grid_cell_array, i);
         }
     }
 }

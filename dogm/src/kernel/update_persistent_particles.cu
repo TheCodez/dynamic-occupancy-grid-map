@@ -20,8 +20,8 @@ __device__ float calc_norm_assoc(float occ_accum, float rho_p)
 
 __device__ float calc_norm_unassoc(const GridCell& grid_cell)
 {
-    float occ_mass = grid_cell.occ_mass;
-    return occ_mass > 0.0 ? grid_cell.pers_occ_mass / occ_mass : 0.0;
+    float pred_occ_mass = grid_cell.pred_occ_mass;
+    return pred_occ_mass > 0.0f ? grid_cell.pers_occ_mass / pred_occ_mass : 0.0f;
 }
 
 __device__ void set_normalization_components(GridCell* __restrict__ grid_cell_array, int i, float mu_A, float mu_UA)
