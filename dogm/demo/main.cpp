@@ -71,8 +71,8 @@ int main(int argc, const char** argv)
 
     SimulationData sim_data = simulator.update(num_simulation_steps, simulation_step_period);
     PrecisionEvaluator precision_evaluator{sim_data, grid_params.resolution, grid_params.size};
-    precision_evaluator.registerMetric("Mean absolute error (MAE)", std::make_shared<MAE>());
-    precision_evaluator.registerMetric("Root mean squared error (RMSE)", std::make_shared<RMSE>());
+    precision_evaluator.registerMetric("Mean absolute error (MAE)", std::make_unique<MAE>());
+    precision_evaluator.registerMetric("Root mean squared error (RMSE)", std::make_unique<RMSE>());
 
     Timer cycle_timer{"DOGM cycle"};
 

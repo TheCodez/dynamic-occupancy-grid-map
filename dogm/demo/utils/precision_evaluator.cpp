@@ -29,9 +29,9 @@ PrecisionEvaluator::PrecisionEvaluator(const SimulationData _sim_data, const flo
     number_of_unassigned_detections = 0;
 }
 
-void PrecisionEvaluator::registerMetric(const std::string& name, std::shared_ptr<Metric> metric)
+void PrecisionEvaluator::registerMetric(const std::string& name, std::unique_ptr<Metric> metric)
 {
-    metrics.emplace(name, metric);
+    metrics.emplace(name, std::move(metric));
 }
 
 void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
@@ -80,7 +80,7 @@ void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
             for (auto& metric : metrics)
             {
                 // error should be the same for all metrics
-                current_error = metric.second->update(cluster_mean, closest_vehicle);
+                current_error = metric.second->addObjectDetection(cluster_mean, closest_vehicle);
             }
 
             if (print_current_precision)
@@ -126,7 +126,7 @@ void PrecisionEvaluator::printSummary()
     for (auto& metric : metrics)
     {
         std::cout << std::endl << metric.first << ": " << std::endl;
-        PointWithVelocity error = metric.second->compute();
+        PointWithVelocity error = metric.second->computeErrorStatistic();
 
         std::cout << "Position: " << error.x << " " << error.y << std::endl;
         std::cout << "Velocity: " << error.v_x << " " << error.v_y << std::endl;

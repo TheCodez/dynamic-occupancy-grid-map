@@ -11,15 +11,15 @@ class Metric
 {
 public:
     Metric() : cumulative_error{}, number_of_detections(0) {}
-    virtual ~Metric(){};
+    virtual ~Metric() = default;
 
     virtual void reset()
     {
         cumulative_error = {};
         number_of_detections = 0;
     }
-    virtual PointWithVelocity update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) { return {}; }
-    virtual PointWithVelocity compute() { return {}; }
+    virtual PointWithVelocity addObjectDetection(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) = 0;
+    virtual PointWithVelocity computeErrorStatistic() = 0;
 
 protected:
     PointWithVelocity computeError(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
@@ -40,21 +40,23 @@ protected:
 class MAE : public Metric
 {
 public:
-    MAE(){};
-    virtual ~MAE(){};
+    MAE() = default;
+    virtual ~MAE() = default;
 
-    virtual PointWithVelocity update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) override;
-    virtual PointWithVelocity compute() override;
+    virtual PointWithVelocity addObjectDetection(const PointWithVelocity& cluster_mean,
+                                                 const Vehicle& vehicle) override;
+    virtual PointWithVelocity computeErrorStatistic() override;
 };
 
 class RMSE : public Metric
 {
 public:
-    RMSE(){};
-    virtual ~RMSE(){};
+    RMSE() = default;
+    virtual ~RMSE() = default;
 
-    virtual PointWithVelocity update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle) override;
-    virtual PointWithVelocity compute() override;
+    virtual PointWithVelocity addObjectDetection(const PointWithVelocity& cluster_mean,
+                                                 const Vehicle& vehicle) override;
+    virtual PointWithVelocity computeErrorStatistic() override;
 };
 
 #endif  // METRICS_H

@@ -5,7 +5,7 @@
 #include "metrics.h"
 #include <cmath>
 
-PointWithVelocity MAE::update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
+PointWithVelocity MAE::addObjectDetection(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
 {
     const auto error = computeError(cluster_mean, vehicle);
 
@@ -19,7 +19,7 @@ PointWithVelocity MAE::update(const PointWithVelocity& cluster_mean, const Vehic
     return error;
 }
 
-PointWithVelocity MAE::compute()
+PointWithVelocity MAE::computeErrorStatistic()
 {
     PointWithVelocity error;
     error.x = cumulative_error.x / number_of_detections;
@@ -30,7 +30,7 @@ PointWithVelocity MAE::compute()
     return error;
 }
 
-PointWithVelocity RMSE::update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
+PointWithVelocity RMSE::addObjectDetection(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
 {
     const auto error = computeError(cluster_mean, vehicle);
 
@@ -44,7 +44,7 @@ PointWithVelocity RMSE::update(const PointWithVelocity& cluster_mean, const Vehi
     return error;
 }
 
-PointWithVelocity RMSE::compute()
+PointWithVelocity RMSE::computeErrorStatistic()
 {
     PointWithVelocity error;
     error.x = sqrtf(cumulative_error.x / number_of_detections);
