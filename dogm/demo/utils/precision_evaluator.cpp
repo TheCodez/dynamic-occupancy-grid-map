@@ -26,7 +26,6 @@ static Clusters<dogm::GridCell> computeDbscanClusters(const std::vector<Point<do
 PrecisionEvaluator::PrecisionEvaluator(const SimulationData _sim_data, const float _resolution, const float _grid_size)
     : sim_data{_sim_data}, resolution{_resolution}, grid_size{_grid_size}
 {
-    number_of_detections = 0;
     number_of_unassigned_detections = 0;
 }
 
@@ -87,9 +86,9 @@ void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
             if (print_current_precision)
             {
                 std::cout << std::setprecision(2);
-                std::cout << "\nCluster ID=" << cluster_id << "\n";
+                std::cout << std::endl << "Cluster ID=" << cluster_id << std::endl;
                 std::cout << "Vel. Err.: " << current_error.v_x << " " << current_error.v_y
-                          << ", Pos. Err.: " << current_error.x << " " << current_error.y << "\n";
+                          << ", Pos. Err.: " << current_error.x << " " << current_error.y << std::endl;
             }
             cluster_id++;
         }
@@ -126,15 +125,15 @@ void PrecisionEvaluator::printSummary()
 {
     for (auto& metric : metrics)
     {
-        std::cout << "\n" << metric.first << ": \n";
+        std::cout << std::endl << metric.first << ": " << std::endl;
         PointWithVelocity error = metric.second->compute();
 
-        std::cout << "Position: " << error.x << " " << error.y << "\n";
-        std::cout << "Velocity: " << error.v_x << " " << error.v_y << "\n";
+        std::cout << "Position: " << error.x << " " << error.y << std::endl;
+        std::cout << "Velocity: " << error.v_x << " " << error.v_y << std::endl;
 
-        std::cout << "\n";
+        std::cout << std::endl;
     }
 
-    std::cout << "Detections unassigned by evaluator: " << number_of_unassigned_detections << "\n";
-    std::cout << "Maximum possible detections: " << sim_data[0].vehicles.size() * sim_data.size() << "\n";
+    std::cout << "Detections unassigned by evaluator: " << number_of_unassigned_detections << std::endl;
+    std::cout << "Maximum possible detections: " << sim_data[0].vehicles.size() * sim_data.size() << std::endl;
 }

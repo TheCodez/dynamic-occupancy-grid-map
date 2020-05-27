@@ -41,7 +41,6 @@ private:
     SimulationData sim_data;
     float resolution;
     float grid_size;
-    int number_of_detections;
     int number_of_unassigned_detections;
 
     std::map<std::string, std::shared_ptr<Metric>> metrics;
