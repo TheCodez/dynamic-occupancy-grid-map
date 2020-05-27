@@ -18,6 +18,7 @@ struct GridCell
     float pers_occ_mass;
     float free_mass;
     float occ_mass;
+    float pred_occ_mass;
     float mu_A;
     float mu_UA;
 

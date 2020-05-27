@@ -42,7 +42,7 @@ void Timer::printLastSplitMs() const
 void Timer::printStatsMs() const
 {
     std::cout << m_name << " stats (" << m_splits.size() << " splits):\n";
-    if (m_splits.size() > 0)
+    if (!m_splits.empty())
     {
         std::vector<unsigned int> splits_ms{};
         for (const auto& split : m_splits)

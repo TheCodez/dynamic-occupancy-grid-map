@@ -4,10 +4,8 @@
 
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
-#include "image_creation.h"
-#include "mapping/laser_to_meas_grid.h"
-#include "metrics.h"
-#include "precision_evaluator.h"
+#include "image_creation.h" #include "mapping/laser_to_meas_grid.h"
+#include "metrics.h" #include "precision_evaluator.h"
 #include "simulator.h"
 #include "timer.h"
 
