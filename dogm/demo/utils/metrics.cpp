@@ -1,3 +1,7 @@
+// Copyright (c) 2020 Michael Koesel and respective contributors
+// SPDX-License-Identifier: MIT
+// See accompanying LICENSE file for detailed information
+
 #include "metrics.h"
 
 PointWithVelocity MAE::update(const PointWithVelocity& cluster_mean, const Vehicle& vehicle)
