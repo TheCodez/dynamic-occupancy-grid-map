@@ -1,4 +1,5 @@
 name: Build Windows
+
 on:
   push:
     branches: [ master ]
