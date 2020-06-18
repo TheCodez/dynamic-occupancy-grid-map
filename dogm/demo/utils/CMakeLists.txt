@@ -8,14 +8,17 @@ SET(HEADER_FILES
     include/color_wheel_adder.h
     include/dbscan.h
     include/image_creation.h
+    include/metrics.h
     include/precision_evaluator.h
     include/timer.h
+    include/types.h
 )
 
 SET(SRC_FILES
     color_wheel_adder.cpp
     dbscan.cpp
     image_creation.cpp
+    metrics.cpp
     precision_evaluator.cpp
     timer.cpp
 )
