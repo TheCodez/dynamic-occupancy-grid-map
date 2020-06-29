@@ -39,7 +39,7 @@ void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
                                               bool print_current_precision)
 {
     const auto groundtruth_vehicles = sim_data[simulation_step_index].vehicles;
-    if (cells_with_velocity.size() > 0 && groundtruth_vehicles.size() > 0)
+    if (!cells_with_velocity.empty() && !groundtruth_vehicles.empty())
     {
         const auto clusters = computeDbscanClusters(cells_with_velocity);
         int cluster_id = 0;
@@ -58,7 +58,7 @@ void PrecisionEvaluator::evaluateAndStoreStep(int simulation_step_index,
                 }
             }
 
-            if (matching_groundtruth_vehicles.size() == 0)
+            if (matching_groundtruth_vehicles.empty())
             {
                 ++number_of_unassigned_detections;
                 continue;

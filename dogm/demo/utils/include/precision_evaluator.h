@@ -20,7 +20,7 @@ class Metric;
 class PrecisionEvaluator
 {
 public:
-    PrecisionEvaluator(const SimulationData sim_data, const float resolution, const float grid_size);
+    PrecisionEvaluator(const SimulationData _sim_data, const float _resolution, const float _grid_size);
 
     void registerMetric(const std::string& name, std::unique_ptr<Metric> metric);
 

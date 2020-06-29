@@ -40,8 +40,8 @@ static cv::Mat createCircleMask(const cv::Size2d& size)
 {
     cv::Mat mask{size, CV_8UC3, cv::Scalar(0, 0, 0)};
     const cv::Point image_center{mask.cols / 2, mask.rows / 2};
-    const float outer_radius = mask.rows / 2;
-    const float inner_radius = mask.rows / 4;
+    const auto outer_radius = mask.rows / 2;
+    const auto inner_radius = mask.rows / 4;
     cv::circle(mask, image_center, outer_radius, cv::Scalar(1, 1, 1), -1);
     cv::circle(mask, image_center, inner_radius, cv::Scalar(0, 0, 0), -1);
     return mask;
