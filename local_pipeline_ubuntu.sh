@@ -38,13 +38,9 @@ if [ "$CLEAN_BUILD" = true ]; then rm -rf *; fi
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "${BUILD_DEBUG}" ../dogm
 make -j $(nproc)
 
-# TODO: write script to automatically check all .cpp (and .cu) files
-clang-tidy -p . ../dogm/demo/utils/color_wheel_adder.cpp
-clang-tidy -p . ../dogm/demo/utils/dbscan.cpp
-clang-tidy -p . ../dogm/demo/utils/image_creation.cpp
-clang-tidy -p . ../dogm/demo/utils/metrics.cpp
-clang-tidy -p . ../dogm/demo/utils/precision_evaluator.cpp
-clang-tidy -p . ../dogm/demo/utils/timer.cpp
+# TODO: extend to check more/all .cpp (and .cu) files
+cd ..
+find dogm/demo/utils -iname '*.cpp' | xargs clang-tidy -p build
 
 ctest . -j $(nproc)
 ./demo/demo
