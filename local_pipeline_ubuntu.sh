@@ -35,7 +35,12 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 find dogm/demo dogm/include dogm/src dogm/test -iname '*.h' -o -iname '*.cpp' -o -iname '*.cu' | xargs clang-format -i
 mkdir -p build && cd build
 if [ "$CLEAN_BUILD" = true ]; then rm -rf *; fi
-cmake "${BUILD_DEBUG}" ../dogm
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "${BUILD_DEBUG}" ../dogm
 make -j $(nproc)
+
+# TODO: extend to check more/all .cpp (and .cu) files
+cd ..
+find dogm/demo/utils -iname '*.cpp' | xargs clang-tidy -p build
+
 ctest . -j $(nproc)
 ./demo/demo

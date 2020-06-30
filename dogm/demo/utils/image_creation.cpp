@@ -73,14 +73,14 @@ cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
-        cv::Vec3b* row_ptr = grid_img.ptr<cv::Vec3b>(y);
+        auto* row_ptr = grid_img.ptr<cv::Vec3b>(y);
         for (int x = 0; x < grid_map.getGridSize(); x++)
         {
             int index = y * grid_map.getGridSize() + x;
 
             const dogm::MeasurementCell& cell = meas_cells[index];
             float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
-            uchar temp = static_cast<uchar>(occ * 255.0f);
+            auto temp = static_cast<uchar>(occ * 255.0f);
 
             row_ptr[x] = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
         }
@@ -97,13 +97,13 @@ cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
-        cv::Vec3b* row_ptr = grid_img.ptr<cv::Vec3b>(y);
+        auto* row_ptr = grid_img.ptr<cv::Vec3b>(y);
         for (int x = 0; x < grid_map.getGridSize(); x++)
         {
             int index = y * grid_map.getGridSize() + x;
             const dogm::MeasurementCell& cell = meas_cells[index];
-            int red = static_cast<int>(cell.occ_mass * 255.0f);
-            int green = static_cast<int>(cell.free_mass * 255.0f);
+            auto red = static_cast<int>(cell.occ_mass * 255.0f);
+            auto green = static_cast<int>(cell.free_mass * 255.0f);
             int blue = 255 - red - green;
 
             row_ptr[x] = cv::Vec3b(blue, green, red);
@@ -121,7 +121,7 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, const std::vector<Point<d
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
-        cv::Vec3b* row_ptr = grid_img.ptr<cv::Vec3b>(y);
+        auto* row_ptr = grid_img.ptr<cv::Vec3b>(y);
         for (int x = 0; x < grid_map.getGridSize(); x++)
         {
             int index = y * grid_map.getGridSize() + x;
