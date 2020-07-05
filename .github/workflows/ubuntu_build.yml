@@ -2,9 +2,9 @@ name: Build and test on Ubuntu 18.04
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, test-clang-tidy-in-ci ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, test-clang-tidy-in-ci ]
 
 jobs:
   build-and-test-ubuntu:
@@ -22,7 +22,7 @@ jobs:
     - name: Install CUDA toolkit
       run: sudo apt install nvidia-cuda-toolkit
     - name: Configure
-      run: mkdir build && cd build && cmake ..
+      run: mkdir build && cd build && cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  ..
       working-directory: dogm
     - name: Build
       run: cmake --build build
@@ -30,3 +30,5 @@ jobs:
     - name: Test Utils
       run: ctest
       working-directory: dogm/build/demo
+    - name: Clang-Tidy
+      run: find dogm/demo/utils -iname '*.cpp' | xargs clang-tidy -p build
