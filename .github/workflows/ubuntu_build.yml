@@ -2,9 +2,9 @@ name: Build and test on Ubuntu 18.04
 
 on:
   push:
-    branches: [ master, test-clang-tidy-in-ci ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, test-clang-tidy-in-ci ]
+    branches: [ master ]
 
 jobs:
   build-and-test-ubuntu:
