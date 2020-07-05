@@ -30,5 +30,7 @@ jobs:
     - name: Test Utils
       run: ctest
       working-directory: dogm/build/demo
+    - name: Install clang-tidy
+      run: sudo apt install clang-tidy
     - name: Clang-Tidy
       run: find dogm/demo/utils -iname '*.cpp' | xargs clang-tidy -p dogm/build
