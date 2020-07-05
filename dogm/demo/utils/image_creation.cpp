@@ -102,7 +102,7 @@ cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
         {
             int index = y * grid_map.getGridSize() + x;
             const dogm::MeasurementCell& cell = meas_cells[index];
-            auto red = static_cast<int>(cell.occ_mass * 255.0f);
+            int red = static_cast<int>(cell.occ_mass * 255.0f);
             auto green = static_cast<int>(cell.free_mass * 255.0f);
             int blue = 255 - red - green;
 
