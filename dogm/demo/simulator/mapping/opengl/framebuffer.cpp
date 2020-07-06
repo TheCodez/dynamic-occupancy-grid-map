@@ -36,7 +36,7 @@ Framebuffer::~Framebuffer()
 
 void Framebuffer::beginCudaAccess(cudaSurfaceObject_t* surfaceObject)
 {
-    CHECK_ERROR(cudaGraphicsMapResources(1, &resource, 0));
+    CHECK_ERROR(cudaGraphicsMapResources(1, &resource, nullptr));
 
     cudaArray_t cudaArray;
     CHECK_ERROR(cudaGraphicsSubResourceGetMappedArray(&cudaArray, resource, 0, 0));
@@ -51,7 +51,7 @@ void Framebuffer::beginCudaAccess(cudaSurfaceObject_t* surfaceObject)
 
 void Framebuffer::endCudaAccess(cudaSurfaceObject_t surfaceObject)
 {
-    CHECK_ERROR(cudaGraphicsUnmapResources(1, &resource, 0));
+    CHECK_ERROR(cudaGraphicsUnmapResources(1, &resource, nullptr));
     CHECK_ERROR(cudaDestroySurfaceObject(surfaceObject));
 }
 

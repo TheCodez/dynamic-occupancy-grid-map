@@ -64,7 +64,7 @@ void Renderer::renderToTexture(Texture& polar_texture)
 
 void Renderer::generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy)
 {
-    vertices.push_back(Vertex(glm::vec2(cx, cy), glm::vec2(0.0f, 0.0f)));
+    vertices.emplace_back(Vertex(glm::vec2(cx, cy), glm::vec2(0.0f, 0.0f)));
 
     float halfFov = fov / 2;
     float startAngle = 90 - halfFov;
@@ -80,6 +80,6 @@ void Renderer::generateCircleSegmentVertices(std::vector<Vertex>& vertices, floa
         float x = radius * x_val;
         float y = radius * y_val;
 
-        vertices.push_back(Vertex(glm::vec2(cx + x, cy + y), glm::vec2((angle - startAngle) / fov, 1.0f)));
+        vertices.emplace_back(Vertex(glm::vec2(cx + x, cy + y), glm::vec2((angle - startAngle) / fov, 1.0f)));
     }
 }
