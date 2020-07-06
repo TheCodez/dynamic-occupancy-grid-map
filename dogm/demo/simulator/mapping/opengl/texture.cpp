@@ -7,7 +7,6 @@
 
 #include <cstdio>
 #include <memory.h>
-#include <stdio.h>
 
 Texture::Texture(int width, int height, float anisotropy_level)
 {
@@ -45,7 +44,7 @@ Texture::~Texture()
 
 void Texture::beginCudaAccess(cudaSurfaceObject_t* surfaceObject)
 {
-    CHECK_ERROR(cudaGraphicsMapResources(1, &resource, 0));
+    CHECK_ERROR(cudaGraphicsMapResources(1, &resource, nullptr));
 
     cudaArray_t cudaArray;
     CHECK_ERROR(cudaGraphicsSubResourceGetMappedArray(&cudaArray, resource, 0, 0));
@@ -60,7 +59,7 @@ void Texture::beginCudaAccess(cudaSurfaceObject_t* surfaceObject)
 
 void Texture::endCudaAccess(cudaSurfaceObject_t surfaceObject)
 {
-    CHECK_ERROR(cudaGraphicsUnmapResources(1, &resource, 0));
+    CHECK_ERROR(cudaGraphicsUnmapResources(1, &resource, nullptr));
     CHECK_ERROR(cudaDestroySurfaceObject(surfaceObject));
 }
 
@@ -70,9 +69,9 @@ void Texture::generateMipMap()
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-void Texture::bind(GLuint texUnit)
+void Texture::bind(GLuint tex_unit)
 {
-    unit = texUnit;
+    unit = tex_unit;
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, texture);
 }

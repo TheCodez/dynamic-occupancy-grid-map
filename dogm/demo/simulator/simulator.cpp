@@ -17,7 +17,7 @@ std::vector<glm::vec2> Vehicle::getPointsOnFacingSide(const float resolution) co
     for (float point_on_facing_side = leftmost_point_on_facing_side;
          point_on_facing_side < rightmost_point_on_facing_side; point_on_facing_side += resolution)
     {
-        points_on_facing_side.push_back(glm::vec2{point_on_facing_side, pos.y});
+        points_on_facing_side.emplace_back(glm::vec2{point_on_facing_side, pos.y});
     }
     return points_on_facing_side;
 }

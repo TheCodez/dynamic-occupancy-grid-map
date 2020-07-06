@@ -18,7 +18,7 @@ public:
 
     void generateMipMap();
 
-    void bind(GLuint unit);
+    void bind(GLuint tex_unit);
 
 private:
     GLuint texture;
