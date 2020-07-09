@@ -40,7 +40,7 @@ make -j $(nproc)
 
 # TODO: extend to check more/all .cpp (and .cu) files
 cd ..
-find dogm/demo -iname '*.cpp' | xargs clang-tidy -p build
+find -iname '*.cpp' | xargs clang-tidy -p build
 
 ctest . -j $(nproc)
 ./demo/demo
