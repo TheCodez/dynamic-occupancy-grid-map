@@ -9,7 +9,6 @@ llvm*,
 misc*,
 modernize*,
 readability*,
--clang-diagonstic-error
 '
 
 WarningsAsErrors: '-*'
