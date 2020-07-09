@@ -134,7 +134,7 @@ void DOGM::updateGrid(float dt)
 
 GridCell* DOGM::getGridCells() const
 {
-    GridCell* grid_cells = (GridCell*)malloc(grid_cell_count * sizeof(GridCell));
+    auto grid_cells = (GridCell*)malloc(grid_cell_count * sizeof(GridCell));
 
     CHECK_ERROR(cudaMemcpy(grid_cells, grid_cell_array, grid_cell_count * sizeof(GridCell), cudaMemcpyDeviceToHost));
 
@@ -143,7 +143,7 @@ GridCell* DOGM::getGridCells() const
 
 MeasurementCell* DOGM::getMeasurementCells() const
 {
-    MeasurementCell* meas_cells = (MeasurementCell*)malloc(grid_cell_count * sizeof(MeasurementCell));
+    auto meas_cells = (MeasurementCell*)malloc(grid_cell_count * sizeof(MeasurementCell));
 
     CHECK_ERROR(
         cudaMemcpy(meas_cells, meas_cell_array, grid_cell_count * sizeof(MeasurementCell), cudaMemcpyDeviceToHost));

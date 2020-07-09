@@ -123,7 +123,7 @@ __global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const
         const GridCell& grid_cell = grid_cell_array[cell_idx];
 
         float x = cell_idx % grid_size + 0.5f;
-        float y = cell_idx / grid_size + 0.5f;
+        float y = cell_idx / static_cast<float>(grid_size) + 0.5f;
         float vel_x = curand_normal(&local_state, 0.0f, velocity);
         float vel_y = curand_normal(&local_state, 0.0f, velocity);
 

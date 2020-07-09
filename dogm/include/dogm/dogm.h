@@ -104,7 +104,7 @@ public:
 private:
     int iteration;
 
-    float first_pose_received;
+    bool first_pose_received;
     float position_x;
     float position_y;
 };
