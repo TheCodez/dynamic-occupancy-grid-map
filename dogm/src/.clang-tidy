@@ -1,0 +1,15 @@
+FormatStyle: file
+
+Checks: '
+-*,
+bugprone*,
+cppcoreguidelines*
+google*,
+llvm*,
+misc*,
+modernize*,
+readability*,
+'
+
+WarningsAsErrors: '-*'
+

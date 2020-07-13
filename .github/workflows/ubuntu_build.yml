@@ -32,5 +32,7 @@ jobs:
       working-directory: dogm/build/demo
     - name: Install clang-tidy
       run: sudo apt install clang-tidy
-    - name: Clang-Tidy
-      run: find dogm/demo -iname '*.cpp' | xargs clang-tidy -p dogm/build
+    - name: Clang-Tidy on cpp
+      run: find -iname '*.cpp' | xargs clang-tidy -p dogm/build
+    - name: Clang-Tidy on cuda (non-failing)
+      run: find dogm/src -iname '*.cu' | xargs -I{} clang-tidy -p build {} -- --cuda-host-only -Idogm/include | grep -v "clang-diagnostic-error"
