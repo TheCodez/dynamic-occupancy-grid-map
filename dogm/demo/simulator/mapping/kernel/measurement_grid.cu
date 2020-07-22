@@ -43,6 +43,55 @@ __device__ float pOcc(int r, float zk, int index, float resolution)
     return occ_max * exp(-0.5f * (index - r) * (index - r) / (delta * delta));
 }
 
+__device__ float find_min(float* meas, int size)
+{
+    float min = meas[0];
+
+    for (int i = 0; i < size; i++)
+    {
+        if (meas[i] < min)
+        {
+            min = meas[i];
+        }
+    }
+
+    return min;
+}
+
+__device__ float2 multi_inverse_sensor_model(int i, float resolution, float* meas_points, int num_meas_points,
+                                             float r_max)
+{
+    // Masses: mOcc, mFree
+    float m_free = 0.0f, m_occ = 0.0f;
+    float cell_pos = i * resolution;
+
+    // if cell pos is inside sensor range
+    if (cell_pos < r_max)
+    {
+        float delta = 0.3f;
+        for (int j = 0; j < num_meas_points; j++)
+        {
+            float zk = meas_points[j];
+            float occ = 0.95f * exp(-0.5f * (cell_pos - zk) * (cell_pos - zk) / (delta * delta));
+            m_occ = max(occ, m_occ);
+        }
+
+        float min_r = find_min(meas_points, 2);
+        if (cell_pos < min_r)
+        {
+            float free = 1.0f - pFree(i, 0.2f, 1.0f, r_max);
+            m_free = max(free - m_occ, 0.0f);
+        }
+    }
+    else
+    {
+        m_occ = 0.0f;
+        m_free = 0.0f;
+    }
+
+    return make_float2(m_occ, m_free);
+}
+
 __device__ float2 inverse_sensor_model(int i, float resolution, float zk, float r_max)
 {
     // Masses: mOcc, mFree
@@ -79,8 +128,10 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, const fl
     {
         const float epsilon = 0.00001f;
         const float zk = measurements[theta];
+        const int num_meas_points = 2;
+        float meas_points[num_meas_points] = {zk, zk + 5.0f};
 
-        float2 masses = inverse_sensor_model(range, resolution, zk, height);
+        float2 masses = multi_inverse_sensor_model(range, resolution, meas_points, num_meas_points, height);
         masses.x = max(epsilon, min(1.0f - epsilon, masses.x));
         masses.y = max(epsilon, min(1.0f - epsilon, masses.y));
 
