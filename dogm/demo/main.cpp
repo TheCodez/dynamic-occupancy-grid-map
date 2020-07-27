@@ -19,7 +19,7 @@
 int main(int argc, const char** argv)
 {
     dogm::DOGM::Params grid_params;
-    grid_params.size = 50.0f;
+    grid_params.size = 100.0f;
     grid_params.resolution = 0.2f;
     grid_params.particle_count = 3 * static_cast<int>(10e5);
     grid_params.new_born_particle_count = 3 * static_cast<int>(10e4);
@@ -31,8 +31,8 @@ int main(int argc, const char** argv)
     grid_params.velocity_birth = 30.0f;
 
     LaserMeasurementGrid::Params laser_params;
-    laser_params.fov = 120.0f;
-    laser_params.max_range = 50.0f;
+    laser_params.fov = 360.0f;  // 120.0f;
+    laser_params.max_range = 100.0f;
     laser_params.resolution = grid_params.resolution;  // TODO make independent of grid_params.resolution
     LaserMeasurementGrid grid_generator(laser_params, grid_params.size, grid_params.resolution);
 
@@ -78,9 +78,9 @@ int main(int argc, const char** argv)
 
     for (int step = 0; step < num_simulation_steps; ++step)
     {
-        grid_map.updatePose(sim_data[step].ego_pose.x, sim_data[step].ego_pose.y);
+        // grid_map.updatePose(sim_data[step].ego_pose.x, sim_data[step].ego_pose.y);
 
-        dogm::MeasurementCell* meas_grid = grid_generator.generateGrid(sim_data[step].measurements);
+        dogm::MeasurementCell* meas_grid = grid_generator.generateGrid();  // sim_data[step].measurements);
         grid_map.addMeasurementGrid(meas_grid, true);
 
         cycle_timer.tic();

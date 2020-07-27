@@ -25,8 +25,8 @@ Renderer::Renderer(int grid_size, float fov, float grid_range, float max_range) 
 
     // center vehicle in the middle
     float range = 2.0f * (max_range / grid_range);
-    // generateCircleSegmentVertices(vertices, fov, range, 0.0f, 0.0f);
-    generateCircleSegmentVertices(vertices, fov, range, 0.0f, -1.0f);
+    generateCircleSegmentVertices(vertices, fov, range, 0.0f, 0.0f);
+    // generateCircleSegmentVertices(vertices, fov, range, 0.0f, -1.0f);
 
     polygon = new Polygon(vertices.data(), vertices.size());
     shader = new Shader();
@@ -65,6 +65,9 @@ void Renderer::renderToTexture(Texture& polar_texture)
 void Renderer::generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy)
 {
     vertices.emplace_back(Vertex(glm::vec2(cx, cy), glm::vec2(0.0f, 0.0f)));
+
+    // fix 1 off error
+    fov += 1.0f;
 
     float halfFov = fov / 2;
     float startAngle = 90 - halfFov;

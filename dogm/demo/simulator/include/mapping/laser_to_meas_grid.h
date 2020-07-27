@@ -24,6 +24,7 @@ public:
     ~LaserMeasurementGrid();
 
     dogm::MeasurementCell* generateGrid(const std::vector<float>& measurements);
+    dogm::MeasurementCell* generateGrid();
 
 private:
     dogm::MeasurementCell* meas_grid;

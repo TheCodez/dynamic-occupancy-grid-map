@@ -11,8 +11,8 @@ namespace dogm
 struct MeasurementCell;
 }
 
-__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements,
-                                             int width, int height, float resolution);
+__global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* __restrict__ measurements, int width,
+                                             int height, float resolution);
 
 __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements, int width,
                                            int height, float resolution);
