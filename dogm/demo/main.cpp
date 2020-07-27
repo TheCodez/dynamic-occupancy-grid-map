@@ -33,6 +33,8 @@ int main(int argc, const char** argv)
     LaserMeasurementGrid::Params laser_params;
     laser_params.fov = 360.0f;  // 120.0f;
     laser_params.max_range = 100.0f;
+    laser_params.stddev_range = 0.2f;
+    laser_params.num_layers = 64;
     laser_params.resolution = grid_params.resolution;  // TODO make independent of grid_params.resolution
     LaserMeasurementGrid grid_generator(laser_params, grid_params.size, grid_params.resolution);
 

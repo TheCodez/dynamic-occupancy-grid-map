@@ -18,6 +18,8 @@ public:
         float max_range;
         float resolution;
         float fov;
+        float stddev_range;
+        int num_layers;
     };
 
     LaserMeasurementGrid(const Params& params, float grid_length, float resolution);

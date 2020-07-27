@@ -28,7 +28,7 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<floa
 {
     const int num_measurements = measurements.size();
 
-    thrust::device_vector<float> meas_points(num_measurements * 3, INFINITY);
+    thrust::device_vector<float> meas_points(num_measurements * params.num_layers, INFINITY);
     std::vector<int> point_count(num_measurements);
 
     for (int i = 0; i < num_measurements; i++)
@@ -36,9 +36,9 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<floa
         float range = measurements[i];
 
         int count = point_count[i];
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < params.num_layers; j++)
         {
-            meas_points[i * 3 + j] = range + j * 5;
+            meas_points[i * params.num_layers + j] = range + j * 5;
             point_count[i]++;
         }
     }
@@ -59,7 +59,7 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<floa
     // create polar texture
     polar_texture.beginCudaAccess(&polar_surface);
     createPolarGridTextureKernel<<<grid_dim, dim_block>>>(polar_surface, d_measurements, polar_width, polar_height,
-                                                          params.resolution);
+                                                          params.resolution, params.stddev_range, params.num_layers);
 
     CHECK_ERROR(cudaGetLastError());
     polar_texture.endCudaAccess(polar_surface);
@@ -122,14 +122,13 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid()  // pcl::PointCloud<
 {
     std::vector<LidarPoint> cloud = loadLidar(0);
 
-    int num_layers = 64;
     float angle_min = -M_PI;
     float angle_max = M_PI;
     float angle_increment = M_PI / 180.0f;
 
     int ranges_size = std::ceil((angle_max - angle_min) / angle_increment);
 
-    thrust::device_vector<float> meas_points(ranges_size * num_layers, 110);
+    thrust::device_vector<float> meas_points(ranges_size * params.num_layers, 110);
     std::vector<int> point_count(ranges_size);
 
     for (int i = 0; i < cloud.size(); i++)
@@ -164,9 +163,9 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid()  // pcl::PointCloud<
 
         int index = (angle - angle_min) / angle_increment;
         int count = point_count[index];
-        if (count < num_layers)
+        if (count < params.num_layers)
         {
-            meas_points[index * num_layers + count] = range;
+            meas_points[index * params.num_layers + count] = range;
             point_count[index]++;
         }
     }
@@ -187,7 +186,7 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid()  // pcl::PointCloud<
     // create polar texture
     polar_texture.beginCudaAccess(&polar_surface);
     createPolarGridTextureKernel<<<grid_dim, dim_block>>>(polar_surface, d_meas_points, polar_width, polar_height,
-                                                          params.resolution);
+                                                          params.resolution, params.stddev_range, params.num_layers);
 
     CHECK_ERROR(cudaGetLastError());
     polar_texture.endCudaAccess(polar_surface);

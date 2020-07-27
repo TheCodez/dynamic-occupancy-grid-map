@@ -24,16 +24,16 @@ __device__ float pOcc(int r, float zk, int index, float resolution)
 }
 
 __device__ float2 multi_inverse_sensor_model(int cell_index, int theta, float resolution, float* meas_points,
-                                             int num_meas_points, float r_max)
+                                             int num_meas_points, float height, float stddev_range)
 {
     // Masses: mOcc, mFree
     float m_free = 0.0f, m_occ = 0.0f;
     float cell_pos = cell_index * resolution;
+    float r_max = height * resolution;
 
     // if cell is inside sensor range
     if (cell_pos < r_max)
     {
-        float delta = 0.2f;
         float min_range = meas_points[theta * num_meas_points];
 
         for (int j = 0; j < num_meas_points; j++)
@@ -45,13 +45,13 @@ __device__ float2 multi_inverse_sensor_model(int cell_index, int theta, float re
             }
 
             float zk = meas_points[theta * num_meas_points + j];
-            float occ = 0.95f * exp(-0.5f * (cell_pos - zk) * (cell_pos - zk) / (delta * delta));
+            float occ = 0.95f * exp(-0.5f * (cell_pos - zk) * (cell_pos - zk) / (stddev_range * stddev_range));
             m_occ = max(occ, m_occ);
         }
 
         if (cell_pos < min_range)
         {
-            float free = 1.0f - pFree(cell_index, 0.2f, 1.0f, r_max);
+            float free = 1.0f - pFree(cell_pos, 0.2f, 1.0f, r_max);
             m_free = max(free - m_occ, 0.0f);
         }
     }
@@ -91,7 +91,7 @@ __device__ float2 inverse_sensor_model(int i, float resolution, float zk, float 
 }
 
 __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* __restrict__ measurements, int width,
-                                             int height, float resolution)
+                                             int height, float resolution, float stddev_range, int num_layers)
 {
     const int theta = blockIdx.x * blockDim.x + threadIdx.x;
     const int range = blockIdx.y * blockDim.y + threadIdx.y;
@@ -99,11 +99,8 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, float* _
     if (theta < width && range < height)
     {
         const float epsilon = 0.00001f;
-        const float zk = measurements[theta];
-        const int num_meas_points = 64;
-        // float* meas_points = measurements[theta];//[num_meas_points] = {zk, zk + 5.0f, zk + 8.0f};
-
-        float2 masses = multi_inverse_sensor_model(range, theta, resolution, measurements, num_meas_points, height);
+        float2 masses =
+            multi_inverse_sensor_model(range, theta, resolution, measurements, num_layers, height, stddev_range);
         masses.x = max(epsilon, min(1.0f - epsilon, masses.x));
         masses.y = max(epsilon, min(1.0f - epsilon, masses.y));
 
