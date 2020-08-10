@@ -40,8 +40,8 @@ Renderer::Renderer(int grid_size, float fov, float grid_range, float max_range) 
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 
-    window = glfwCreateWindow(grid_size, grid_size, "GPU Occupancy Grid Map", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
+    window.reset(glfwCreateWindow(grid_size, grid_size, "GPU Occupancy Grid Map", nullptr, nullptr));
+    glfwMakeContextCurrent(window.get());
 
     glewExperimental = GL_TRUE;
     glewInit();
@@ -53,17 +53,13 @@ Renderer::Renderer(int grid_size, float fov, float grid_range, float max_range) 
     // generateCircleSegmentVertices(vertices, fov, range, 0.0f, 0.0f);
     generateCircleSegmentVertices(vertices, fov, range, 0.0f, -1.0f);
 
-    polygon = new Polygon(vertices.data(), vertices.size());
-    shader = new Shader();
-    framebuffer = new Framebuffer(grid_size, grid_size);
+    polygon = std::make_unique<Polygon>(vertices.data(), vertices.size());
+    shader = std::make_unique<Shader>();
+    framebuffer = std::make_shared<Framebuffer>(grid_size, grid_size);
 }
 
 Renderer::~Renderer()
 {
-    delete polygon;
-    delete shader;
-    delete framebuffer;
-
     glfwTerminate();
 }
 

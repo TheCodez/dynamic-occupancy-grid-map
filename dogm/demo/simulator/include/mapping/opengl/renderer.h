@@ -13,6 +13,7 @@
 #include "shader.h"
 #include "texture.h"
 
+#include <memory>
 #include <vector>
 
 class Renderer
@@ -28,9 +29,9 @@ public:
 private:
     int grid_size;
 
-    Polygon* polygon;
-    Shader* shader;
-    Framebuffer* framebuffer;
+    std::unique_ptr<Polygon> polygon;
+    std::unique_ptr<Shader> shader;
+    std::shared_ptr<Framebuffer> framebuffer;
 
-    GLFWwindow* window;
+    std::unique_ptr<GLFWwindow, decltype(&glfwDestroyWindow)> window{nullptr, glfwDestroyWindow};
 };

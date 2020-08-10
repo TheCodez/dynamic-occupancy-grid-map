@@ -53,7 +53,7 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<floa
     // render cartesian image to texture using polar texture
     renderer->renderToTexture(polar_texture);
 
-    Framebuffer* framebuffer = renderer->getFrameBuffer();
+    auto framebuffer = renderer->getFrameBuffer();
     cudaSurfaceObject_t cartesian_surface;
 
     framebuffer->beginCudaAccess(&cartesian_surface);
