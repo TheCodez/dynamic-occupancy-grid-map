@@ -13,6 +13,7 @@
 #include "shader.h"
 #include "texture.h"
 
+#include <memory>
 #include <vector>
 
 class Renderer
@@ -23,17 +24,14 @@ public:
 
     void renderToTexture(Texture& polar_texture);
 
-    Framebuffer* getFrameBuffer() const { return framebuffer; }
-
-private:
-    void generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy);
+    std::shared_ptr<Framebuffer> getFrameBuffer() const { return framebuffer; }
 
 private:
     int grid_size;
 
-    Polygon* polygon;
-    Shader* shader;
-    Framebuffer* framebuffer;
+    std::unique_ptr<Polygon> polygon;
+    std::unique_ptr<Shader> shader;
+    std::shared_ptr<Framebuffer> framebuffer;
 
-    GLFWwindow* window;
+    std::unique_ptr<GLFWwindow, decltype(&glfwDestroyWindow)> window{nullptr, glfwDestroyWindow};
 };
