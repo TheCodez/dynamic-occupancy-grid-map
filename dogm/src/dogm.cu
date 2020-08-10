@@ -141,12 +141,12 @@ GridCell* DOGM::getGridCells() const
     return grid_cells;
 }
 
-MeasurementCell* DOGM::getMeasurementCells() const
+std::vector<MeasurementCell> DOGM::getMeasurementCells() const
 {
-    auto meas_cells = (MeasurementCell*)malloc(grid_cell_count * sizeof(MeasurementCell));
+    std::vector<MeasurementCell> meas_cells(grid_cell_count, MeasurementCell{});
 
-    CHECK_ERROR(
-        cudaMemcpy(meas_cells, meas_cell_array, grid_cell_count * sizeof(MeasurementCell), cudaMemcpyDeviceToHost));
+    CHECK_ERROR(cudaMemcpy(meas_cells.data(), meas_cell_array, grid_cell_count * sizeof(MeasurementCell),
+                           cudaMemcpyDeviceToHost));
 
     return meas_cells;
 }

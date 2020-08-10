@@ -42,7 +42,7 @@ public:
     void updateGrid(float dt);
 
     GridCell* getGridCells() const;
-    MeasurementCell* getMeasurementCells() const;
+    std::vector<MeasurementCell> getMeasurementCells() const;
 
     ParticlesSoA getParticles() const;
 

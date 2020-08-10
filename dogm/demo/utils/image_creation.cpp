@@ -69,7 +69,7 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
 
 cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
 {
-    dogm::MeasurementCell* meas_cells = grid_map.getMeasurementCells();
+    const auto meas_cells = grid_map.getMeasurementCells();
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
@@ -86,14 +86,12 @@ cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
         }
     }
 
-    free(meas_cells);
-
     return grid_img;
 }
 
 cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
 {
-    dogm::MeasurementCell* meas_cells = grid_map.getMeasurementCells();
+    const auto meas_cells = grid_map.getMeasurementCells();
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
@@ -109,8 +107,6 @@ cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
             row_ptr[x] = cv::Vec3b(blue, green, red);
         }
     }
-
-    free(meas_cells);
 
     return grid_img;
 }
