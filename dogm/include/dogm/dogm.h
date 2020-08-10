@@ -41,7 +41,7 @@ public:
     void addMeasurementGrid(MeasurementCell* measurement_grid, bool device);
     void updateGrid(float dt);
 
-    GridCell* getGridCells() const;
+    std::vector<GridCell> getGridCells() const;
     std::vector<MeasurementCell> getMeasurementCells() const;
 
     ParticlesSoA getParticles() const;
