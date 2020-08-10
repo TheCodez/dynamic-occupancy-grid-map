@@ -24,7 +24,7 @@ static float pignistic_transformation(float free_mass, float occ_mass)
 std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& grid_map, float min_occupancy_threshold,
                                                             float min_velocity_threshold)
 {
-    dogm::GridCell* grid_cells = grid_map.getGridCells();
+    const auto grid_cells = grid_map.getGridCells();
     std::vector<Point<dogm::GridCell>> cells_with_velocity;
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
@@ -62,14 +62,12 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
         }
     }
 
-    free(grid_cells);
-
     return cells_with_velocity;
 }
 
 cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
 {
-    dogm::MeasurementCell* meas_cells = grid_map.getMeasurementCells();
+    const auto meas_cells = grid_map.getMeasurementCells();
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
@@ -86,14 +84,12 @@ cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
         }
     }
 
-    free(meas_cells);
-
     return grid_img;
 }
 
 cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
 {
-    dogm::MeasurementCell* meas_cells = grid_map.getMeasurementCells();
+    const auto meas_cells = grid_map.getMeasurementCells();
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
@@ -110,14 +106,12 @@ cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
         }
     }
 
-    free(meas_cells);
-
     return grid_img;
 }
 
 cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, const std::vector<Point<dogm::GridCell>>& cells_with_velocity)
 {
-    dogm::GridCell* grid_cells = grid_map.getGridCells();
+    const auto grid_cells = grid_map.getGridCells();
     cv::Mat grid_img(grid_map.getGridSize(), grid_map.getGridSize(), CV_8UC3);
     for (int y = 0; y < grid_map.getGridSize(); y++)
     {
@@ -150,8 +144,6 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, const std::vector<Point<d
     }
 
     addColorWheelToBottomRightCorner(grid_img);
-
-    free(grid_cells);
 
     return grid_img;
 }

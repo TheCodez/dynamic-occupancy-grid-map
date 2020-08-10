@@ -132,21 +132,22 @@ void DOGM::updateGrid(float dt)
     iteration++;
 }
 
-GridCell* DOGM::getGridCells() const
+std::vector<GridCell> DOGM::getGridCells() const
 {
-    auto grid_cells = (GridCell*)malloc(grid_cell_count * sizeof(GridCell));
+    std::vector<GridCell> grid_cells(static_cast<std::vector<GridCell>::size_type>(grid_cell_count));
 
-    CHECK_ERROR(cudaMemcpy(grid_cells, grid_cell_array, grid_cell_count * sizeof(GridCell), cudaMemcpyDeviceToHost));
+    CHECK_ERROR(
+        cudaMemcpy(grid_cells.data(), grid_cell_array, grid_cell_count * sizeof(GridCell), cudaMemcpyDeviceToHost));
 
     return grid_cells;
 }
 
-MeasurementCell* DOGM::getMeasurementCells() const
+std::vector<MeasurementCell> DOGM::getMeasurementCells() const
 {
-    auto meas_cells = (MeasurementCell*)malloc(grid_cell_count * sizeof(MeasurementCell));
+    std::vector<MeasurementCell> meas_cells(static_cast<std::vector<GridCell>::size_type>(grid_cell_count));
 
-    CHECK_ERROR(
-        cudaMemcpy(meas_cells, meas_cell_array, grid_cell_count * sizeof(MeasurementCell), cudaMemcpyDeviceToHost));
+    CHECK_ERROR(cudaMemcpy(meas_cells.data(), meas_cell_array, grid_cell_count * sizeof(MeasurementCell),
+                           cudaMemcpyDeviceToHost));
 
     return meas_cells;
 }
