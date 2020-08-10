@@ -23,10 +23,7 @@ public:
 
     void renderToTexture(Texture& polar_texture);
 
-    Framebuffer* getFrameBuffer() const { return framebuffer; }
-
-private:
-    void generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy);
+    std::shared_ptr<Framebuffer> getFrameBuffer() const { return framebuffer; }
 
 private:
     int grid_size;

@@ -6,6 +6,31 @@
 
 #include <cmath>
 
+namespace
+{
+void generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy)
+{
+    vertices.emplace_back(Vertex(glm::vec2(cx, cy), glm::vec2(0.0f, 0.0f)));
+
+    float halfFov = fov / 2;
+    float startAngle = 90 - halfFov;
+    float endAngle = 90 + halfFov;
+
+    for (int angle = startAngle; angle <= endAngle; angle++)
+    {
+        float angle_radians = angle * M_PI / 180.0f;
+
+        float x_val = cos(angle_radians);
+        float y_val = sin(angle_radians);
+
+        float x = radius * x_val;
+        float y = radius * y_val;
+
+        vertices.emplace_back(Vertex(glm::vec2(cx + x, cy + y), glm::vec2((angle - startAngle) / fov, 1.0f)));
+    }
+}
+}  // namespace
+
 Renderer::Renderer(int grid_size, float fov, float grid_range, float max_range) : grid_size(grid_size)
 {
     glfwInit();
@@ -60,26 +85,4 @@ void Renderer::renderToTexture(Texture& polar_texture)
     polygon->draw();
 
     framebuffer->unbind();
-}
-
-void Renderer::generateCircleSegmentVertices(std::vector<Vertex>& vertices, float fov, float radius, float cx, float cy)
-{
-    vertices.emplace_back(Vertex(glm::vec2(cx, cy), glm::vec2(0.0f, 0.0f)));
-
-    float halfFov = fov / 2;
-    float startAngle = 90 - halfFov;
-    float endAngle = 90 + halfFov;
-
-    for (int angle = startAngle; angle <= endAngle; angle++)
-    {
-        float angle_radians = angle * M_PI / 180.0f;
-
-        float x_val = cos(angle_radians);
-        float y_val = sin(angle_radians);
-
-        float x = radius * x_val;
-        float y = radius * y_val;
-
-        vertices.emplace_back(Vertex(glm::vec2(cx + x, cy + y), glm::vec2((angle - startAngle) / fov, 1.0f)));
-    }
 }
