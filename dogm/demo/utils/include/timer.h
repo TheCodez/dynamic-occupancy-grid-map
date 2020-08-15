@@ -15,6 +15,10 @@ public:
     Timer(const std::string& name) : m_name{name} { tic(); }
     void tic();
     void toc(const bool print_split = false);
+
+    template<typename FunctionType, typename... ArgumentTypes>
+    void timeVoidFunctionCall(const bool print_split, FunctionType&& function, ArgumentTypes&&... args);
+
     int getLastSplitMs() const;
     void printLastSplitMs() const;
     void printStatsMs() const;
