@@ -83,6 +83,7 @@ int main(int argc, const char** argv)
         dogm::MeasurementCell* meas_grid = grid_generator.generateGrid(sim_data[step].measurements);
         grid_map.addMeasurementGrid(meas_grid, true);
 
+        // TODO use Timer::timeVoidFunctionCall()
         cycle_timer.tic();
         grid_map.updateGrid(simulation_step_period);
         cycle_timer.toc(true);
