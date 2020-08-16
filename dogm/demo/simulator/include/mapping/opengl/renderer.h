@@ -20,7 +20,12 @@ class Renderer
 {
 public:
     Renderer(int grid_size, float fov, float grid_range, float max_range);
+
     ~Renderer();
+    Renderer(const Renderer&) = delete;
+    Renderer& operator=(const Renderer&) = delete;
+    Renderer(Renderer&&) = delete;
+    Renderer& operator=(Renderer&&) = delete;
 
     void renderToTexture(Texture& polar_texture);
 
