@@ -159,6 +159,7 @@ TEST_F(TimerFixture, TimeFunctionCallWithArgumentsNoOutput)
 
     const auto result = m_unit.timeFunctionCall(false, add, 2, 3);
 
+    ASSERT_EQ(5, result);
     const std::string output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(std::string{}, output);
 }
