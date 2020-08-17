@@ -16,13 +16,23 @@ public:
     void tic();
     void toc(const bool print_split = false);
 
-    template<typename FunctionType, typename... ArgumentTypes>
-    void timeVoidFunctionCall(const bool print_split, FunctionType&& function, ArgumentTypes&&... args){
-        // TODO check if you can default print_split
+    template <typename FunctionType, typename... ArgumentTypes>
+    auto timeFunctionCall(const bool print_split, FunctionType&& function, ArgumentTypes&&... args)
+        -> decltype(function(std::declval<ArgumentTypes>()...))
+    {
         tic();
-        // TODO extend to return result?
-        std::forward<decltype(function)>(function)(std::forward<decltype(args)>(args)...);
-        toc(print_split);
+        if constexpr (std::is_same<void, decltype(function(std::declval<ArgumentTypes>()...))>::value)
+        {
+            function(std::forward<decltype(args)>(args)...);
+            toc(print_split);
+            return;
+        }
+        else
+        {
+            const auto result = function(std::forward<decltype(args)>(args)...);
+            toc(print_split);
+            return result;
+        }
     }
 
     int getLastSplitMs() const;
