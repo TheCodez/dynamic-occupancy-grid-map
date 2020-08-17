@@ -84,8 +84,7 @@ TEST_F(TimerFixture, TocCallsTic)
     EXPECT_EQ(expected_output, output);
 }
 
-void sleepFor2Ms()
-{
+void sleepFor2Ms(){
     sleepMilliseconds(2);
 }
 
