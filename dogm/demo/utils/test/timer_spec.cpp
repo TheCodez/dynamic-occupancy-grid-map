@@ -120,7 +120,7 @@ TEST_F(TimerFixture, TimeVoidFunctionCallWithoutArgumentsNoOutput)
     EXPECT_EQ(std::string{}, output);
 }
 
-void sleepFor2MsWithDummyArguments(int, double)
+void sleepFor2MsWithDummyArguments(int /*unused*/, double /*unused*/)
 {
     sleepMilliseconds(2);
 }
