@@ -21,7 +21,9 @@ public:
         -> decltype(function(std::declval<ArgumentTypes>()...))
     {
         tic();
-        if constexpr (std::is_same<void, decltype(function(std::declval<ArgumentTypes>()...))>::value)
+        constexpr auto has_function_void_return_type =
+            std::is_same<void, decltype(function(std::declval<ArgumentTypes>()...))>::value;
+        if constexpr (has_function_void_return_type)
         {
             function(std::forward<decltype(arguments)>(arguments)...);
             toc(print_split);
