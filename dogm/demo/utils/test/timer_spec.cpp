@@ -84,6 +84,34 @@ TEST_F(TimerFixture, TocCallsTic)
     EXPECT_EQ(expected_output, output);
 }
 
+void sleepFor2Ms(){
+    sleepMilliseconds(2);
+}
+
+TEST_F(TimerFixture, TimeVoidFunctionCallWithoutArguments)
+{
+    std::string expected_output{m_unit_name + " took 2ms\n"};
+
+    m_unit.timeVoidFunctionCall(true, sleepFor2Ms);
+
+    std::string output = getStdoutOfSplit();
+    EXPECT_EQ(expected_output, output);
+}
+
+void sleepFor2MsWithDummyArguments(int, double){
+    sleepMilliseconds(2);
+}
+
+TEST_F(TimerFixture, TimeVoidFunctionCallWithArguments)
+{
+    std::string expected_output{m_unit_name + " took 2ms\n"};
+
+    m_unit.timeVoidFunctionCall(true, sleepFor2MsWithDummyArguments, 2, 3.4);
+
+    std::string output = getStdoutOfSplit();
+    EXPECT_EQ(expected_output, output);
+}
+
 TEST_F(TimerFixture, OneMillisecond)
 {
     std::string expected_output{m_unit_name + " took 1ms\n"};
