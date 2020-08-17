@@ -17,19 +17,19 @@ public:
     void toc(const bool print_split = false);
 
     template <typename FunctionType, typename... ArgumentTypes>
-    auto timeFunctionCall(const bool print_split, FunctionType&& function, ArgumentTypes&&... args)
+    auto timeFunctionCall(const bool print_split, FunctionType&& function, ArgumentTypes&&... arguments)
         -> decltype(function(std::declval<ArgumentTypes>()...))
     {
         tic();
         if constexpr (std::is_same<void, decltype(function(std::declval<ArgumentTypes>()...))>::value)
         {
-            function(std::forward<decltype(args)>(args)...);
+            function(std::forward<decltype(arguments)>(arguments)...);
             toc(print_split);
             return;
         }
         else
         {
-            const auto result = function(std::forward<decltype(args)>(args)...);
+            const auto result = function(std::forward<decltype(arguments)>(arguments)...);
             toc(print_split);
             return result;
         }
