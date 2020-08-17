@@ -84,7 +84,8 @@ TEST_F(TimerFixture, TocCallsTic)
     EXPECT_EQ(expected_output, output);
 }
 
-void sleepFor2Ms(){
+void sleepFor2Ms()
+{
     sleepMilliseconds(2);
 }
 
@@ -119,7 +120,8 @@ TEST_F(TimerFixture, TimeVoidFunctionCallWithoutArgumentsNoOutput)
     EXPECT_EQ(std::string{}, output);
 }
 
-void sleepFor2MsWithDummyArguments(int, double){
+void sleepFor2MsWithDummyArguments(int, double)
+{
     sleepMilliseconds(2);
 }
 
@@ -134,8 +136,9 @@ TEST_F(TimerFixture, TimeVoidFunctionCallWithArguments)
     EXPECT_EQ(expected_output, output);
 }
 
-int add(int a, int b){
-    return a+b;
+int add(int a, int b)
+{
+    return a + b;
 }
 
 TEST_F(TimerFixture, TimeFunctionCallWithArguments)
