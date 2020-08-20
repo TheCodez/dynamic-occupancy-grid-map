@@ -9,7 +9,8 @@ INCLUDE(GoogleTestDownloadAndBuild)
 
 SET(HEADER_FILES
     include/timer.h
-)
+    include/IClock.h
+    include/Clock.h)
 
 SET(SRC_FILES
     timer.cpp
