@@ -16,12 +16,12 @@ static int castToMilliseconds(const std::chrono::nanoseconds& nanoseconds)
 
 void Timer::tic()
 {
-    m_current_start = std::chrono::high_resolution_clock::now();
+    m_current_start = std::chrono::steady_clock::now();
 }
 
 void Timer::toc(const bool print_split)
 {
-    m_splits.push_back(std::chrono::high_resolution_clock::now() - m_current_start);
+    m_splits.push_back(std::chrono::steady_clock::now() - m_current_start);
     if (print_split)
     {
         printLastSplitMs();

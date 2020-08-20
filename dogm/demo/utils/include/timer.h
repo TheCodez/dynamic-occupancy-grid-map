@@ -12,7 +12,7 @@
 class Timer
 {
 public:
-    Timer(const std::string& name) : m_name{name} { tic(); }
+    Timer(std::string name) : m_name{std::move(name)} { tic(); }
     void tic();
     void toc(const bool print_split = false);
 
@@ -44,7 +44,7 @@ public:
 private:
     const std::string m_name;
     std::vector<std::chrono::nanoseconds> m_splits;
-    std::chrono::high_resolution_clock::time_point m_current_start;
+    std::chrono::steady_clock::time_point m_current_start;
 };
 
 #endif  // TIMER_H
