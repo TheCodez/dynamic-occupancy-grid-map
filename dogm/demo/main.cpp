@@ -83,9 +83,8 @@ int main(int argc, const char** argv)
         dogm::MeasurementCell* meas_grid = grid_generator.generateGrid(sim_data[step].measurements);
         grid_map.addMeasurementGrid(meas_grid, true);
 
-        cycle_timer.tic();
-        grid_map.updateGrid(simulation_step_period);
-        cycle_timer.toc(true);
+        const auto update_grid_caller = [&grid_map](const float dt) { grid_map.updateGrid(dt); };
+        cycle_timer.timeFunctionCall(true, update_grid_caller, simulation_step_period);
 
         const auto cells_with_velocity =
             computeCellsWithVelocity(grid_map, minimum_occupancy_threshold, minimum_velocity_threshold);

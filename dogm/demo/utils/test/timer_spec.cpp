@@ -84,6 +84,86 @@ TEST_F(TimerFixture, TocCallsTic)
     EXPECT_EQ(expected_output, output);
 }
 
+void sleepFor2Ms()
+{
+    sleepMilliseconds(2);
+}
+
+TEST_F(TimerFixture, TimeVoidFunctionCallWithoutArguments)
+{
+    std::string expected_output{m_unit_name + " took 2ms\n"};
+    testing::internal::CaptureStdout();
+
+    m_unit.timeFunctionCall(true, sleepFor2Ms);
+
+    std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(expected_output, output);
+}
+
+TEST_F(TimerFixture, TimeVoidFunctionCallRecordsSplit)
+{
+    std::string expected_output{m_unit_name + " took 2ms\n"};
+
+    m_unit.timeFunctionCall(true, sleepFor2Ms);
+
+    std::string output = getStdoutOfSplit();
+    EXPECT_EQ(expected_output, output);
+}
+
+TEST_F(TimerFixture, TimeVoidFunctionCallWithoutArgumentsNoOutput)
+{
+    testing::internal::CaptureStdout();
+
+    m_unit.timeFunctionCall(false, sleepFor2Ms);
+
+    const std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(std::string{}, output);
+}
+
+void sleepFor2MsWithDummyArguments(int /*unused*/, double /*unused*/)
+{
+    sleepMilliseconds(2);
+}
+
+TEST_F(TimerFixture, TimeVoidFunctionCallWithArguments)
+{
+    const std::string expected_output{m_unit_name + " took 2ms\n"};
+    testing::internal::CaptureStdout();
+
+    m_unit.timeFunctionCall(true, sleepFor2MsWithDummyArguments, 2, 3.4);
+
+    const std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(expected_output, output);
+}
+
+int add(int a, int b)
+{
+    return a + b;
+}
+
+TEST_F(TimerFixture, TimeFunctionCallWithArguments)
+{
+    const std::string expected_output{m_unit_name + " took 0ms\n"};
+    testing::internal::CaptureStdout();
+
+    const auto result = m_unit.timeFunctionCall(true, add, 2, 3);
+
+    ASSERT_EQ(5, result);
+    const std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(expected_output, output);
+}
+
+TEST_F(TimerFixture, TimeFunctionCallWithArgumentsNoOutput)
+{
+    testing::internal::CaptureStdout();
+
+    const auto result = m_unit.timeFunctionCall(false, add, 2, 3);
+
+    ASSERT_EQ(5, result);
+    const std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(std::string{}, output);
+}
+
 TEST_F(TimerFixture, OneMillisecond)
 {
     std::string expected_output{m_unit_name + " took 1ms\n"};

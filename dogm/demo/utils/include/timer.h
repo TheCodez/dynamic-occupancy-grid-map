@@ -15,6 +15,28 @@ public:
     Timer(const std::string& name) : m_name{name} { tic(); }
     void tic();
     void toc(const bool print_split = false);
+
+    template <typename FunctionType, typename... ArgumentTypes>
+    auto timeFunctionCall(const bool print_split, FunctionType&& function, ArgumentTypes&&... arguments)
+        -> decltype(function(std::declval<ArgumentTypes>()...))
+    {
+        tic();
+        constexpr auto has_function_void_return_type =
+            std::is_same<void, decltype(function(std::declval<ArgumentTypes>()...))>::value;
+        if constexpr (has_function_void_return_type)
+        {
+            function(std::forward<decltype(arguments)>(arguments)...);
+            toc(print_split);
+            return;
+        }
+        else
+        {
+            const auto result = function(std::forward<decltype(arguments)>(arguments)...);
+            toc(print_split);
+            return result;
+        }
+    }
+
     int getLastSplitMs() const;
     void printLastSplitMs() const;
     void printStatsMs() const;
