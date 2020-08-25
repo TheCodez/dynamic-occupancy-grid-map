@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // See accompanying LICENSE file for detailed information
 
+#include "clock.h"
 #include "dogm/dogm.h"
 #include "dogm/dogm_types.h"
 #include "image_creation.h"
@@ -14,6 +15,7 @@
 #include <glm/glm.hpp>
 #include <opencv2/opencv.hpp>
 
+#include <memory>
 #include <string>
 
 int main(int argc, const char** argv)
@@ -50,7 +52,7 @@ int main(int argc, const char** argv)
     // Just to init cuda
     cudaDeviceSynchronize();
 
-    Timer initialization_timer{"DOGM initialization"};
+    Timer initialization_timer{"DOGM initialization", std::make_unique<Clock>()};
     dogm::DOGM grid_map(grid_params);
     initialization_timer.toc(true);
 
@@ -74,7 +76,7 @@ int main(int argc, const char** argv)
     precision_evaluator.registerMetric("Mean absolute error (MAE)", std::make_unique<MAE>());
     precision_evaluator.registerMetric("Root mean squared error (RMSE)", std::make_unique<RMSE>());
 
-    Timer cycle_timer{"DOGM cycle"};
+    Timer cycle_timer{"DOGM cycle", std::make_unique<Clock>()};
 
     for (int step = 0; step < num_simulation_steps; ++step)
     {
