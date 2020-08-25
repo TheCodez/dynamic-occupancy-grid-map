@@ -7,10 +7,11 @@
 
 #include <chrono>
 
-class IClock {
+class IClock
+{
 public:
     virtual std::chrono::steady_clock::time_point getCurrentTime() = 0;
     virtual ~IClock() = default;
 };
 
-#endif // ICLOCK_H
+#endif  // ICLOCK_H

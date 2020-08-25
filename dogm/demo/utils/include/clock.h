@@ -5,14 +5,13 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#include <chrono>
 #include "IClock.h"
+#include <chrono>
 
-class Clock : public IClock {
+class Clock : public IClock
+{
 public:
-    std::chrono::steady_clock::time_point getCurrentTime() final {
-        return std::chrono::steady_clock::now();
-    }
+    std::chrono::steady_clock::time_point getCurrentTime() final { return std::chrono::steady_clock::now(); }
 };
 
-#endif // CLOCK_H
+#endif  // CLOCK_H
