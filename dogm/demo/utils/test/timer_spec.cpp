@@ -13,32 +13,24 @@
 
 class ClockStub : public IClock {
 public:
-    ClockStub(std::initializer_list<std::size_t> time_diffs) {
-        auto current_time = std::chrono::steady_clock::now();
-        for (const auto &time_diff : time_diffs) {
-            m_fake_time_points.push(current_time);
-            current_time += std::chrono::milliseconds(time_diff);
-            m_fake_time_points.push(current_time);
-            current_time += std::chrono::milliseconds(1);  // TODO check if necessary
-        }
-        m_fake_time_points.push(current_time);  // for tic() call in toc()
+    std::chrono::steady_clock::time_point getCurrentTime() final {
+        return m_fake_current_time;
     }
 
-    std::chrono::steady_clock::time_point getCurrentTime() final {
-        const auto result = m_fake_time_points.front();
-        m_fake_time_points.pop();
-        return result;
+    void incrementCurrentTimeBy(const unsigned int milliseconds) {
+        m_fake_current_time += std::chrono::milliseconds(milliseconds);
     }
 
 private:
-    std::queue<std::chrono::steady_clock::time_point> m_fake_time_points{};
+    std::chrono::steady_clock::time_point m_fake_current_time{std::chrono::steady_clock::now()};
 };
 
 TEST(Timer, ConstructorCallsTic) {
     std::string unit_name{"name"};
-    std::string expected_output{unit_name + " took 1ms\n"};
+    std::string expected_output{unit_name + " took 0ms\n"};
 
-    Timer unit{unit_name, std::make_unique<ClockStub>(std::initializer_list<std::size_t>{1U})};
+    Timer unit{unit_name, std::make_unique<ClockStub>()};
+    // TODO pass time in clockstub
     unit.toc();
 
     testing::internal::CaptureStdout();
@@ -51,8 +43,9 @@ TEST(Timer, ConstructorCallsTic) {
 class TimerFixture : public ::testing::Test {
 protected:
     std::string m_unit_name{"name"};
-//    Timer m_unit{m_unit_name};
-    Timer m_unit{m_unit_name, std::make_unique<ClockStub>(std::initializer_list<std::size_t>{1U, 2U, 5U, 0U})};
+    std::unique_ptr<ClockStub> temporary_clock_stub = std::make_unique<ClockStub>();
+    ClockStub* m_clock_stub{temporary_clock_stub.get()};
+    Timer m_unit{m_unit_name, std::move(temporary_clock_stub)};
 
     std::string getStdoutOfSplit() {
         testing::internal::CaptureStdout();
@@ -65,13 +58,19 @@ protected:
         m_unit.printStatsMs();
         return testing::internal::GetCapturedStdout();
     }
+
+    void sleepMilliseconds(const unsigned int milliseconds) {
+        m_clock_stub->incrementCurrentTimeBy(milliseconds);
+    }
 };
 
 TEST_F(TimerFixture, TocCanCallPrint) {
-    std::string expected_output{m_unit_name + " took 1ms\n"};
+    std::string expected_output{m_unit_name + " took 2ms\n"};
 
     testing::internal::CaptureStdout();
+    sleepMilliseconds(1);
     m_unit.tic();
+    sleepMilliseconds(2);
     m_unit.toc(true);
 
     std::string output = testing::internal::GetCapturedStdout();
@@ -79,9 +78,10 @@ TEST_F(TimerFixture, TocCanCallPrint) {
 }
 
 TEST_F(TimerFixture, TocCallsTic) {
-    std::string expected_output{m_unit_name + " took 2ms\n"};
+    std::string expected_output{m_unit_name + " took 3ms\n"};
 
     m_unit.toc();
+    sleepMilliseconds(3);
     m_unit.toc();
 
     std::string output = getStdoutOfSplit();
