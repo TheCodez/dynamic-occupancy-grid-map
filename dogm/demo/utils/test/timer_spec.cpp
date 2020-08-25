@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include "IClock.h"
+#include "iclock.h"
 #include "timer.h"
 #include <chrono>
 #include <memory>
