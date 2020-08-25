@@ -5,7 +5,7 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#include "IClock.h"
+#include "iclock.h"
 #include <chrono>
 
 class Clock : public IClock

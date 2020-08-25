@@ -50,6 +50,15 @@ protected:
     ClockStub* m_clock_stub{temporary_clock_stub.get()};
     Timer m_unit{m_unit_name, std::move(temporary_clock_stub)};
 
+    void sleepMilliseconds(const unsigned int milliseconds) { m_clock_stub->incrementCurrentTimeBy(milliseconds); }
+
+    void addSplit(const unsigned int milliseconds)
+    {
+        m_unit.tic();
+        sleepMilliseconds(milliseconds);
+        m_unit.toc();
+    }
+
     std::string getStdoutOfSplit()
     {
         testing::internal::CaptureStdout();
@@ -62,15 +71,6 @@ protected:
         testing::internal::CaptureStdout();
         m_unit.printStatsMs();
         return testing::internal::GetCapturedStdout();
-    }
-
-    void sleepMilliseconds(const unsigned int milliseconds) { m_clock_stub->incrementCurrentTimeBy(milliseconds); }
-
-    void addSplit(const unsigned int milliseconds)
-    {
-        m_unit.tic();
-        sleepMilliseconds(milliseconds);
-        m_unit.toc();
     }
 };
 
