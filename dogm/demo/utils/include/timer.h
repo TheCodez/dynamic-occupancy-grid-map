@@ -6,6 +6,7 @@
 #define TIMER_H
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
 
