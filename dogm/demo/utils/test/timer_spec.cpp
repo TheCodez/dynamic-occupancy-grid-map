@@ -76,12 +76,11 @@ protected:
 
 TEST_F(TimerFixture, TocCanCallPrint)
 {
-    std::string expected_output{m_unit_name + " took 2ms\n"};
+    std::string expected_output{m_unit_name + " took 1ms\n"};
 
     testing::internal::CaptureStdout();
-    sleepMilliseconds(1);
     m_unit.tic();
-    sleepMilliseconds(2);
+    sleepMilliseconds(1);
     m_unit.toc(true);
 
     std::string output = testing::internal::GetCapturedStdout();
@@ -90,10 +89,11 @@ TEST_F(TimerFixture, TocCanCallPrint)
 
 TEST_F(TimerFixture, TocCallsTic)
 {
-    std::string expected_output{m_unit_name + " took 3ms\n"};
+    std::string expected_output{m_unit_name + " took 2ms\n"};
 
+    sleepMilliseconds(1);
     m_unit.toc();
-    sleepMilliseconds(3);
+    sleepMilliseconds(2);
     m_unit.toc();
 
     std::string output = getStdoutOfSplit();
