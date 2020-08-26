@@ -4,23 +4,35 @@
 
 #include <gtest/gtest.h>
 
+#include "iclock.h"
 #include "timer.h"
 #include <chrono>
+#include <memory>
 #include <string>
-#include <thread>
 
-void sleepMilliseconds(const unsigned int milliseconds)
+class ClockStub : public IClock
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
-}
+public:
+    std::chrono::steady_clock::time_point getCurrentTime() final { return m_fake_current_time; }
+
+    void incrementCurrentTimeBy(const unsigned int milliseconds)
+    {
+        m_fake_current_time += std::chrono::milliseconds(milliseconds);
+    }
+
+private:
+    std::chrono::steady_clock::time_point m_fake_current_time{std::chrono::steady_clock::now()};
+};
 
 TEST(Timer, ConstructorCallsTic)
 {
     std::string unit_name{"name"};
-    std::string expected_output{unit_name + " took 1ms\n"};
+    std::string expected_output{unit_name + " took 5ms\n"};
+    std::unique_ptr<ClockStub> temporary_clock_stub = std::make_unique<ClockStub>();
+    ClockStub* clock_stub{temporary_clock_stub.get()};
 
-    Timer unit{unit_name};
-    sleepMilliseconds(1);
+    Timer unit{unit_name, std::move(temporary_clock_stub)};
+    clock_stub->incrementCurrentTimeBy(5);
     unit.toc();
 
     testing::internal::CaptureStdout();
@@ -34,7 +46,11 @@ class TimerFixture : public ::testing::Test
 {
 protected:
     std::string m_unit_name{"name"};
-    Timer m_unit{m_unit_name};
+    std::unique_ptr<ClockStub> temporary_clock_stub = std::make_unique<ClockStub>();
+    ClockStub* m_clock_stub{temporary_clock_stub.get()};
+    Timer m_unit{m_unit_name, std::move(temporary_clock_stub)};
+
+    void sleepMilliseconds(const unsigned int milliseconds) { m_clock_stub->incrementCurrentTimeBy(milliseconds); }
 
     void addSplit(const unsigned int milliseconds)
     {
@@ -84,17 +100,13 @@ TEST_F(TimerFixture, TocCallsTic)
     EXPECT_EQ(expected_output, output);
 }
 
-void sleepFor2Ms()
-{
-    sleepMilliseconds(2);
-}
-
 TEST_F(TimerFixture, TimeVoidFunctionCallWithoutArguments)
 {
-    std::string expected_output{m_unit_name + " took 2ms\n"};
+    std::string expected_output{m_unit_name + " took 4ms\n"};
     testing::internal::CaptureStdout();
 
-    m_unit.timeFunctionCall(true, sleepFor2Ms);
+    const auto sleepFor4Ms = [this]() { sleepMilliseconds(4); };
+    m_unit.timeFunctionCall(true, sleepFor4Ms);
 
     std::string output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(expected_output, output);
@@ -104,6 +116,7 @@ TEST_F(TimerFixture, TimeVoidFunctionCallRecordsSplit)
 {
     std::string expected_output{m_unit_name + " took 2ms\n"};
 
+    const auto sleepFor2Ms = [this]() { sleepMilliseconds(2); };
     m_unit.timeFunctionCall(true, sleepFor2Ms);
 
     std::string output = getStdoutOfSplit();
@@ -114,15 +127,11 @@ TEST_F(TimerFixture, TimeVoidFunctionCallWithoutArgumentsNoOutput)
 {
     testing::internal::CaptureStdout();
 
+    const auto sleepFor2Ms = [this]() { sleepMilliseconds(2); };
     m_unit.timeFunctionCall(false, sleepFor2Ms);
 
     const std::string output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(std::string{}, output);
-}
-
-void sleepFor2MsWithDummyArguments(int /*unused*/, double /*unused*/)
-{
-    sleepMilliseconds(2);
 }
 
 TEST_F(TimerFixture, TimeVoidFunctionCallWithArguments)
@@ -130,6 +139,7 @@ TEST_F(TimerFixture, TimeVoidFunctionCallWithArguments)
     const std::string expected_output{m_unit_name + " took 2ms\n"};
     testing::internal::CaptureStdout();
 
+    const auto sleepFor2MsWithDummyArguments = [this](int /*unused*/, double /*unused*/) { sleepMilliseconds(2); };
     m_unit.timeFunctionCall(true, sleepFor2MsWithDummyArguments, 2, 3.4);
 
     const std::string output = testing::internal::GetCapturedStdout();

@@ -6,13 +6,20 @@
 #define TIMER_H
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
+
+#include "iclock.h"
 
 class Timer
 {
 public:
-    Timer(const std::string& name) : m_name{name} { tic(); }
+    Timer(std::string name, std::unique_ptr<IClock> clock) : m_name{std::move(name)}, m_clock{std::move(clock)}
+    {
+        tic();
+    }
+
     void tic();
     void toc(const bool print_split = false);
 
@@ -44,7 +51,8 @@ public:
 private:
     const std::string m_name;
     std::vector<std::chrono::nanoseconds> m_splits;
-    std::chrono::high_resolution_clock::time_point m_current_start;
+    std::chrono::steady_clock::time_point m_current_start;
+    std::unique_ptr<IClock> m_clock;
 };
 
 #endif  // TIMER_H

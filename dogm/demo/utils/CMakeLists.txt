@@ -6,7 +6,9 @@ endif()
 
 SET(HEADER_FILES
     include/color_wheel_adder.h
+    include/clock.h
     include/dbscan.h
+    include/iclock.h
     include/image_creation.h
     include/metrics.h
     include/precision_evaluator.h
