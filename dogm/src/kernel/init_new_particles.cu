@@ -121,24 +121,17 @@ __global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const
     {
         int cell_idx = birth_particle_array.grid_cell_idx[i];
         const GridCell& grid_cell = grid_cell_array[cell_idx];
+        bool associated = birth_particle_array.associated[i];
 
         float x = cell_idx % grid_size + 0.5f;
         float y = cell_idx / static_cast<float>(grid_size) + 0.5f;
-        float vel_x = curand_normal(&local_state, 0.0f, velocity);
-        float vel_y = curand_normal(&local_state, 0.0f, velocity);
 
-        bool associated = birth_particle_array.associated[i];
-        // TODO: Use correct distribution
-        if (associated)
-        {
-            birth_particle_array.weight[i] = grid_cell.w_A;
-            birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
-        }
-        else
-        {
-            birth_particle_array.weight[i] = grid_cell.w_UA;
-            birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
-        }
+        float2 mean = associated ? make_float2(grid_cell.mean_x_vel, grid_cell.mean_y_vel) : make_float2(0.0f, 0.0f);
+        float vel_x = curand_normal(&local_state, mean.x, velocity);
+        float vel_y = curand_normal(&local_state, mean.y, velocity);
+
+        birth_particle_array.weight[i] = associated ? grid_cell.w_A : grid_cell.w_UA;
+        birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
     }
 
     global_state[thread_id] = local_state;
