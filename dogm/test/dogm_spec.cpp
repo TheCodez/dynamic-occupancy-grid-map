@@ -15,11 +15,10 @@ TEST(DOGM, EgoMotionCompensation)
     grid_params.particle_count = 2;
     grid_params.new_born_particle_count = 1;
     grid_params.persistence_prob = 0.5f;
-    grid_params.process_noise_position = 0.0f;
-    grid_params.process_noise_velocity = 0.0f;
+    grid_params.stddev_process_noise_position = 0.0f;
+    grid_params.stddev_process_noise_velocity = 0.0f;
     grid_params.birth_prob = 0.02f;
-    grid_params.velocity_persistent = 10.0f;
-    grid_params.velocity_birth = 10.0f;
+    grid_params.stddev_velocity = 10.0f;
 
     dogm::DOGM dogm(grid_params);
     cudaDeviceSynchronize();
@@ -73,11 +72,10 @@ TEST(DOGM, Predict)
     grid_params.particle_count = 2;
     grid_params.new_born_particle_count = 1;
     grid_params.persistence_prob = 0.5f;
-    grid_params.process_noise_position = 0.0f;
-    grid_params.process_noise_velocity = 0.0f;
+    grid_params.stddev_process_noise_position = 0.0f;
+    grid_params.stddev_process_noise_velocity = 0.0f;
     grid_params.birth_prob = 0.02f;
-    grid_params.velocity_persistent = 10.0f;
-    grid_params.velocity_birth = 10.0f;
+    grid_params.stddev_velocity = 10.0f;
 
     float delta_time = 0.1f;
 

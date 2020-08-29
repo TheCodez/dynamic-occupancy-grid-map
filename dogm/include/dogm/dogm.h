@@ -27,11 +27,10 @@ public:
         int particle_count;
         int new_born_particle_count;
         float persistence_prob;
-        float process_noise_position;
-        float process_noise_velocity;
+        float stddev_process_noise_position;
+        float stddev_process_noise_velocity;
         float birth_prob;
-        float velocity_persistent;
-        float velocity_birth;
+        float stddev_velocity;
     };
 
     DOGM(const Params& params);

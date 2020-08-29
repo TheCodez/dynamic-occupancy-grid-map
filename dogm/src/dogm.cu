@@ -104,7 +104,7 @@ void DOGM::initialize()
     CHECK_ERROR(cudaDeviceSynchronize());
 
     initParticlesKernel<<<particles_grid, block_dim, 0, particles_stream>>>(
-        particle_array, rng_states, params.velocity_persistent, grid_size, particle_count);
+        particle_array, rng_states, params.stddev_velocity, grid_size, particle_count);
 
     initGridCellsKernel<<<grid_map_grid, block_dim, 0, grid_stream>>>(grid_cell_array, meas_cell_array, grid_size,
                                                                       grid_cell_count);
@@ -223,8 +223,8 @@ void DOGM::particlePrediction(float dt)
     transition_matrix = glm::transpose(transition_matrix);
 
     predictKernel<<<particles_grid, block_dim>>>(
-        particle_array, rng_states, params.velocity_persistent, grid_size, params.persistence_prob, transition_matrix,
-        params.process_noise_position, params.process_noise_velocity, particle_count);
+        particle_array, rng_states, params.stddev_velocity, grid_size, params.persistence_prob, transition_matrix,
+        params.stddev_process_noise_position, params.stddev_process_noise_velocity, particle_count);
 
     CHECK_ERROR(cudaGetLastError());
 }
@@ -299,7 +299,7 @@ void DOGM::initializeNewParticles()
     // std::cout << "DOGM::initializeNewParticles" << std::endl;
 
     initBirthParticlesKernel<<<birth_particles_grid, block_dim>>>(
-        birth_particle_array, rng_states, params.velocity_birth, grid_size, new_born_particle_count);
+        birth_particle_array, rng_states, params.stddev_velocity, grid_size, new_born_particle_count);
 
     CHECK_ERROR(cudaGetLastError());
     // CHECK_ERROR(cudaDeviceSynchronize());
@@ -317,7 +317,7 @@ void DOGM::initializeNewParticles()
     CHECK_ERROR(cudaGetLastError());
 
     initNewParticlesKernel2<<<birth_particles_grid, block_dim>>>(
-        birth_particle_array, grid_cell_array, rng_states, params.velocity_birth, grid_size, new_born_particle_count);
+        birth_particle_array, grid_cell_array, rng_states, params.stddev_velocity, grid_size, new_born_particle_count);
 
     CHECK_ERROR(cudaGetLastError());
 }

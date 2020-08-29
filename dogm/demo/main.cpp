@@ -26,11 +26,10 @@ int main(int argc, const char** argv)
     grid_params.particle_count = 3 * static_cast<int>(10e5);
     grid_params.new_born_particle_count = 3 * static_cast<int>(10e4);
     grid_params.persistence_prob = 0.99f;
-    grid_params.process_noise_position = 0.1f;
-    grid_params.process_noise_velocity = 1.0f;
+    grid_params.stddev_process_noise_position = 0.1f;
+    grid_params.stddev_process_noise_velocity = 1.0f;
     grid_params.birth_prob = 0.02f;
-    grid_params.velocity_persistent = 30.0f;
-    grid_params.velocity_birth = 30.0f;
+    grid_params.stddev_velocity = 30.0f;
 
     LaserMeasurementGrid::Params laser_params;
     laser_params.fov = 120.0f;
