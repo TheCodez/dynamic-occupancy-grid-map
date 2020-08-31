@@ -19,6 +19,7 @@ TEST(DOGM, EgoMotionCompensation)
     grid_params.stddev_process_noise_velocity = 0.0f;
     grid_params.birth_prob = 0.02f;
     grid_params.stddev_velocity = 10.0f;
+    grid_params.init_max_velocity = 30.0f;
 
     dogm::DOGM dogm(grid_params);
     cudaDeviceSynchronize();
@@ -76,6 +77,7 @@ TEST(DOGM, Predict)
     grid_params.stddev_process_noise_velocity = 0.0f;
     grid_params.birth_prob = 0.02f;
     grid_params.stddev_velocity = 10.0f;
+    grid_params.init_max_velocity = 30.0f;
 
     float delta_time = 0.1f;
 

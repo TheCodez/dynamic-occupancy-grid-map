@@ -30,6 +30,7 @@ int main(int argc, const char** argv)
     grid_params.stddev_process_noise_velocity = 1.0f;
     grid_params.birth_prob = 0.02f;
     grid_params.stddev_velocity = 30.0f;
+    grid_params.init_max_velocity = 30.0f;
 
     LaserMeasurementGrid::Params laser_params;
     laser_params.fov = 120.0f;

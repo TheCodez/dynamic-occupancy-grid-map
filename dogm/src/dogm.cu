@@ -104,7 +104,7 @@ void DOGM::initialize()
     CHECK_ERROR(cudaDeviceSynchronize());
 
     initParticlesKernel<<<particles_grid, block_dim, 0, particles_stream>>>(
-        particle_array, rng_states, params.stddev_velocity, grid_size, particle_count);
+        particle_array, rng_states, params.init_max_velocity, grid_size, particle_count);
 
     initGridCellsKernel<<<grid_map_grid, block_dim, 0, grid_stream>>>(grid_cell_array, meas_cell_array, grid_size,
                                                                       grid_cell_count);
