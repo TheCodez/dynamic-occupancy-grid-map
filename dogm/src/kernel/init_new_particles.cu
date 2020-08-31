@@ -73,6 +73,56 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
                       GPU_LAMBDA(float x) { return x * (v_B / max); });
 }
 
+__global__ void copyMassesKernel(const MeasurementCell* __restrict__ meas_cell_array, float* __restrict__ masses,
+                                 int cell_count)
+{
+    for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
+    {
+        masses[j] = meas_cell_array[j].occ_mass;
+    }
+}
+
+__global__ void initParticlesKernel1(GridCell* __restrict__ grid_cell_array,
+                                     const MeasurementCell* __restrict__ meas_cell_array, ParticlesSoA particle_array,
+                                     const float* __restrict__ particle_orders_array_accum, int cell_count)
+{
+    for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
+    {
+        int start_idx = calc_start_idx(particle_orders_array_accum, j);
+        int end_idx = calc_end_idx(particle_orders_array_accum, j);
+
+        for (int i = start_idx; i < end_idx + 1; i++)
+        {
+            particle_array.grid_cell_idx[i] = j;
+        }
+    }
+}
+
+__global__ void initParticlesKernel2(ParticlesSoA particle_array, const GridCell* __restrict__ grid_cell_array,
+                                     curandState* __restrict__ global_state, float velocity, int grid_size,
+                                     float new_weight, int particle_count)
+{
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    curandState local_state = global_state[thread_id];
+
+    for (int i = thread_id; i < particle_count; i += stride)
+    {
+        int cell_idx = particle_array.grid_cell_idx[i];
+
+        float x = cell_idx % grid_size + 0.5f;
+        float y = cell_idx / grid_size + 0.5f;
+        float vel_x = curand_normal(&local_state, 0.0f, velocity);
+        float vel_y = curand_normal(&local_state, 0.0f, velocity);
+
+        particle_array.weight[i] = new_weight;
+        particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
+    }
+
+    global_state[thread_id] = local_state;
+}
+
 __global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
                                         const MeasurementCell* __restrict__ meas_cell_array,
                                         const float* __restrict__ weight_array,

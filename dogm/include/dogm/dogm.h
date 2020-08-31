@@ -57,6 +57,8 @@ private:
     void initialize();
 
 public:
+    void initializeParticles();
+
     void particlePrediction(float dt);
     void particleAssignment();
     void gridCellOccupancyUpdate();
@@ -104,6 +106,7 @@ private:
     int iteration;
 
     bool first_pose_received;
+    bool first_measurement_received;
     float position_x;
     float position_y;
 };

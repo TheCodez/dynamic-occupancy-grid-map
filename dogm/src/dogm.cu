@@ -34,7 +34,7 @@ DOGM::DOGM(const Params& params)
     : params(params), grid_size(static_cast<int>(params.size / params.resolution)),
       particle_count(params.particle_count), grid_cell_count(grid_size * grid_size),
       new_born_particle_count(params.new_born_particle_count), block_dim(BLOCK_SIZE), first_pose_received(false),
-      position_x(0.0f), position_y(0.0f)
+      first_measurement_received(false), position_x(0.0f), position_y(0.0f)
 {
     int device;
     CHECK_ERROR(cudaGetDevice(&device));
@@ -102,9 +102,6 @@ void DOGM::initialize()
 
     CHECK_ERROR(cudaGetLastError());
     CHECK_ERROR(cudaDeviceSynchronize());
-
-    initParticlesKernel<<<particles_grid, block_dim, 0, particles_stream>>>(
-        particle_array, rng_states, params.stddev_velocity, grid_size, particle_count);
 
     initGridCellsKernel<<<grid_map_grid, block_dim, 0, grid_stream>>>(grid_cell_array, meas_cell_array, grid_size,
                                                                       grid_cell_count);
@@ -206,6 +203,38 @@ void DOGM::addMeasurementGrid(MeasurementCell* measurement_grid, bool device)
 {
     cudaMemcpyKind kind = device ? cudaMemcpyDeviceToDevice : cudaMemcpyHostToDevice;
     CHECK_ERROR(cudaMemcpy(meas_cell_array, measurement_grid, grid_cell_count * sizeof(MeasurementCell), kind));
+
+    if (!first_measurement_received)
+    {
+        initializeParticles();
+        first_measurement_received = true;
+    }
+}
+
+void DOGM::initializeParticles()
+{
+    copyMassesKernel<<<grid_map_grid, block_dim>>>(meas_cell_array, born_masses_array, grid_cell_count);
+
+    CHECK_ERROR(cudaGetLastError());
+    CHECK_ERROR(cudaDeviceSynchronize());
+
+    thrust::device_vector<float> particle_orders_accum(grid_cell_count);
+    accumulate(born_masses_array, particle_orders_accum);
+    float* particle_orders_array_accum = thrust::raw_pointer_cast(particle_orders_accum.data());
+
+    float new_weight = particle_orders_accum.back() / particle_count;
+
+    normalize_particle_orders(particle_orders_array_accum, grid_cell_count, particle_count);
+
+    initParticlesKernel1<<<grid_map_grid, block_dim>>>(grid_cell_array, meas_cell_array, particle_array,
+                                                       particle_orders_array_accum, grid_cell_count);
+
+    CHECK_ERROR(cudaGetLastError());
+
+    initParticlesKernel2<<<particles_grid, block_dim>>>(particle_array, grid_cell_array, rng_states,
+                                                        params.stddev_velocity, grid_size, new_weight, particle_count);
+
+    CHECK_ERROR(cudaGetLastError());
 }
 
 void DOGM::particlePrediction(float dt)
