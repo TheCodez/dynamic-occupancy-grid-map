@@ -316,8 +316,9 @@ void DOGM::initializeNewParticles()
 
     CHECK_ERROR(cudaGetLastError());
 
-    initNewParticlesKernel2<<<birth_particles_grid, block_dim>>>(
-        birth_particle_array, grid_cell_array, rng_states, params.stddev_velocity, grid_size, new_born_particle_count);
+    initNewParticlesKernel2<<<birth_particles_grid, block_dim>>>(birth_particle_array, grid_cell_array, rng_states,
+                                                                 params.stddev_velocity, params.init_max_velocity,
+                                                                 grid_size, new_born_particle_count);
 
     CHECK_ERROR(cudaGetLastError());
 }

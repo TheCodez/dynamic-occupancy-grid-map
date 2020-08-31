@@ -109,8 +109,8 @@ __global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
 }
 
 __global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const GridCell* __restrict__ grid_cell_array,
-                                        curandState* __restrict__ global_state, float velocity, int grid_size,
-                                        int particle_count)
+                                        curandState* __restrict__ global_state, float stddev_velocity,
+                                        float max_velocity, int grid_size, int particle_count)
 {
     int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
@@ -126,12 +126,22 @@ __global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const
         float x = cell_idx % grid_size + 0.5f;
         float y = cell_idx / static_cast<float>(grid_size) + 0.5f;
 
-        float2 mean = associated ? make_float2(grid_cell.mean_x_vel, grid_cell.mean_y_vel) : make_float2(0.0f, 0.0f);
-        float vel_x = curand_normal(&local_state, mean.x, velocity);
-        float vel_y = curand_normal(&local_state, mean.y, velocity);
+        if (associated)
+        {
+            float vel_x = curand_normal(&local_state, grid_cell.mean_x_vel, stddev_velocity);
+            float vel_y = curand_normal(&local_state, grid_cell.mean_y_vel, stddev_velocity);
 
-        birth_particle_array.weight[i] = associated ? grid_cell.w_A : grid_cell.w_UA;
-        birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
+            birth_particle_array.weight[i] = grid_cell.w_A;
+            birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
+        }
+        else
+        {
+            float vel_x = curand_uniform(&local_state, -max_velocity, max_velocity);
+            float vel_y = curand_uniform(&local_state, -max_velocity, max_velocity);
+
+            birth_particle_array.weight[i] = grid_cell.w_UA;
+            birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
+        }
     }
 
     global_state[thread_id] = local_state;
