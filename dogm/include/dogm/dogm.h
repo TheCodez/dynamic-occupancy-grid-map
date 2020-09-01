@@ -31,6 +31,7 @@ public:
         float stddev_process_noise_velocity;
         float birth_prob;
         float stddev_velocity;
+        float init_max_velocity;
     };
 
     DOGM(const Params& params);

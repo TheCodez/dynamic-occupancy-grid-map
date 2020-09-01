@@ -232,7 +232,7 @@ void DOGM::initializeParticles()
     CHECK_ERROR(cudaGetLastError());
 
     initParticlesKernel2<<<particles_grid, block_dim>>>(particle_array, grid_cell_array, rng_states,
-                                                        params.stddev_velocity, grid_size, new_weight, particle_count);
+                                                        params.init_max_velocity, grid_size, new_weight, particle_count);
 
     CHECK_ERROR(cudaGetLastError());
 }
@@ -302,8 +302,8 @@ void DOGM::updatePersistentParticles()
 {
     // std::cout << "DOGM::updatePersistentParticles" << std::endl;
 
-    updatePersistentParticlesKernel1<<<particles_grid, block_dim>>>(particle_array, meas_cell_array, weight_array,
-                                                                    particle_count);
+    //updatePersistentParticlesKernel1<<<particles_grid, block_dim>>>(particle_array, meas_cell_array, weight_array,
+    //                                                                particle_count);
 
     CHECK_ERROR(cudaGetLastError());
     // CHECK_ERROR(cudaDeviceSynchronize());
@@ -345,8 +345,9 @@ void DOGM::initializeNewParticles()
 
     CHECK_ERROR(cudaGetLastError());
 
-    initNewParticlesKernel2<<<birth_particles_grid, block_dim>>>(
-        birth_particle_array, grid_cell_array, rng_states, params.stddev_velocity, grid_size, new_born_particle_count);
+    initNewParticlesKernel2<<<birth_particles_grid, block_dim>>>(birth_particle_array, grid_cell_array, rng_states,
+                                                                 params.stddev_velocity, params.init_max_velocity,
+                                                                 grid_size, new_born_particle_count);
 
     CHECK_ERROR(cudaGetLastError());
 }

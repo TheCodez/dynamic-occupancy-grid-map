@@ -33,8 +33,8 @@ __global__ void initParticlesKernel(ParticlesSoA particle_array, curandState* __
     {
         float x = curand_uniform(&local_state, 0.0f, grid_size - 1);
         float y = curand_uniform(&local_state, 0.0f, grid_size - 1);
-        float vel_x = curand_normal(&local_state, 0.0f, velocity);
-        float vel_y = curand_normal(&local_state, 0.0f, velocity);
+        float vel_x = curand_uniform(&local_state, -velocity, velocity);
+        float vel_y = curand_uniform(&local_state, -velocity, velocity);
 
         particle_array.weight[i] = 1.0f / particle_count;
         particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
