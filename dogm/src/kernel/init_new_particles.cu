@@ -178,16 +178,17 @@ __global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const
 
         if (associated)
         {
-            float vel_x = curand_normal(&local_state, grid_cell.mean_x_vel, stddev_velocity);
-            float vel_y = curand_normal(&local_state, grid_cell.mean_y_vel, stddev_velocity);
+            // TODO: associated particles would use the doppler velocity in their velocity distribution
+            float vel_x = curand_normal(&local_state, 0.0f, stddev_velocity);
+            float vel_y = curand_normal(&local_state, 0.0f, stddev_velocity);
 
             birth_particle_array.weight[i] = grid_cell.w_A;
             birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
         }
         else
         {
-            float vel_x = curand_uniform(&local_state, -max_velocity, max_velocity);
-            float vel_y = curand_uniform(&local_state, -max_velocity, max_velocity);
+            float vel_x = curand_normal(&local_state, 0.0f, stddev_velocity);
+            float vel_y = curand_normal(&local_state, 0.0f, stddev_velocity);
 
             birth_particle_array.weight[i] = grid_cell.w_UA;
             birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
