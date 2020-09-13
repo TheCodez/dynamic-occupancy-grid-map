@@ -26,10 +26,10 @@ This repository is fast moving and we currently guarentee no backwards compatibi
 \** the NVIDIA GTX 980 is more than twice as fast as the NVIDIA GTX 1050 Mobile
 
 ## Requirements and Setup
-You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this project. You can find the setup instructions for Ubuntu 18.04 LTS and Windows 10 below.
+You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this project. You can find the setup instructions for Ubuntu (tested for 18.04 LTS and 20.04 LTS) and Windows 10 below.
 
 <details>
-<summary>Ubuntu 18.04</summary>
+<summary>Ubuntu</summary>
   
 - OpenCV:
     ```console
@@ -81,7 +81,7 @@ You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this proje
 Use CMake to build the project:
 
 <details>
-<summary>Ubuntu 18.04</summary>
+<summary>Ubuntu</summary>
 
 Use the [local pipeline](/local_pipeline_ubuntu.sh) to configure, build and execute the project:
 
