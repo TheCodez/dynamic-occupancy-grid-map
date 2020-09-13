@@ -4,6 +4,7 @@
 
 #include "simulator.h"
 
+#include <algorithm>
 #include <cmath>
 #include <glm/glm.hpp>
 #include <vector>
@@ -11,21 +12,24 @@
 std::vector<glm::vec2> Vehicle::getPointsOnFacingSide(const float resolution) const
 {
     assert(resolution > 0.0f);
-    std::vector<glm::vec2> points_on_facing_side{};
     const auto leftmost_point_on_facing_side = pos.x - width * 0.5f;
     const auto rightmost_point_on_facing_side = pos.x + width * 0.5f;
-    for (float point_on_facing_side = leftmost_point_on_facing_side;
-         point_on_facing_side < rightmost_point_on_facing_side; point_on_facing_side += resolution)
-    {
-        points_on_facing_side.emplace_back(glm::vec2{point_on_facing_side, pos.y});
-    }
+    const auto number_of_points_on_facing_side = static_cast<std::size_t>(
+        std::ceil((rightmost_point_on_facing_side - leftmost_point_on_facing_side) / resolution));
+    std::vector<glm::vec2> points_on_facing_side(number_of_points_on_facing_side);
+    std::generate(points_on_facing_side.begin(), points_on_facing_side.end(),
+                  [resolution, point_on_facing_side = (leftmost_point_on_facing_side - resolution),
+                   longitudinal_distance = this->pos.y]() mutable {
+                      point_on_facing_side += resolution;
+                      return glm::vec2{point_on_facing_side, longitudinal_distance};
+                  });
     return points_on_facing_side;
 }
 
 static float regressAngleOffset(float angle_difference)
 {
     // TODO find a final solution for this. The current regression is only an approximation to the true,
-    // unkown function. Error is mostly <0.5 degrees, <0.05 for an fov of 120 degrees.
+    // unknown function. Error is mostly <0.5 degrees, <0.05 for an fov of 120 degrees.
     // Expected results (found manually):
     // angle_difference==90: return 90
     // angle_difference==60: return 45
