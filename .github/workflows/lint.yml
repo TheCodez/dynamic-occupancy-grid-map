@@ -1,0 +1,11 @@
+name: Super-Lint
+
+on: [push, pull request]
+
+jobs:
+  super-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Lint Code Base
+      uses: docker://github/super-linter:v2.1.0
