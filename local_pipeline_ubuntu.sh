@@ -21,7 +21,7 @@ while [[ $# -gt 0 ]]; do
 This scripts configures, builds, and executes the dogm library, unit tests, and the demo.
 You can use the following flags:\n
 -c      Clean build (removes previous build files)
--d      Debug build\n" $0
+-d      Debug build\n" "$0"
         exit 0
         ;;
         *)    # unknown option
@@ -40,7 +40,7 @@ make -j "$(nproc)"
 
 # TODO: extend to check more/all .cpp (and .cu) files
 cd ..
-find -iname '*.cpp' -print0 | xargs -0 clang-tidy -p build
+find . -iname '*.cpp' -print0 | xargs -0 clang-tidy -p build
 
 ctest . -j "$(nproc)"
 ./demo/demo
