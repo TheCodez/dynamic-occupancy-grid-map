@@ -1,7 +1,8 @@
+# A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  ![alt text](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
 ![Build and test on Ubuntu 18.04](https://github.com/TheCodez/dynamic-occupancy-grid-map/workflows/Build%20and%20test%20on%20Ubuntu%2018.04/badge.svg)
-
-# A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
+![Super-Lint](https://github.com/TheCodez/dynamic-occupancy-grid-map/workflows/Super-Lint/badge.svg)
 
 Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application](https://arxiv.org/abs/1605.02406)
 
@@ -16,42 +17,52 @@ This repository is fast moving and we currently guarentee no backwards compatibi
 
 ## Performance
 
-|             | Particle count | Birth particle count | Grid cell count* |  Time  |          GPU**         |
-|-------------|:--------------:|:--------------------:|:----------------:|:------:|:----------------------:|
-|     Ours    |     3 * 10⁵    |        3 * 10⁴       |    6.25 * 10⁴    |  79 ms | NVIDIA GTX 1050 Mobile |
-| Nuss et al. |     2 * 10⁶    |        2 * 10⁵       |    1.44 * 10⁶    |  50 ms |    NVIDIA GTX 980      |
+|             | Particle count  | Birth particle count  | Grid cell count\* |  Time  |          GPU\*\*       |
+|-------------|:---------------:|:---------------------:|:-----------------:|:------:|:----------------------:|
+|     Ours    |     3 \* 10⁵    |        3 \* 10⁴       |    6.25 \* 10⁴    |  79 ms | NVIDIA GTX 1050 Mobile |
+| Nuss et al. |     2 \* 10⁶    |        2 \* 10⁵       |    1.44 \* 10⁶    |  50 ms |    NVIDIA GTX 980      |
 
 \* increasing the grid cell count to 1.44 * 10⁶ increases the runtime by only ~20ms
 
-\** the NVIDIA GTX 980 is more than twice as fast as the NVIDIA GTX 1050 Mobile
+\*\* the NVIDIA GTX 980 is more than twice as fast as the NVIDIA GTX 1050 Mobile
 
 ## Requirements and Setup
+
 You need OpenCV, OpenGL, GLFW3, GLEW, GLM and CUDA to compile and run this project. You can find the setup instructions for Ubuntu (tested for 18.04 LTS and 20.04 LTS) and Windows 10 below.
 
 <details>
 <summary>Ubuntu</summary>
   
 - OpenCV:
+
     ```console
     sudo apt install libopencv-dev
     ```
+
 - GLFW3, GLEW, GLM:
+
     ```console
     sudo apt install libglfw3-dev libglew-dev libglm-dev
     ```
+
 - CUDA:
   - Have the most recent nvidia driver installed on your system, then check which CUDA version it supports
+
       ```console
       nvidia-smi -q | grep CUDA
       ```
+
   - Follow the corresponding instructions from the [cuda toolkit archive](https://developer.nvidia.com/cuda-toolkit-archive)
   - Update environment variables in your `bashrc` (or equivalent rc file)
+
       ```console
       echo "\n# CUDA paths\nexport PATH=$PATH:/usr/local/cuda/bin\nexport CUDADIR=/usr/local/cuda\nexport LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64\n" >> ~/.bashrc
       ```
+
   - Reboot (if necessary, a couple of times)
   - Check that your system GPU driver is still working by executing `nvidia-smi`
   - To verify that your CUDA installation is working, consider compiling and running one of the examples from /usr/local/cuda/samples. In particular ones that use OpenGL+CUDA, e.g. `samples/2_Graphics/Mandelbrot`.
+
 </details>
 
 <details>
@@ -85,7 +96,7 @@ Use CMake to build the project:
 
 Use the [local pipeline](/local_pipeline_ubuntu.sh) to configure, build and execute the project:
 
-```
+```console
 ./local_pipeline_ubuntu.sh
 ```
 

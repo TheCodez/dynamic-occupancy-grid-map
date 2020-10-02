@@ -1,5 +1,5 @@
-## Core Developer:
+# Core Developer
 * Michael Kösel ([TheCodez](https://github.com/TheCodez))
 
-## Contributors:
+## Contributors
 * Christoph Bachhuber ([cbachhuber](https://github.com/cbachhuber))
