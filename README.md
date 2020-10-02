@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  ![alt text](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
 ![Build and test on Ubuntu 18.04](https://github.com/TheCodez/dynamic-occupancy-grid-map/workflows/Build%20and%20test%20on%20Ubuntu%2018.04/badge.svg)
+![Super-Lint](https://github.com/TheCodez/dynamic-occupancy-grid-map/workflows/Super-Lint/badge.svg)
 
 Implementation of [A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application](https://arxiv.org/abs/1605.02406)
 
