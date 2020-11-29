@@ -3,7 +3,7 @@
 # DISCLAIMER
 
 This repository is still WIP and in a pretty early stage. Contributions are kindly appreciated :)
-
+# ROS support is still early work in progress.
 
 # [WIP] A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
 
