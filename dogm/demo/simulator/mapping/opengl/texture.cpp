@@ -60,6 +60,7 @@ void Texture::beginCudaAccess(cudaSurfaceObject_t* surfaceObject)
 void Texture::endCudaAccess(cudaSurfaceObject_t surfaceObject)
 {
     CHECK_ERROR(cudaGraphicsUnmapResources(1, &resource, nullptr));
+    CHECK_ERROR(cudaGraphicsUnregisterResource(resource));
     CHECK_ERROR(cudaDestroySurfaceObject(surfaceObject));
 }
 
