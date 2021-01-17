@@ -9,10 +9,10 @@ PointWithVelocity MAE::addObjectDetection(const PointWithVelocity& cluster_mean,
 {
     const auto error = computeError(cluster_mean, vehicle);
 
-    cumulative_error.x += abs(error.x);
-    cumulative_error.y += abs(error.y);
-    cumulative_error.v_x += abs(error.v_x);
-    cumulative_error.v_y += abs(error.v_y);
+    cumulative_error.x += std::fabs(error.x);
+    cumulative_error.y += std::fabs(error.y);
+    cumulative_error.v_x += std::fabs(error.v_x);
+    cumulative_error.v_y += std::fabs(error.v_y);
 
     ++number_of_detections;
 
