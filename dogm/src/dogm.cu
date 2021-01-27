@@ -112,8 +112,11 @@ void DOGM::initialize()
     CHECK_ERROR(cudaStreamDestroy(grid_stream));
 }
 
-void DOGM::updateGrid(float dt)
+void DOGM::updateGrid(MeasurementCell* measurement_grid, float new_x, float new_y, float new_yaw, float dt, bool device)
 {
+    updateMeasurementGrid(measurement_grid, device);
+    updatePose(new_x, new_y, new_yaw);
+
     particlePrediction(dt);
     particleAssignment();
     gridCellOccupancyUpdate();
@@ -157,12 +160,13 @@ ParticlesSoA DOGM::getParticles() const
     return particles;
 }
 
-void DOGM::updatePose(float new_x, float new_y)
+void DOGM::updatePose(float new_x, float new_y, float new_yaw)
 {
     if (!first_pose_received)
     {
         position_x = new_x;
         position_y = new_y;
+        yaw = new_yaw;
         first_pose_received = true;
     }
     else
@@ -195,11 +199,12 @@ void DOGM::updatePose(float new_x, float new_y)
 
             position_x = new_x;
             position_y = new_y;
+            yaw = new_yaw;
         }
     }
 }
 
-void DOGM::addMeasurementGrid(MeasurementCell* measurement_grid, bool device)
+void DOGM::updateMeasurementGrid(MeasurementCell* measurement_grid, bool device)
 {
     cudaMemcpyKind kind = device ? cudaMemcpyDeviceToDevice : cudaMemcpyHostToDevice;
     CHECK_ERROR(cudaMemcpy(meas_cell_array, measurement_grid, grid_cell_count * sizeof(MeasurementCell), kind));
