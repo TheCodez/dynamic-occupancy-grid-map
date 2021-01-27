@@ -20,9 +20,9 @@ namespace dogm
 class DOGM
 {
 public:
-    /** 
+    /**
      * Parameters used for the DOGM
-    */
+     */
     struct Params
     {
         // Grid size [m]
@@ -42,7 +42,7 @@ public:
 
         // Process noise position
         float stddev_process_noise_position;
-       
+
         // Process noise velocity
         float stddev_process_noise_velocity;
 
@@ -61,7 +61,7 @@ public:
      * @params params parameter used for the grid map and the particle filter.
      */
     DOGM(const Params& params);
-    
+
     /**
      * Destructor.
      */
@@ -80,7 +80,7 @@ public:
      * @param device whether the measurement grid resides in GPU memory.
      */
     void addMeasurementGrid(MeasurementCell* measurement_grid, bool device);
-    
+
     /**
      * Updates the grid map and particle filter to the new timestep.
      * @param dt delta time since the last update.
@@ -107,7 +107,7 @@ public:
      * @return particle array.
      */
     ParticlesSoA getParticles() const;
-    
+
     /**
      * Returns the grid map size in cells.
      *
@@ -128,7 +128,7 @@ public:
      * @return x position.
      */
     float getPositionX() const { return position_x; }
-    
+
     /**
      * Returns the y position.
      *
