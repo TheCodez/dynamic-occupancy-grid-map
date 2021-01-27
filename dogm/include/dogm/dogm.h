@@ -68,24 +68,16 @@ public:
     ~DOGM();
 
     /**
-     * Updates the position of the grid map using the current pose.
+     * Updates the grid map and particle filter to the new timestep.
+     * @param measurement_grid new measurement grid map.
      * @param new_x new x pose.
      * @param new_y new y pose.
-     */
-    void updatePose(float new_x, float new_y);
-
-    /**
-     * Updates grid map using a new measurement grid map.
-     * @param measurement_grid measurement grid map.
-     * @param device whether the measurement grid resides in GPU memory.
-     */
-    void addMeasurementGrid(MeasurementCell* measurement_grid, bool device);
-
-    /**
-     * Updates the grid map and particle filter to the new timestep.
+     * @param new_yaw new yaw.
      * @param dt delta time since the last update.
+     * @param device whether the measurement grid resides in GPU memory (default: true).
      */
-    void updateGrid(float dt);
+    void updateGrid(MeasurementCell* measurement_grid, float new_x, float new_y, float new_yaw, float dt,
+                    bool device = true);
 
     /**
      * Returns the grid map in the host memory.
@@ -130,6 +122,13 @@ public:
     float getPositionX() const { return position_x; }
 
     /**
+     * Returns the vehicles yaw.
+     *
+     * @return yaw.
+     */
+    float getYaw() const { return yaw; }
+
+    /**
      * Returns the y position.
      *
      * @return y position.
@@ -140,6 +139,9 @@ public:
 
 private:
     void initialize();
+
+    void updatePose(float new_x, float new_y, float new_yaw);
+    void updateMeasurementGrid(MeasurementCell* measurement_grid, bool device);
 
 public:
     void initializeParticles();
@@ -194,6 +196,7 @@ private:
     bool first_measurement_received;
     float position_x;
     float position_y;
+    float yaw;
 };
 
 } /* namespace dogm */
