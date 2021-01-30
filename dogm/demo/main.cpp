@@ -82,9 +82,8 @@ int main(int argc, const char** argv)
     {
         dogm::MeasurementCell* meas_grid = grid_generator.generateGrid(sim_data[step].measurements);
 
-        const auto update_grid_caller = [&grid_map](dogm::MeasurementCell* meas, const float pose_x, const float pose_y,
-                                                    const float yaw, const float dt, const bool device) {
-            grid_map.updateGrid(meas, pose_x, pose_y, yaw, dt, device);
+        const auto update_grid_caller = [&grid_map](auto&&... args) {
+            grid_map.updateGrid(std::forward<decltype(args)>(args)...);
         };
 
         cycle_timer.timeFunctionCall(true, update_grid_caller, meas_grid, sim_data[step].ego_pose.x,
