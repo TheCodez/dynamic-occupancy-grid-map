@@ -46,8 +46,6 @@ __global__ void predictKernel(ParticlesSoA particle_array, curandState* __restri
         int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
         int pos_y = clamp(static_cast<int>(y), 0, grid_size - 1);
         particle_array.grid_cell_idx[i] = pos_x + grid_size * pos_y;
-
-        // printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
     }
 
     global_state[thread_id] = local_state;

@@ -38,9 +38,6 @@ __global__ void initParticlesKernel(ParticlesSoA particle_array, curandState* __
 
         particle_array.weight[i] = 1.0f / particle_count;
         particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
-
-        // printf("w: %f, x: %f, y: %f, vx: %f, vy: %f\n", particle_array[i].weight, particle_array[i].state[0],
-        // particle_array[i].state[1], 	particle_array[i].state[2], particle_array[i].state[3]);
     }
 
     global_state[thread_id] = local_state;

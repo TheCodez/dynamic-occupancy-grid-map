@@ -130,7 +130,7 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, const std::vector<Point<d
 
     for (const auto& cell : cells_with_velocity)
     {
-        float angle = fmodf((atan2(cell.data.mean_y_vel, cell.data.mean_x_vel) * (180.0f / M_PI)) + 360, 360);
+        float angle = fmodf((atan2(cell.data.mean_y_vel, cell.data.mean_x_vel) * (180.0f / M_PI)) + 360.0f, 360.0f);
 
         // printf("Angle: %f\n", angle);
 

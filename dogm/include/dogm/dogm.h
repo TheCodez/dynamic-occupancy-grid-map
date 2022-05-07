@@ -135,8 +135,6 @@ public:
      */
     float getPositionY() const { return position_y; }
 
-    int getIteration() const { return iteration; }
-
 private:
     void initialize();
 
@@ -190,8 +188,6 @@ public:
     dim3 grid_map_grid;
 
 private:
-    int iteration;
-
     bool first_pose_received;
     bool first_measurement_received;
     float position_x;
