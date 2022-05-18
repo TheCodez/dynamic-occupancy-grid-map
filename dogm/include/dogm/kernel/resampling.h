@@ -13,8 +13,6 @@
 namespace dogm
 {
 
-struct Particle;
-
 __global__ void resamplingGenerateRandomNumbersKernel(float* __restrict__ rand_array,
                                                       curandState* __restrict__ global_state, float max,
                                                       int particle_count);

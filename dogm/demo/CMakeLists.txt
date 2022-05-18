@@ -12,7 +12,10 @@ add_executable(demo
 	main.cpp
 )
 
-target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR})
+target_include_directories(demo PUBLIC
+	${OpenCV_INCLUDE_DIRS}
+	${GLM_INCLUDE_DIR}
+)
 
 target_link_libraries(demo
 	dogm

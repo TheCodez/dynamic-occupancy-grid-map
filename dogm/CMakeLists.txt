@@ -51,6 +51,7 @@ set(HEADER_FILES
 	include/dogm/kernel/particle_to_grid.h
 	include/dogm/kernel/predict.h
 	include/dogm/kernel/resampling.h
+	include/dogm/kernel/resampling_parallel.h
 	include/dogm/kernel/statistical_moments.h
 	include/dogm/kernel/update_persistent_particles.h
 	include/dogm/kernel/ego_motion_compensation.h
@@ -69,6 +70,7 @@ set(SRC_FILES
 	src/kernel/particle_to_grid.cu
 	src/kernel/predict.cu
 	src/kernel/resampling.cu
+	src/kernel/resampling_parallel.cu
 	src/kernel/statistical_moments.cu
 	src/kernel/update_persistent_particles.cu
 	src/kernel/ego_motion_compensation.cu

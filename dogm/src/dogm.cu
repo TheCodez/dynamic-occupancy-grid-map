@@ -14,6 +14,7 @@
 #include "dogm/kernel/particle_to_grid.h"
 #include "dogm/kernel/predict.h"
 #include "dogm/kernel/resampling.h"
+#include "dogm/kernel/resampling_parallel.h"
 #include "dogm/kernel/statistical_moments.h"
 #include "dogm/kernel/update_persistent_particles.h"
 
@@ -71,6 +72,8 @@ DOGM::DOGM(const Params& params)
     CUDA_CALL(cudaMalloc(&vel_xy_array, particle_count * sizeof(float)));
 
     CUDA_CALL(cudaMalloc(&rand_array, particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&idx_array_up, particle_count * sizeof(int)));
+    CUDA_CALL(cudaMalloc(&idx_array_down, particle_count * sizeof(int)));
 
     CUDA_CALL(cudaMalloc(&rng_states, particles_grid.x * block_dim.x * sizeof(curandState)));
 
@@ -99,6 +102,8 @@ DOGM::~DOGM()
     CUDA_CALL(cudaFree(rand_array));
 
     CUDA_CALL(cudaFree(rng_states));
+    CUDA_CALL(cudaFree(idx_array_up));
+    CUDA_CALL(cudaFree(idx_array_down));
 }
 
 void DOGM::initialize()
@@ -127,7 +132,9 @@ void DOGM::updateGrid(MeasurementCellsSoA measurement_grid, float new_x, float n
     updatePersistentParticles();
     initializeNewParticles();
     statisticalMoments();
-    resampling();
+   
+    // resampling();
+    resampling_parallel_ns();
 
     particle_array = particle_array_next;
 
@@ -336,6 +343,7 @@ void DOGM::statisticalMoments()
                                                             vel_xy_array_accum, grid_cell_count);
 }
 
+// Multinomial origin resampling
 void DOGM::resampling()
 {
     thrust::device_ptr<float> persistent_weights(weight_array);
@@ -355,17 +363,71 @@ void DOGM::resampling()
 
     thrust::device_ptr<float> rand_ptr(rand_array);
     thrust::device_vector<float> rand_vector(rand_ptr, rand_ptr + particle_count);
-
     thrust::sort(rand_vector.begin(), rand_vector.end());
-
     thrust::device_vector<int> idx_resampled(particle_count);
     calc_resampled_indices(joint_weight_accum, rand_vector, idx_resampled, joint_max);
     int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
-
     float new_weight = joint_max / particle_count;
 
     resamplingKernel<<<particles_grid, block_dim>>>(particle_array, particle_array_next, birth_particle_array,
                                                     idx_array_resampled, new_weight, particle_count);
+}
+
+void DOGM::resampling_parallel_ns()
+{
+    thrust::device_ptr<float> persistent_weights(weight_array);
+    thrust::device_ptr<float> new_born_weights(birth_particle_array.weight);
+
+    thrust::device_vector<float> joint_weight_array;
+    joint_weight_array.insert(joint_weight_array.end(), persistent_weights, persistent_weights + particle_count);
+    joint_weight_array.insert(joint_weight_array.end(), new_born_weights, new_born_weights + new_born_particle_count);
+
+    thrust::device_vector<float> joint_weight_accum(joint_weight_array.size());
+    accumulate(joint_weight_array, joint_weight_accum);
+
+    float joint_max = joint_weight_accum.back();
+    thrust::transform(joint_weight_accum.begin(), joint_weight_accum.end(),
+        joint_weight_accum.begin(), thrust::placeholders::_1 /= joint_max);
+    float new_weight = joint_max / particle_count;
+
+
+    unsigned long long int seed {static_cast<unsigned long long int>(clock())};
+    // thrust::device_vector<int> up_vec(particle_count, 0);
+    // thrust::device_vector<int> down_vec(particle_count, 0);
+    // int* idx_array_up = thrust::raw_pointer_cast(up_vec.data());
+    // int* idx_array_down = thrust::raw_pointer_cast(down_vec.data());
+    float* accumulated_sum = thrust::raw_pointer_cast(joint_weight_accum.data());
+
+    // void *args_up[] {const_cast<int *>( &particle_count ), &seed,                          
+    //     &idx_array_up, &accumulated_sum};
+
+    CUDA_CALL(cudaGetLastError());
+
+    // CUDA_RT_CALL(cudaLaunchKernel(reinterpret_cast<void*>(&resampleSystematicIndexUp),
+    //     particles_grid, block_dim, args_up, 0, cuda_streams[0]));
+
+    // cudaDeviceSynchronize();
+
+    resampleSystematicIndexUp<<<particles_grid, block_dim>>>(particle_count,
+        seed, idx_array_up, accumulated_sum);
+    
+    // cudaDeviceSynchronize(); 
+    // std::cout << up_vec[0] << "\n";
+
+    // void *args_down[] {const_cast<int *>( &particle_count ), &seed,                          
+    //     &idx_array_down, &accumulated_sum};
+
+    // CUDA_RT_CALL(cudaLaunchKernel(reinterpret_cast<void*>(&resampleSystematicIndexDown),
+    //     40, 256, args_down, 0, cuda_streams[1]));
+
+    resampleSystematicIndexDown<<<particles_grid, block_dim>>>(particle_count,
+        seed, idx_array_down, accumulated_sum);
+    
+    // CHECK_ERROR(cudaDeviceSynchronize());
+    // cudaDeviceSynchronize();
+
+    resampleIndexKernel<<<particles_grid, block_dim>>>(particle_array, particle_array_next,
+        birth_particle_array, idx_array_up, idx_array_down, new_weight, particle_count);
 }
 
 cv::Mat DOGM::getPredOccMassImage(GridCellsSoA& grid_cells) const
@@ -424,8 +486,6 @@ cv::Mat DOGM::getOccupancyImage(GridCellsSoA& grid_cells) const
         image.at<cv::Vec3b>(grid_size - x - 1, grid_size - y - 1) = color;
     }
     return image;
-}
-
 }
 
 } /* namespace dogm */
