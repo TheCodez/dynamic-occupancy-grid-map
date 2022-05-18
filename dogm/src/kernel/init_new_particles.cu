@@ -146,12 +146,12 @@ __global__ void initNewParticlesKernel1(GridCellsSoA grid_cell_array,
 
         // printf("w_A: %f, w_UA: %f\n", w_A, w_UA);
 
-        for (int i = start_idx; i < start_idx + nu_A + 1; i++)
+        for (int i = start_idx; i < start_idx + nu_A; i++)
         {
             set_cell_idx_A(birth_particle_array, i, j);
         }
 
-        for (int i = start_idx + nu_A + 1; i < end_idx + 1; i++)
+        for (int i = start_idx + nu_A; i < end_idx + 1; i++)
         {
             set_cell_idx_UA(birth_particle_array, i, j);
         }
