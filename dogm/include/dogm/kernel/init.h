@@ -10,14 +10,10 @@
 namespace dogm
 {
 
-struct GridCell;
-struct MeasurementCell;
-struct Particle;
-
-__global__ void setupRandomStatesKernel(curandState* __restrict__ states, unsigned long long seed, int count);
+__global__ void setupRandomStatesKernel(curandState* __restrict__ states, int count);
 
 __global__ void initParticlesKernel(ParticlesSoA particle_array, curandState* __restrict__ global_state, float velocity,
-                                    int grid_size, int particle_count);
+                                    int grid_size, int particle_count, float resolution);
 
 __global__ void initBirthParticlesKernel(ParticlesSoA birth_particle_array, curandState* __restrict__ global_state,
                                          float velocity, int grid_size, int particle_count);

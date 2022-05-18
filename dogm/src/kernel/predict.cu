@@ -14,8 +14,8 @@ namespace dogm
 {
 
 __global__ void predictKernel(ParticlesSoA particle_array, curandState* __restrict__ global_state, float velocity,
-                              int grid_size, float p_S, const glm::mat4x4 transition_matrix,
-                              float process_noise_position, float process_noise_velocity, int particle_count)
+                              int grid_size, float p_S, const glm::mat4x4 transition_matrix, float process_noise_position,
+                              float process_noise_velocity, int particle_count, float resolution)
 {
     int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
@@ -34,8 +34,8 @@ __global__ void predictKernel(ParticlesSoA particle_array, curandState* __restri
         particle_array.weight[i] = p_S * particle_array.weight[i];
 
         glm::vec4 state = particle_array.state[i];
-        float x = state[0];
-        float y = state[1];
+        float x = state[0] / resolution;
+        float y = state[1] / resolution;
 
         // Particle out of grid so decrease its chance of being resampled
         if ((x > grid_size - 1 || x < 0) || (y > grid_size - 1 || y < 0))
@@ -46,8 +46,6 @@ __global__ void predictKernel(ParticlesSoA particle_array, curandState* __restri
         int pos_x = clamp(static_cast<int>(x), 0, grid_size - 1);
         int pos_y = clamp(static_cast<int>(y), 0, grid_size - 1);
         particle_array.grid_cell_idx[i] = pos_x + grid_size * pos_y;
-
-        // printf("X: %d, Y: %d, Cell index: %d\n", pos_x, pos_y, (pos_x + grid_size * pos_y));
     }
 
     global_state[thread_id] = local_state;

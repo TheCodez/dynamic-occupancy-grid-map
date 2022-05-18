@@ -34,13 +34,13 @@ DOGM::DOGM(const Params& params)
     : params(params), grid_size(static_cast<int>(params.size / params.resolution)),
       particle_count(params.particle_count), grid_cell_count(grid_size * grid_size),
       new_born_particle_count(params.new_born_particle_count), block_dim(BLOCK_SIZE), first_pose_received(false),
-      first_measurement_received(false), position_x(0.0f), position_y(0.0f)
+      first_measurement_received(false), position_x(0.0f), position_y(0.0f), iteration(0)
 {
     int device;
-    CHECK_ERROR(cudaGetDevice(&device));
+    CUDA_CALL(cudaGetDevice(&device));
 
     cudaDeviceProp device_prop;
-    CHECK_ERROR(cudaGetDeviceProperties(&device_prop, device));
+    CUDA_CALL(cudaGetDeviceProperties(&device_prop, device));
 
     int blocks_per_sm = device_prop.maxThreadsPerMultiProcessor / block_dim.x;
     dim3 dim(device_prop.multiProcessorCount * blocks_per_sm);
@@ -109,10 +109,10 @@ void DOGM::initialize()
     CUDA_CALL(cudaStreamDestroy(grid_stream));
 }
 
-void DOGM::updateGrid(MeasurementCell* measurement_grid, float new_x, float new_y, float new_yaw, float dt, bool device)
+void DOGM::updateGrid(MeasurementCellsSoA measurement_grid, float new_x, float new_y, float dt, bool device)
 {
     updateMeasurementGrid(measurement_grid, device);
-    updatePose(new_x, new_y, new_yaw);
+    updatePose(new_x, new_y);
 
     particlePrediction(dt);
     particleAssignment();
@@ -123,8 +123,6 @@ void DOGM::updateGrid(MeasurementCell* measurement_grid, float new_x, float new_
     resampling();
 
     particle_array = particle_array_next;
-
-    CHECK_ERROR(cudaDeviceSynchronize());
 
     iteration++;
 }
@@ -153,21 +151,19 @@ ParticlesSoA DOGM::getParticles() const
     return particles;
 }
 
-void DOGM::updatePose(float new_x, float new_y, float new_yaw)
+void DOGM::updatePose(float new_x, float new_y)
 {
     if (!first_pose_received)
     {
         position_x = new_x;
         position_y = new_y;
-        yaw = new_yaw;
         first_pose_received = true;
     }
     else
     {
-        const float x_diff = new_x - position_x;
-        const float y_diff = new_y - position_y;
-
-        if (fabsf(x_diff) > params.resolution || fabsf(y_diff) > params.resolution)
+        const int x_move = std::nearbyint((new_x - position_x) / params.resolution);
+        const int y_move = std::nearbyint((new_y - position_y) / params.resolution);
+        if (x_move != 0 || y_move != 0)
         {
             moveParticlesKernel<<<particles_grid, block_dim>>>(particle_array, x_move, y_move, particle_count,
                 params.resolution, grid_size);
@@ -185,7 +181,6 @@ void DOGM::updatePose(float new_x, float new_y, float new_yaw)
 
             position_x = new_x;
             position_y = new_y;
-            yaw = new_yaw;
         }
     }
 }
@@ -206,27 +201,22 @@ void DOGM::initializeParticles()
 {
     copyMassesKernel<<<grid_map_grid, block_dim>>>(meas_cell_array, born_masses_array, grid_cell_count);
 
-    CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
-
     thrust::device_vector<float> particle_orders_accum(grid_cell_count);
     accumulate(born_masses_array, particle_orders_accum);
     float* particle_orders_array_accum = thrust::raw_pointer_cast(particle_orders_accum.data());
 
     // TODO: particle_orders_accum.back() / particle_count is correct but leads to inferior results
-    float new_weight = 1.0f / particle_count;
+    // TODO: or back to 1 / particle_count
+    float new_weight = particle_orders_accum.back() / particle_count;
 
     normalize_particle_orders(particle_orders_array_accum, grid_cell_count, particle_count);
 
-    initParticlesKernel1<<<grid_map_grid, block_dim>>>(grid_cell_array, meas_cell_array, particle_array,
+    initParticlesKernel1<<<grid_map_grid, block_dim>>>(particle_array,
                                                        particle_orders_array_accum, grid_cell_count);
 
-    CHECK_ERROR(cudaGetLastError());
-
     initParticlesKernel2<<<particles_grid, block_dim>>>(
-        particle_array, grid_cell_array, rng_states, params.init_max_velocity, grid_size, new_weight, particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
+        particle_array, rng_states, params.init_max_velocity, grid_size, new_weight, particle_count,
+        params.resolution);
 }
 
 void DOGM::particlePrediction(float dt)
@@ -239,24 +229,14 @@ void DOGM::particlePrediction(float dt)
                                   0, dt, 0, 1);
     // clang-format on
 
-    // FIXME: glm uses column major, we need row major
-    transition_matrix = glm::transpose(transition_matrix);
-
     predictKernel<<<particles_grid, block_dim>>>(
         particle_array, rng_states, params.stddev_velocity, grid_size, params.persistence_prob, transition_matrix,
-        params.stddev_process_noise_position, params.stddev_process_noise_velocity, particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
+        params.stddev_process_noise_position, params.stddev_process_noise_velocity, particle_count, params.resolution);
 }
 
 void DOGM::particleAssignment()
 {
-    // std::cout << "DOGM::particleAssignment" << std::endl;
-
     reinitGridParticleIndices<<<grid_map_grid, block_dim>>>(grid_cell_array, grid_cell_count);
-
-    CHECK_ERROR(cudaGetLastError());
-    // CHECK_ERROR(cudaDeviceSynchronize());
 
     // sort particles
     thrust::device_ptr<int> grid_index_ptr(particle_array.grid_cell_idx);
@@ -268,16 +248,10 @@ void DOGM::particleAssignment()
     thrust::sort_by_key(grid_index_ptr, grid_index_ptr + particle_count, it);
 
     particleToGridKernel<<<particles_grid, block_dim>>>(particle_array, grid_cell_array, weight_array, particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
 }
 
 void DOGM::gridCellOccupancyUpdate()
 {
-    // std::cout << "DOGM::gridCellOccupancyUpdate" << std::endl;
-
-    // CHECK_ERROR(cudaDeviceSynchronize());
-
     thrust::device_vector<float> weights_accum(particle_count);
     accumulate(weight_array, weights_accum);
     float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
@@ -285,19 +259,12 @@ void DOGM::gridCellOccupancyUpdate()
     gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(grid_cell_array, particle_array, weight_array,
                                                                  weight_array_accum, meas_cell_array, born_masses_array,
                                                                  params.birth_prob, grid_cell_count);
-
-    CHECK_ERROR(cudaGetLastError());
 }
 
 void DOGM::updatePersistentParticles()
 {
-    // std::cout << "DOGM::updatePersistentParticles" << std::endl;
-
     updatePersistentParticlesKernel1<<<particles_grid, block_dim>>>(particle_array, meas_cell_array, weight_array,
                                                                     particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
-    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_vector<float> weights_accum(particle_count);
     accumulate(weight_array, weights_accum);
@@ -306,23 +273,14 @@ void DOGM::updatePersistentParticles()
     updatePersistentParticlesKernel2<<<divUp(grid_cell_count, BLOCK_SIZE), BLOCK_SIZE>>>(
         grid_cell_array, weight_array_accum, grid_cell_count);
 
-    CHECK_ERROR(cudaGetLastError());
-
     updatePersistentParticlesKernel3<<<particles_grid, block_dim>>>(particle_array, meas_cell_array, grid_cell_array,
                                                                     weight_array, particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
 }
 
 void DOGM::initializeNewParticles()
 {
-    // std::cout << "DOGM::initializeNewParticles" << std::endl;
-
     initBirthParticlesKernel<<<birth_particles_grid, block_dim>>>(
         birth_particle_array, rng_states, params.stddev_velocity, grid_size, new_born_particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
-    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_vector<float> particle_orders_accum(grid_cell_count);
     accumulate(born_masses_array, particle_orders_accum);
@@ -334,25 +292,17 @@ void DOGM::initializeNewParticles()
                                                           born_masses_array, birth_particle_array,
                                                           particle_orders_array_accum, grid_cell_count);
 
-    CHECK_ERROR(cudaGetLastError());
-
     initNewParticlesKernel2<<<birth_particles_grid, block_dim>>>(birth_particle_array, grid_cell_array, rng_states,
                                                                  params.stddev_velocity, params.init_max_velocity,
-                                                                 grid_size, new_born_particle_count);
+                                                                 grid_size, new_born_particle_count, params.resolution);
 
-    CHECK_ERROR(cudaGetLastError());
 }
 
 void DOGM::statisticalMoments()
 {
-    // std::cout << "DOGM::statisticalMoments" << std::endl;
-
     statisticalMomentsKernel1<<<particles_grid, block_dim>>>(particle_array, weight_array, vel_x_array, vel_y_array,
                                                              vel_x_squared_array, vel_y_squared_array, vel_xy_array,
                                                              particle_count);
-
-    CHECK_ERROR(cudaGetLastError());
-    // CHECK_ERROR(cudaDeviceSynchronize());
 
     thrust::device_vector<float> vel_x_accum(particle_count);
     accumulate(vel_x_array, vel_x_accum);
@@ -377,16 +327,10 @@ void DOGM::statisticalMoments()
     statisticalMomentsKernel2<<<grid_map_grid, block_dim>>>(grid_cell_array, vel_x_array_accum, vel_y_array_accum,
                                                             vel_x_squared_array_accum, vel_y_squared_array_accum,
                                                             vel_xy_array_accum, grid_cell_count);
-
-    CHECK_ERROR(cudaGetLastError());
 }
 
 void DOGM::resampling()
 {
-    // std::cout << "DOGM::resampling" << std::endl;
-
-    // CHECK_ERROR(cudaDeviceSynchronize());
-
     thrust::device_ptr<float> persistent_weights(weight_array);
     thrust::device_ptr<float> new_born_weights(birth_particle_array.weight);
 
@@ -402,9 +346,6 @@ void DOGM::resampling()
     resamplingGenerateRandomNumbersKernel<<<particles_grid, block_dim>>>(rand_array, rng_states, joint_max,
                                                                          particle_count);
 
-    CHECK_ERROR(cudaGetLastError());
-    // CHECK_ERROR(cudaDeviceSynchronize());
-
     thrust::device_ptr<float> rand_ptr(rand_array);
     thrust::device_vector<float> rand_vector(rand_ptr, rand_ptr + particle_count);
 
@@ -415,8 +356,6 @@ void DOGM::resampling()
     int* idx_array_resampled = thrust::raw_pointer_cast(idx_resampled.data());
 
     float new_weight = joint_max / particle_count;
-
-    // printf("joint_max: %f\n", joint_max);
 
     resamplingKernel<<<particles_grid, block_dim>>>(particle_array, particle_array_next, birth_particle_array,
                                                     idx_array_resampled, new_weight, particle_count);

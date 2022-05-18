@@ -140,7 +140,7 @@ public:
 private:
     void initialize();
 
-    void updatePose(float new_x, float new_y, float new_yaw);
+    void updatePose(float new_x, float new_y);
     void updateMeasurementGrid(MeasurementCellsSoA measurement_grid, bool device);
 
 public:
@@ -196,7 +196,6 @@ private:
     bool first_measurement_received;
     float position_x;
     float position_y;
-    float yaw;
 };
 
 } /* namespace dogm */
