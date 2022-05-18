@@ -32,17 +32,16 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
         {
             int index = y * grid_map.getGridSize() + x;
 
-            const dogm::GridCell& cell = grid_cells[index];
-            float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
+            float occ = pignistic_transformation(grid_cells.free_mass[index], grid_cells.occ_mass[index]);
             cv::Mat velocity_mean(2, 1, CV_32FC1);
-            velocity_mean.at<float>(0) = cell.mean_x_vel;
-            velocity_mean.at<float>(1) = cell.mean_y_vel;
+            velocity_mean.at<float>(0) = grid_cells.mean_x_vel[index];
+            velocity_mean.at<float>(1) = grid_cells.mean_y_vel[index];
 
             cv::Mat velocity_covar(2, 2, CV_32FC1);
-            velocity_covar.at<float>(0, 0) = cell.var_x_vel;
-            velocity_covar.at<float>(1, 0) = cell.covar_xy_vel;
-            velocity_covar.at<float>(0, 1) = cell.covar_xy_vel;
-            velocity_covar.at<float>(1, 1) = cell.var_y_vel;
+            velocity_covar.at<float>(0, 0) = grid_cells.var_x_vel[index];
+            velocity_covar.at<float>(1, 0) = grid_cells.covar_xy_vel[index];
+            velocity_covar.at<float>(0, 1) = grid_cells.covar_xy_vel[index];
+            velocity_covar.at<float>(1, 1) = grid_cells.var_y_vel[index];
 
             cv::Mat velocity_normalized_by_variance = velocity_mean.t() * velocity_covar.inv() * velocity_mean;
 
@@ -54,7 +53,22 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
                 // Storing the point as grid index to be consistent with cell.mean_x_vel and cell.mean_y_vel
                 point.x = static_cast<float>(x);
                 point.y = static_cast<float>(y);
-                point.data = cell;
+                point.data.start_idx = grid_cells.start_idx[index];
+                point.data.end_idx = grid_cells.end_idx[index];
+                point.data.new_born_occ_mass = grid_cells.new_born_occ_mass[index];
+                point.data.pers_occ_mass = grid_cells.pers_occ_mass[index];
+                point.data.free_mass = grid_cells.free_mass[index];
+                point.data.occ_mass = grid_cells.occ_mass[index];
+                point.data.pred_occ_mass = grid_cells.pred_occ_mass[index];
+                point.data.mu_A = grid_cells.mu_A[index];
+                point.data.mu_UA = grid_cells.mu_UA[index];
+                point.data.w_A = grid_cells.w_A[index];
+                point.data.w_UA = grid_cells.w_UA[index];
+                point.data.mean_x_vel = grid_cells.mean_x_vel[index];
+                point.data.mean_y_vel = grid_cells.mean_y_vel[index];
+                point.data.var_x_vel = grid_cells.var_x_vel[index];
+                point.data.var_y_vel = grid_cells.var_y_vel[index];
+                point.data.covar_xy_vel = grid_cells.covar_xy_vel[index];
                 point.cluster_id = UNCLASSIFIED;
 
                 cells_with_velocity.push_back(point);
@@ -76,8 +90,7 @@ cv::Mat compute_measurement_grid_image(const dogm::DOGM& grid_map)
         {
             int index = y * grid_map.getGridSize() + x;
 
-            const dogm::MeasurementCell& cell = meas_cells[index];
-            float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
+            float occ = pignistic_transformation(meas_cells.free_mass[index], meas_cells.occ_mass[index]);
             auto temp = static_cast<uchar>(occ * 255.0f);
 
             row_ptr[x] = cv::Vec3b(255 - temp, 255 - temp, 255 - temp);
@@ -97,9 +110,8 @@ cv::Mat compute_raw_measurement_grid_image(const dogm::DOGM& grid_map)
         for (int x = 0; x < grid_map.getGridSize(); x++)
         {
             int index = y * grid_map.getGridSize() + x;
-            const dogm::MeasurementCell& cell = meas_cells[index];
-            auto red = static_cast<int>(cell.occ_mass * 255.0f);
-            auto green = static_cast<int>(cell.free_mass * 255.0f);
+            auto red = static_cast<int>(meas_cells.occ_mass[index] * 255.0f);
+            auto green = static_cast<int>(meas_cells.free_mass[index] * 255.0f);
             int blue = 255 - red - green;
 
             row_ptr[x] = cv::Vec3b(blue, green, red);
@@ -120,8 +132,7 @@ cv::Mat compute_dogm_image(const dogm::DOGM& grid_map, const std::vector<Point<d
         {
             int index = y * grid_map.getGridSize() + x;
 
-            const dogm::GridCell& cell = grid_cells[index];
-            float occ = pignistic_transformation(cell.free_mass, cell.occ_mass);
+            float occ = pignistic_transformation(grid_cells.free_mass[index], grid_cells.occ_mass[index]);
             uchar grayscale_value = 255 - static_cast<uchar>(floor(occ * 255));
 
             row_ptr[x] = cv::Vec3b(grayscale_value, grayscale_value, grayscale_value);

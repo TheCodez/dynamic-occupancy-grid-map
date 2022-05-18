@@ -57,10 +57,10 @@ __device__ float calc_weight_unassoc(int nu_UA, float p_A, float born_mass)
     return nu_UA > 0 ? ((1.0 - p_A) * born_mass) / nu_UA : 0.0;
 }
 
-__device__ void store_weights(float w_A, float w_UA, GridCell* __restrict__ grid_cell_array, int j)
+__device__ void store_weights(float w_A, float w_UA, GridCellsSoA grid_cell_array, int j)
 {
-    grid_cell_array[j].w_A = w_A;
-    grid_cell_array[j].w_UA = w_UA;
+    grid_cell_array.w_A[j] = w_A;
+    grid_cell_array.w_UA[j] = w_UA;
 }
 
 void normalize_particle_orders(float* particle_orders_array_accum, int particle_orders_count, int v_B)
@@ -69,21 +69,21 @@ void normalize_particle_orders(float* particle_orders_array_accum, int particle_
 
     float max = 1.0f;
     cudaMemcpy(&max, &particle_orders_array_accum[particle_orders_count - 1], sizeof(float), cudaMemcpyDeviceToHost);
-    thrust::transform(particle_orders_accum, particle_orders_accum + particle_orders_count, particle_orders_accum,
-                      GPU_LAMBDA(float x) { return x * (v_B / max); });
+    thrust::transform(
+        particle_orders_accum, particle_orders_accum + particle_orders_count, particle_orders_accum,
+        GPU_LAMBDA(float x) { return x * (v_B / max); });
 }
 
-__global__ void copyMassesKernel(const MeasurementCell* __restrict__ meas_cell_array, float* __restrict__ masses,
+__global__ void copyMassesKernel(const MeasurementCellsSoA meas_cell_array, float* __restrict__ masses,
                                  int cell_count)
 {
     for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
     {
-        masses[j] = meas_cell_array[j].occ_mass;
+        masses[j] = meas_cell_array.occ_mass[j];
     }
 }
 
-__global__ void initParticlesKernel1(GridCell* __restrict__ grid_cell_array,
-                                     const MeasurementCell* __restrict__ meas_cell_array, ParticlesSoA particle_array,
+__global__ void initParticlesKernel1(ParticlesSoA particle_array,
                                      const float* __restrict__ particle_orders_array_accum, int cell_count)
 {
     for (int j = blockIdx.x * blockDim.x + threadIdx.x; j < cell_count; j += blockDim.x * gridDim.x)
@@ -123,8 +123,8 @@ __global__ void initParticlesKernel2(ParticlesSoA particle_array, const GridCell
     global_state[thread_id] = local_state;
 }
 
-__global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
-                                        const MeasurementCell* __restrict__ meas_cell_array,
+__global__ void initNewParticlesKernel1(GridCellsSoA grid_cell_array,
+                                        const MeasurementCellsSoA meas_cell_array,
                                         const float* __restrict__ weight_array,
                                         const float* __restrict__ born_masses_array, ParticlesSoA birth_particle_array,
                                         const float* __restrict__ particle_orders_array_accum, int cell_count)
@@ -137,7 +137,7 @@ __global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
         // printf("Start idx: %d, End idx: %d\n", start_idx, end_idx);
 
         int num_new_particles = start_idx <= end_idx ? end_idx - start_idx + 1 : 0;
-        float p_A = meas_cell_array[j].p_A;
+        float p_A = meas_cell_array.p_A[j];
         int nu_A = calc_num_assoc(num_new_particles, p_A);
         int nu_UA = num_new_particles - nu_A;
         float w_A = calc_weight_assoc(nu_A, p_A, born_masses_array[j]);
@@ -158,7 +158,7 @@ __global__ void initNewParticlesKernel1(GridCell* __restrict__ grid_cell_array,
     }
 }
 
-__global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const GridCell* __restrict__ grid_cell_array,
+__global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const GridCellsSoA grid_cell_array,
                                         curandState* __restrict__ global_state, float stddev_velocity,
                                         float max_velocity, int grid_size, int particle_count)
 {
@@ -182,7 +182,7 @@ __global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const
             float vel_x = curand_normal(&local_state, 0.0f, stddev_velocity);
             float vel_y = curand_normal(&local_state, 0.0f, stddev_velocity);
 
-            birth_particle_array.weight[i] = grid_cell.w_A;
+            birth_particle_array.weight[i] = grid_cell_array.w_A[cell_idx];
             birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
         }
         else
@@ -190,7 +190,7 @@ __global__ void initNewParticlesKernel2(ParticlesSoA birth_particle_array, const
             float vel_x = curand_normal(&local_state, 0.0f, stddev_velocity);
             float vel_y = curand_normal(&local_state, 0.0f, stddev_velocity);
 
-            birth_particle_array.weight[i] = grid_cell.w_UA;
+            birth_particle_array.weight[i] = grid_cell_array.w_UA[cell_idx];
             birth_particle_array.state[i] = glm::vec4(x, y, vel_x, vel_y);
         }
     }

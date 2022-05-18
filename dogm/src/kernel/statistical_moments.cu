@@ -45,14 +45,14 @@ __device__ float calc_covariance(const float* __restrict__ vel_xy_array_accum, i
     return 0.0f;
 }
 
-__device__ void store(GridCell* __restrict__ grid_cell_array, int j, float mean_x_vel, float mean_y_vel,
+__device__ void store(GridCellsSoA grid_cell_array, int j, float mean_x_vel, float mean_y_vel,
                       float var_x_vel, float var_y_vel, float covar_xy_vel)
 {
-    grid_cell_array[j].mean_x_vel = mean_x_vel;
-    grid_cell_array[j].mean_y_vel = mean_y_vel;
-    grid_cell_array[j].var_x_vel = var_x_vel;
-    grid_cell_array[j].var_y_vel = var_y_vel;
-    grid_cell_array[j].covar_xy_vel = covar_xy_vel;
+    grid_cell_array.mean_x_vel[j] = mean_x_vel;
+    grid_cell_array.mean_y_vel[j] = mean_y_vel;
+    grid_cell_array.var_x_vel[j] = var_x_vel;
+    grid_cell_array.var_y_vel[j] = var_y_vel;
+    grid_cell_array.covar_xy_vel[j] = covar_xy_vel;
 }
 
 __global__ void statisticalMomentsKernel1(const ParticlesSoA particle_array, const float* __restrict__ weight_array,
@@ -71,12 +71,10 @@ __global__ void statisticalMomentsKernel1(const ParticlesSoA particle_array, con
         vel_x_squared_array[i] = weight * vel_x * vel_x;
         vel_y_squared_array[i] = weight * vel_y * vel_y;
         vel_xy_array[i] = weight * vel_x * vel_y;
-
-        // printf("vx: %f, vy: %f\n", vel_x_array[i], vel_y_array[i]);
     }
 }
 
-__global__ void statisticalMomentsKernel2(GridCell* __restrict__ grid_cell_array,
+__global__ void statisticalMomentsKernel2(GridCellsSoA grid_cell_array,
                                           const float* __restrict__ vel_x_array_accum,
                                           const float* __restrict__ vel_y_array_accum,
                                           const float* __restrict__ vel_x_squared_array_accum,
@@ -85,10 +83,9 @@ __global__ void statisticalMomentsKernel2(GridCell* __restrict__ grid_cell_array
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        int start_idx = grid_cell_array[i].start_idx;
-        int end_idx = grid_cell_array[i].end_idx;
-        float rho_p = grid_cell_array[i].pers_occ_mass;
-        // printf("rho p: %f\n", rho_p);
+        int start_idx = grid_cell_array.start_idx[i];
+        int end_idx = grid_cell_array.end_idx[i];
+        float rho_p = grid_cell_array.pers_occ_mass[i];
 
         if (start_idx != -1)
         {
@@ -97,7 +94,6 @@ __global__ void statisticalMomentsKernel2(GridCell* __restrict__ grid_cell_array
             float var_x_vel = calc_variance(vel_x_squared_array_accum, start_idx, end_idx, rho_p, mean_x_vel);
             float var_y_vel = calc_variance(vel_y_squared_array_accum, start_idx, end_idx, rho_p, mean_y_vel);
             float covar_xy_vel = calc_covariance(vel_xy_array_accum, start_idx, end_idx, rho_p, mean_x_vel, mean_y_vel);
-            // printf("x: %f, y: %f\n", mean_x_vel, mean_y_vel);
 
             store(grid_cell_array, i, mean_x_vel, mean_y_vel, var_x_vel, var_y_vel, covar_xy_vel);
         }

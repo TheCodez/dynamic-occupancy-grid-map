@@ -18,36 +18,34 @@ __device__ float calc_norm_assoc(float occ_accum, float rho_p)
     return occ_accum > 0.0f ? rho_p / occ_accum : 0.0f;
 }
 
-__device__ float calc_norm_unassoc(const GridCell& grid_cell)
+__device__ float calc_norm_unassoc(float pred_occ_mass, float pers_occ_mass)
 {
-    float pred_occ_mass = grid_cell.pred_occ_mass;
-    return pred_occ_mass > 0.0f ? grid_cell.pers_occ_mass / pred_occ_mass : 0.0f;
+    return pred_occ_mass > 0.0f ? pers_occ_mass / pred_occ_mass : 0.0f;
 }
 
-__device__ void set_normalization_components(GridCell* __restrict__ grid_cell_array, int i, float mu_A, float mu_UA)
+__device__ void set_normalization_components(GridCellsSoA grid_cell_array, int i, float mu_A, float mu_UA)
 {
-    grid_cell_array[i].mu_A = mu_A;
-    grid_cell_array[i].mu_UA = mu_UA;
+    grid_cell_array.mu_A[i] = mu_A;
+    grid_cell_array.mu_UA[i] = mu_UA;
 }
 
 __device__ float update_unnorm(const ParticlesSoA& particle_array, int i,
-                               const MeasurementCell* __restrict__ meas_cell_array)
+                               const MeasurementCellsSoA meas_cell_array)
 {
-    return meas_cell_array[particle_array.grid_cell_idx[i]].likelihood * particle_array.weight[i];
+    return meas_cell_array.likelihood[particle_array.grid_cell_idx[i]] * particle_array.weight[i];
 }
 
-__device__ float normalize(const ParticlesSoA& particle, int i, const GridCell* __restrict__ grid_cell_array,
-                           const MeasurementCell* __restrict__ meas_cell_array, float weight)
+__device__ float normalize(const ParticlesSoA& particle, int i, const GridCellsSoA grid_cell_array,
+                           const MeasurementCellsSoA meas_cell_array, float weight)
 {
     const int cell_idx = particle.grid_cell_idx[i];
-    const GridCell& cell = grid_cell_array[cell_idx];
-    const MeasurementCell& meas_cell = meas_cell_array[cell_idx];
+    const float p_A = meas_cell_array.p_A[cell_idx];
 
-    return meas_cell.p_A * cell.mu_A * weight + (1.0f - meas_cell.p_A) * cell.mu_UA * particle.weight[i];
+    return p_A * grid_cell_array.mu_A[cell_idx] * weight + (1.0f - p_A) * grid_cell_array.mu_UA[cell_idx] * particle.weight[i];
 }
 
 __global__ void updatePersistentParticlesKernel1(const ParticlesSoA particle_array,
-                                                 const MeasurementCell* __restrict__ meas_cell_array,
+                                                 const MeasurementCellsSoA meas_cell_array,
                                                  float* __restrict__ weight_array, int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)
@@ -56,29 +54,28 @@ __global__ void updatePersistentParticlesKernel1(const ParticlesSoA particle_arr
     }
 }
 
-__global__ void updatePersistentParticlesKernel2(GridCell* __restrict__ grid_cell_array,
+__global__ void updatePersistentParticlesKernel2(GridCellsSoA grid_cell_array,
                                                  const float* __restrict__ weight_array_accum, int cell_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        int start_idx = grid_cell_array[i].start_idx;
-        int end_idx = grid_cell_array[i].end_idx;
+        int start_idx = grid_cell_array.start_idx[i];
+        int end_idx = grid_cell_array.end_idx[i];
 
         if (start_idx != -1)
         {
             float m_occ_accum = subtract(weight_array_accum, start_idx, end_idx);
-            float rho_p = grid_cell_array[i].pers_occ_mass;
+            float rho_p = grid_cell_array.pers_occ_mass[i];
             float mu_A = calc_norm_assoc(m_occ_accum, rho_p);
-            float mu_UA = calc_norm_unassoc(grid_cell_array[i]);
+            float mu_UA = calc_norm_unassoc(grid_cell_array.pred_occ_mass[i], grid_cell_array.pers_occ_mass[i]);
             set_normalization_components(grid_cell_array, i, mu_A, mu_UA);
-            // printf("mu_A: %f, mu_UA: %f\n", mu_A, mu_UA);
         }
     }
 }
 
 __global__ void updatePersistentParticlesKernel3(const ParticlesSoA particle_array,
-                                                 const MeasurementCell* __restrict__ meas_cell_array,
-                                                 const GridCell* __restrict__ grid_cell_array,
+                                                 const MeasurementCellsSoA meas_cell_array,
+                                                 const GridCellsSoA grid_cell_array,
                                                  float* __restrict__ weight_array, int particle_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < particle_count; i += blockDim.x * gridDim.x)

@@ -23,7 +23,7 @@ Framebuffer::Framebuffer(int width, int height)
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-    CHECK_ERROR(cudaGraphicsGLRegisterImage(&resource, texture, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsReadOnly));
+    CUDA_CALL(cudaGraphicsGLRegisterImage(&resource, texture, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsReadOnly));
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -36,23 +36,23 @@ Framebuffer::~Framebuffer()
 
 void Framebuffer::beginCudaAccess(cudaSurfaceObject_t* surfaceObject)
 {
-    CHECK_ERROR(cudaGraphicsMapResources(1, &resource, nullptr));
+    CUDA_CALL(cudaGraphicsMapResources(1, &resource, nullptr));
 
     cudaArray_t cudaArray;
-    CHECK_ERROR(cudaGraphicsSubResourceGetMappedArray(&cudaArray, resource, 0, 0));
+    CUDA_CALL(cudaGraphicsSubResourceGetMappedArray(&cudaArray, resource, 0, 0));
 
     cudaResourceDesc resourceDesc;
     memset(&resourceDesc, 0, sizeof(cudaResourceDesc));
     resourceDesc.resType = cudaResourceTypeArray;
     resourceDesc.res.array.array = cudaArray;
 
-    CHECK_ERROR(cudaCreateSurfaceObject(surfaceObject, &resourceDesc));
+    CUDA_CALL(cudaCreateSurfaceObject(surfaceObject, &resourceDesc));
 }
 
 void Framebuffer::endCudaAccess(cudaSurfaceObject_t surfaceObject)
 {
-    CHECK_ERROR(cudaGraphicsUnmapResources(1, &resource, nullptr));
-    CHECK_ERROR(cudaDestroySurfaceObject(surfaceObject));
+    CUDA_CALL(cudaGraphicsUnmapResources(1, &resource, nullptr));
+    CUDA_CALL(cudaDestroySurfaceObject(surfaceObject));
 }
 
 void Framebuffer::bind()

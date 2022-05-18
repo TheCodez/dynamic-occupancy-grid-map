@@ -22,7 +22,8 @@ __global__ void moveParticlesKernel(ParticlesSoA particle_array, int x_move, int
     }
 }
 
-__global__ void moveMapKernel(GridCell* __restrict__ grid_cell_array, const GridCell* __restrict__ old_grid_cell_array,
+__global__ void moveMapKernel(GridCellsSoA grid_cell_array, GridCellsSoA old_grid_cell_array,
+                              MeasurementCellsSoA meas_cell_array, ParticlesSoA particle_array,
                               int x_move, int y_move, int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;

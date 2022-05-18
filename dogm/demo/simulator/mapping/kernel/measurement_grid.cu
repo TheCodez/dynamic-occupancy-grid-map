@@ -112,7 +112,7 @@ __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const floa
     }
 }
 
-__global__ void cartesianGridToMeasurementGridKernel(dogm::MeasurementCell* __restrict__ meas_grid,
+__global__ void cartesianGridToMeasurementGridKernel(dogm::MeasurementCellsSoA meas_grid,
                                                      cudaSurfaceObject_t cart, int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -123,15 +123,15 @@ __global__ void cartesianGridToMeasurementGridKernel(dogm::MeasurementCell* __re
     {
         float4 color = surf2Dread<float4>(cart, x * sizeof(float4), y);
 
-        meas_grid[index].occ_mass = color.x;
-        meas_grid[index].free_mass = color.y;
+        meas_grid.occ_mass[index] = color.x;
+        meas_grid.free_mass[index] = color.y;
 
-        meas_grid[index].likelihood = 1.0f;
-        meas_grid[index].p_A = 1.0f;
+        meas_grid.likelihood[index] = 1.0f;
+        meas_grid.p_A[index] = 1.0f;
     }
 }
 
-__global__ void gridArrayToMeasurementGridKernel(dogm::MeasurementCell* __restrict__ meas_grid,
+__global__ void gridArrayToMeasurementGridKernel(dogm::MeasurementCellsSoA meas_grid,
                                                  const float2* __restrict__ grid, int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -142,10 +142,10 @@ __global__ void gridArrayToMeasurementGridKernel(dogm::MeasurementCell* __restri
     {
         float2 masses = grid[index];
 
-        meas_grid[index].occ_mass = masses.x;
-        meas_grid[index].free_mass = masses.y;
+        meas_grid.occ_mass[index] = masses.x;
+        meas_grid.free_mass[index] = masses.y;
 
-        meas_grid[index].likelihood = 1.0f;
-        meas_grid[index].p_A = 1.0f;
+        meas_grid.likelihood[index] = 1.0f;
+        meas_grid.p_A[index] = 1.0f;
     }
 }

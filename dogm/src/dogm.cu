@@ -50,22 +50,22 @@ DOGM::DOGM(const Params& params)
     particle_array_next.init(particle_count, true);
     birth_particle_array.init(new_born_particle_count, true);
 
-    CHECK_ERROR(cudaMalloc(&grid_cell_array, grid_cell_count * sizeof(GridCell)));
-    CHECK_ERROR(cudaMalloc(&meas_cell_array, grid_cell_count * sizeof(MeasurementCell)));
+    grid_cell_array.init(grid_cell_count, true);
+    meas_cell_array.init(grid_cell_count, true);
 
-    CHECK_ERROR(cudaMalloc(&weight_array, particle_count * sizeof(float)));
-    CHECK_ERROR(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
-    CHECK_ERROR(cudaMalloc(&born_masses_array, grid_cell_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&weight_array, particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&birth_weight_array, new_born_particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&born_masses_array, grid_cell_count * sizeof(float)));
 
-    CHECK_ERROR(cudaMalloc(&vel_x_array, particle_count * sizeof(float)));
-    CHECK_ERROR(cudaMalloc(&vel_y_array, particle_count * sizeof(float)));
-    CHECK_ERROR(cudaMalloc(&vel_x_squared_array, particle_count * sizeof(float)));
-    CHECK_ERROR(cudaMalloc(&vel_y_squared_array, particle_count * sizeof(float)));
-    CHECK_ERROR(cudaMalloc(&vel_xy_array, particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&vel_x_array, particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&vel_y_array, particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&vel_x_squared_array, particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&vel_y_squared_array, particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&vel_xy_array, particle_count * sizeof(float)));
 
-    CHECK_ERROR(cudaMalloc(&rand_array, particle_count * sizeof(float)));
+    CUDA_CALL(cudaMalloc(&rand_array, particle_count * sizeof(float)));
 
-    CHECK_ERROR(cudaMalloc(&rng_states, particles_grid.x * block_dim.x * sizeof(curandState)));
+    CUDA_CALL(cudaMalloc(&rng_states, particles_grid.x * block_dim.x * sizeof(curandState)));
 
     initialize();
 }
@@ -76,40 +76,37 @@ DOGM::~DOGM()
     particle_array_next.free();
     birth_particle_array.free();
 
-    CHECK_ERROR(cudaFree(grid_cell_array));
-    CHECK_ERROR(cudaFree(meas_cell_array));
+    grid_cell_array.free();
+    meas_cell_array.free();
 
-    CHECK_ERROR(cudaFree(weight_array));
-    CHECK_ERROR(cudaFree(birth_weight_array));
-    CHECK_ERROR(cudaFree(born_masses_array));
+    CUDA_CALL(cudaFree(weight_array));
+    CUDA_CALL(cudaFree(birth_weight_array));
+    CUDA_CALL(cudaFree(born_masses_array));
 
-    CHECK_ERROR(cudaFree(vel_x_array));
-    CHECK_ERROR(cudaFree(vel_y_array));
-    CHECK_ERROR(cudaFree(vel_x_squared_array));
-    CHECK_ERROR(cudaFree(vel_y_squared_array));
-    CHECK_ERROR(cudaFree(vel_xy_array));
+    CUDA_CALL(cudaFree(vel_x_array));
+    CUDA_CALL(cudaFree(vel_y_array));
+    CUDA_CALL(cudaFree(vel_x_squared_array));
+    CUDA_CALL(cudaFree(vel_y_squared_array));
+    CUDA_CALL(cudaFree(vel_xy_array));
 
-    CHECK_ERROR(cudaFree(rng_states));
+    CUDA_CALL(cudaFree(rand_array));
+
+    CUDA_CALL(cudaFree(rng_states));
 }
 
 void DOGM::initialize()
 {
     cudaStream_t particles_stream, grid_stream;
-    CHECK_ERROR(cudaStreamCreate(&particles_stream));
-    CHECK_ERROR(cudaStreamCreate(&grid_stream));
+    CUDA_CALL(cudaStreamCreate(&particles_stream));
+    CUDA_CALL(cudaStreamCreate(&grid_stream));
 
-    setupRandomStatesKernel<<<particles_grid, block_dim>>>(rng_states, 123456, particles_grid.x * block_dim.x);
-
-    CHECK_ERROR(cudaGetLastError());
-    CHECK_ERROR(cudaDeviceSynchronize());
+    setupRandomStatesKernel<<<particles_grid, block_dim>>>(rng_states, particles_grid.x * block_dim.x);
 
     initGridCellsKernel<<<grid_map_grid, block_dim, 0, grid_stream>>>(grid_cell_array, meas_cell_array, grid_size,
                                                                       grid_cell_count);
 
-    CHECK_ERROR(cudaGetLastError());
-
-    CHECK_ERROR(cudaStreamDestroy(particles_stream));
-    CHECK_ERROR(cudaStreamDestroy(grid_stream));
+    CUDA_CALL(cudaStreamDestroy(particles_stream));
+    CUDA_CALL(cudaStreamDestroy(grid_stream));
 }
 
 void DOGM::updateGrid(MeasurementCell* measurement_grid, float new_x, float new_y, float new_yaw, float dt, bool device)
@@ -132,22 +129,18 @@ void DOGM::updateGrid(MeasurementCell* measurement_grid, float new_x, float new_
     iteration++;
 }
 
-std::vector<GridCell> DOGM::getGridCells() const
+GridCellsSoA DOGM::getGridCells() const
 {
-    std::vector<GridCell> grid_cells(static_cast<std::vector<GridCell>::size_type>(grid_cell_count));
-
-    CHECK_ERROR(
-        cudaMemcpy(grid_cells.data(), grid_cell_array, grid_cell_count * sizeof(GridCell), cudaMemcpyDeviceToHost));
+    GridCellsSoA grid_cells(grid_cell_count, false);
+    grid_cells.copy(grid_cell_array, cudaMemcpyDeviceToHost);
 
     return grid_cells;
 }
 
-std::vector<MeasurementCell> DOGM::getMeasurementCells() const
+MeasurementCellsSoA DOGM::getMeasurementCells() const
 {
-    std::vector<MeasurementCell> meas_cells(static_cast<std::vector<GridCell>::size_type>(grid_cell_count));
-
-    CHECK_ERROR(cudaMemcpy(meas_cells.data(), meas_cell_array, grid_cell_count * sizeof(MeasurementCell),
-                           cudaMemcpyDeviceToHost));
+    MeasurementCellsSoA meas_cells(grid_cell_count, false);
+    meas_cells.copy(meas_cell_array, cudaMemcpyDeviceToHost);
 
     return meas_cells;
 }
@@ -176,26 +169,19 @@ void DOGM::updatePose(float new_x, float new_y, float new_yaw)
 
         if (fabsf(x_diff) > params.resolution || fabsf(y_diff) > params.resolution)
         {
-            const int x_move = -static_cast<int>(x_diff / params.resolution);
-            const int y_move = -static_cast<int>(y_diff / params.resolution);
-
-            GridCell* old_grid_cell_array;
-            CHECK_ERROR(cudaMalloc(&old_grid_cell_array, grid_cell_count * sizeof(GridCell)));
-
-            CHECK_ERROR(cudaMemcpy(old_grid_cell_array, grid_cell_array, grid_cell_count * sizeof(GridCell),
-                                   cudaMemcpyDeviceToDevice));
-            CHECK_ERROR(cudaMemset(grid_cell_array, 0, grid_cell_count * sizeof(GridCell)));
+            moveParticlesKernel<<<particles_grid, block_dim>>>(particle_array, x_move, y_move, particle_count,
+                params.resolution, grid_size);
 
             dim3 dim_block(32, 32);
             dim3 grid_dim(divUp(grid_size, dim_block.x), divUp(grid_size, dim_block.y));
 
-            moveParticlesKernel<<<particles_grid, block_dim>>>(particle_array, x_move, y_move, particle_count);
-            CHECK_ERROR(cudaGetLastError());
+            GridCellsSoA old_grid_cell_array(grid_cell_count, true);
+            old_grid_cell_array.copy(grid_cell_array, cudaMemcpyDeviceToDevice);
 
-            moveMapKernel<<<grid_dim, dim_block>>>(grid_cell_array, old_grid_cell_array, x_move, y_move, grid_size);
-            CHECK_ERROR(cudaGetLastError());
+            moveMapKernel<<<grid_dim, dim_block>>>(grid_cell_array, old_grid_cell_array, meas_cell_array, particle_array,
+                x_move, y_move, grid_size);
 
-            CHECK_ERROR(cudaFree(old_grid_cell_array));
+            old_grid_cell_array.free();
 
             position_x = new_x;
             position_y = new_y;
@@ -204,10 +190,10 @@ void DOGM::updatePose(float new_x, float new_y, float new_yaw)
     }
 }
 
-void DOGM::updateMeasurementGrid(MeasurementCell* measurement_grid, bool device)
+void DOGM::updateMeasurementGrid(MeasurementCellsSoA measurement_grid, bool device)
 {
     cudaMemcpyKind kind = device ? cudaMemcpyDeviceToDevice : cudaMemcpyHostToDevice;
-    CHECK_ERROR(cudaMemcpy(meas_cell_array, measurement_grid, grid_cell_count * sizeof(MeasurementCell), kind));
+    meas_cell_array.copy(measurement_grid, kind);
 
     if (!first_measurement_received)
     {
@@ -245,13 +231,12 @@ void DOGM::initializeParticles()
 
 void DOGM::particlePrediction(float dt)
 {
-    // std::cout << "DOGM::particlePrediction" << std::endl;
-
+    // glm uses column major, we need row major
     // clang-format off
-    glm::mat4x4 transition_matrix(1, 0, dt, 0,
-                                  0, 1, 0, dt,
-                                  0, 0, 1, 0,
-                                  0, 0, 0, 1);
+    glm::mat4x4 transition_matrix(1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  dt, 0, 1, 0,
+                                  0, dt, 0, 1);
     // clang-format on
 
     // FIXME: glm uses column major, we need row major
