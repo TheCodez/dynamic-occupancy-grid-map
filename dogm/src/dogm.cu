@@ -24,6 +24,13 @@
 
 #include <cmath>
 #include <vector>
+#include <Eigen/Dense>
+#include <stdexcept>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudawarping.hpp>
+
 
 namespace dogm
 {
@@ -359,8 +366,66 @@ void DOGM::resampling()
 
     resamplingKernel<<<particles_grid, block_dim>>>(particle_array, particle_array_next, birth_particle_array,
                                                     idx_array_resampled, new_weight, particle_count);
+}
 
-    CHECK_ERROR(cudaGetLastError());
+cv::Mat DOGM::getPredOccMassImage(GridCellsSoA& grid_cells) const
+{
+    cv::Mat image(grid_size, grid_size, CV_8UC3);
+    for (int i = 0; i < grid_cell_count; i++)
+    {
+        cv::Vec3b color;
+        int x = i % grid_size;
+        int y = i / grid_size;
+        color[0] = color[1] = color[2] = uchar(grid_cells.pred_occ_mass[i] * 255);
+        image.at<cv::Vec3b>(grid_size - x - 1, grid_size - y - 1) = color;
+    }
+    return image;
+}
+
+cv::Mat DOGM::getNewBornOccMassImage(GridCellsSoA& grid_cells) const
+{
+    cv::Mat image(grid_size, grid_size, CV_8UC3);
+    for (int i = 0; i < grid_cell_count; i++)
+    {
+        cv::Vec3b color;
+        int x = i % grid_size;
+        int y = i / grid_size;
+        color[0] = color[1] = color[2] = uchar(grid_cells.new_born_occ_mass[i] * 255);
+        image.at<cv::Vec3b>(grid_size - x - 1, grid_size - y - 1) = color;
+    }
+    return image;
+}
+
+cv::Mat DOGM::getPersOccMassImage(GridCellsSoA& grid_cells) const
+{
+    cv::Mat image(grid_size, grid_size, CV_8UC3);
+    for (int i = 0; i < grid_cell_count; i++)
+    {
+        cv::Vec3b color;
+        int x = i % grid_size;
+        int y = i / grid_size;
+        color[0] = color[1] = color[2] = uchar(grid_cells.pers_occ_mass[i] * 255);
+        image.at<cv::Vec3b>(grid_size - x - 1, grid_size - y - 1) = color;
+    }
+    return image;
+}
+
+cv::Mat DOGM::getOccupancyImage(GridCellsSoA& grid_cells) const
+{
+    cv::Mat image(grid_size, grid_size, CV_8UC3);
+    for (int i = 0; i < grid_cell_count; i++)
+    {
+        const auto occ_mass = grid_cells.occ_mass[i];
+        const auto free_mass = grid_cells.free_mass[i];
+        cv::Vec3b color;
+        int x = i % grid_size;
+        int y = i / grid_size;
+        color[0] = color[1] = color[2] = uchar((occ_mass + (1 - occ_mass - free_mass) / 2) * 255);
+        image.at<cv::Vec3b>(grid_size - x - 1, grid_size - y - 1) = color;
+    }
+    return image;
+}
+
 }
 
 } /* namespace dogm */

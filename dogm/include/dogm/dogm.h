@@ -13,6 +13,7 @@
 #include <memory>
 
 #include <vector>
+#include <opencv2/opencv.hpp>
 
 namespace dogm
 {
@@ -72,7 +73,6 @@ public:
      * @param measurement_grid new measurement grid map.
      * @param new_x new x pose.
      * @param new_y new y pose.
-     * @param new_yaw new yaw.
      * @param dt delta time since the last update.
      * @param device whether the measurement grid resides in GPU memory (default: true).
      */
@@ -122,13 +122,6 @@ public:
     float getPositionX() const { return position_x; }
 
     /**
-     * Returns the vehicles yaw.
-     *
-     * @return yaw.
-     */
-    float getYaw() const { return yaw; }
-
-    /**
      * Returns the y position.
      *
      * @return y position.
@@ -137,6 +130,10 @@ public:
 
     int getIteration() const { return iteration; }
 
+    cv::Mat getPredOccMassImage(GridCellsSoA& grid_cells) const;
+    cv::Mat getNewBornOccMassImage(GridCellsSoA& grid_cells) const;
+    cv::Mat getPersOccMassImage(GridCellsSoA& grid_cells) const;
+    cv::Mat getOccupancyImage(GridCellsSoA& grid_cells) const;
 private:
     void initialize();
 

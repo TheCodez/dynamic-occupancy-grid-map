@@ -4,6 +4,8 @@ if (NOT OpenCV_FOUND)
 	set(OpenCV_LIBS "" CACHE FILEPATH "" )
 endif()
 
+find_package(CUDA REQUIRED)
+
 add_definitions(-D_USE_MATH_DEFINES)  # Required to make M_PI from cmath available in MSVC
 
 add_executable(demo
@@ -14,9 +16,10 @@ target_include_directories(demo PUBLIC ${OpenCV_INCLUDE_DIRS} ${GLM_INCLUDE_DIR}
 
 target_link_libraries(demo
 	dogm
-	utils
-	simulator
+	dogm_utils
+	dogm_simulator
 	${OpenCV_LIBS}
+	${CUDA_CUDART_LIBRARY}
 )
 
 add_subdirectory(utils)

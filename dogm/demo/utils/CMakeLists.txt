@@ -25,18 +25,18 @@ SET(SRC_FILES
     timer.cpp
 )
 
-ADD_LIBRARY(utils STATIC ${SRC_FILES} ${HEADER_FILES})
+ADD_LIBRARY(dogm_utils SHARED ${SRC_FILES} ${HEADER_FILES})
 
-TARGET_COMPILE_FEATURES(utils PUBLIC cxx_std_17)
+TARGET_COMPILE_FEATURES(dogm_utils PUBLIC cxx_std_17)
 
-TARGET_INCLUDE_DIRECTORIES(utils
+TARGET_INCLUDE_DIRECTORIES(dogm_utils
     PUBLIC
     simulator
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/include
     ${OpenCV_INCLUDE_DIRS})
 
-TARGET_LINK_LIBRARIES(utils PRIVATE simulator ${OpenCV_LIBS})
+TARGET_LINK_LIBRARIES(dogm_utils dogm_simulator ${OpenCV_LIBS})
 
 if(BUILD_TESTS)
     add_subdirectory(test)

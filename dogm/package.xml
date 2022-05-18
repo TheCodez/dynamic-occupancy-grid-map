@@ -1,0 +1,16 @@
+<package format="2">
+  <name>dogm</name>
+  <version>0.0.0</version>
+  <description>The dogm package</description>
+
+  <maintainer email="user@todo.todo">user</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
