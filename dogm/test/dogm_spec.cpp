@@ -28,8 +28,10 @@ TEST(DOGM, EgoMotionCompensation)
     glm::vec4 old_state = particles.state[0];
     glm::vec2 pose{10.0f, 10.0f};
 
+    dogm::MeasurementCellsSoA meas_grid(dogm.getGridSize() * dogm.getGridSize(), false);
+
     // Set initial pose (no position update)
-    dogm.updateGrid(nullptr, pose.x, pose.y, 0.0f, 0.0f);
+    dogm.updateGrid(meas_grid, pose.x, pose.y, 0.0f, 0.0f);
     cudaDeviceSynchronize();
     EXPECT_EQ(pose.x, dogm.getPositionX());
     EXPECT_EQ(pose.y, dogm.getPositionY());
@@ -37,7 +39,7 @@ TEST(DOGM, EgoMotionCompensation)
     EXPECT_EQ(old_state, new_particles.state[0]);
 
     // Change lower than resolution doesn't lead to update after initial position is set
-    dogm.updateGrid(nullptr, pose.x + 0.5f, pose.y + 0.5f, 0.0f, 0.0f);
+    dogm.updateGrid(meas_grid, pose.x + 0.5f, pose.y + 0.5f, 0.0f, 0.0f);
     cudaDeviceSynchronize();
     EXPECT_EQ(pose.x, dogm.getPositionX());
     EXPECT_EQ(pose.y, dogm.getPositionY());
@@ -47,7 +49,7 @@ TEST(DOGM, EgoMotionCompensation)
     // Update pose -> position update
     const float x_change = 3.0f;
     pose.x += x_change;
-    dogm.updateGrid(nullptr, pose.x, pose.y, 0.0f, 0.0f);
+    dogm.updateGrid(meas_grid, pose.x, pose.y, 0.0f, 0.0f);
     cudaDeviceSynchronize();
     EXPECT_EQ(pose.x, dogm.getPositionX());
     EXPECT_EQ(pose.y, dogm.getPositionY());
