@@ -11,13 +11,13 @@
 #define GPU_LAMBDA [=] __host__ __device__
 
 #ifndef CUDA_CALL
-#define CUDA_CALL(call)\
-{\
-    auto status = static_cast<cudaError_t>(call);\
-    if (status != cudaSuccess)\
-        fprintf(stderr, "ERROR: CUDA RT call \"%s\" in line %d of file %s failed with %s (%d).\n",\
-            #call, __LINE__, __FILE__, cudaGetErrorString(status), status);\
-}
+#define CUDA_CALL(call)                                                                                                \
+    {                                                                                                                  \
+        auto status = static_cast<cudaError_t>(call);                                                                  \
+        if (status != cudaSuccess)                                                                                     \
+            fprintf(stderr, "ERROR: CUDA RT call \"%s\" in line %d of file %s failed with %s (%d).\n", #call,          \
+                    __LINE__, __FILE__, cudaGetErrorString(status), status);                                           \
+    }
 #endif
 
 inline int divUp(int total, int grain)

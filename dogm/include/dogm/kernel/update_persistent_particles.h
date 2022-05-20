@@ -18,7 +18,7 @@ __global__ void updatePersistentParticlesKernel2(GridCellsSoA grid_cell_array,
 
 __global__ void updatePersistentParticlesKernel3(const ParticlesSoA particle_array,
                                                  const MeasurementCellsSoA meas_cell_array,
-                                                 const GridCellsSoA grid_cell_array,
-                                                 float* __restrict__ weight_array, int particle_count);
+                                                 const GridCellsSoA grid_cell_array, float* __restrict__ weight_array,
+                                                 int particle_count);
 
 } /* namespace dogm */

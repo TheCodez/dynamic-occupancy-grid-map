@@ -76,7 +76,7 @@ public:
      * @param dt delta time since the last update.
      * @param device whether the measurement grid resides in GPU memory (default: true).
      */
-     void updateGrid(MeasurementCellsSoA measurement_grid, float new_x, float new_y, float new_yaw, float dt,
+    void updateGrid(MeasurementCellsSoA measurement_grid, float new_x, float new_y, float new_yaw, float dt,
                     bool device = true);
 
     /**

@@ -112,8 +112,8 @@ __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const floa
     }
 }
 
-__global__ void cartesianGridToMeasurementGridKernel(dogm::MeasurementCellsSoA meas_grid,
-                                                     cudaSurfaceObject_t cart, int grid_size)
+__global__ void cartesianGridToMeasurementGridKernel(dogm::MeasurementCellsSoA meas_grid, cudaSurfaceObject_t cart,
+                                                     int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -131,8 +131,8 @@ __global__ void cartesianGridToMeasurementGridKernel(dogm::MeasurementCellsSoA m
     }
 }
 
-__global__ void gridArrayToMeasurementGridKernel(dogm::MeasurementCellsSoA meas_grid,
-                                                 const float2* __restrict__ grid, int grid_size)
+__global__ void gridArrayToMeasurementGridKernel(dogm::MeasurementCellsSoA meas_grid, const float2* __restrict__ grid,
+                                                 int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;

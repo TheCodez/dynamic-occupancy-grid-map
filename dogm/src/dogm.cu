@@ -111,7 +111,8 @@ void DOGM::initialize()
     CUDA_CALL(cudaStreamDestroy(grid_stream));
 }
 
-void DOGM::updateGrid(MeasurementCellsSoA measurement_grid, float new_x, float new_y, float new_yaw, float dt, bool device)
+void DOGM::updateGrid(MeasurementCellsSoA measurement_grid, float new_x, float new_y, float new_yaw, float dt,
+                      bool device)
 {
     updateMeasurementGrid(measurement_grid, device);
     updatePose(new_x, new_y, new_yaw);
@@ -180,8 +181,8 @@ void DOGM::updatePose(float new_x, float new_y, float new_yaw)
             GridCellsSoA old_grid_cell_array(grid_cell_count, true);
             old_grid_cell_array.copy(grid_cell_array, cudaMemcpyDeviceToDevice);
 
-            moveMapKernel<<<grid_dim, dim_block>>>(grid_cell_array, old_grid_cell_array, meas_cell_array, particle_array,
-                x_move, y_move, grid_size);
+            moveMapKernel<<<grid_dim, dim_block>>>(grid_cell_array, old_grid_cell_array, meas_cell_array,
+                                                   particle_array, x_move, y_move, grid_size);
 
             old_grid_cell_array.free();
 
@@ -219,13 +220,12 @@ void DOGM::initializeParticles()
 
     normalize_particle_orders(particle_orders_array_accum, grid_cell_count, particle_count);
 
-    initParticlesKernel1<<<grid_map_grid, block_dim>>>(particle_array,
-                                                       particle_orders_array_accum, grid_cell_count);
+    initParticlesKernel1<<<grid_map_grid, block_dim>>>(particle_array, particle_orders_array_accum, grid_cell_count);
 
     CUDA_CALL(cudaGetLastError());
 
-    initParticlesKernel2<<<particles_grid, block_dim>>>(
-        particle_array, rng_states, params.init_max_velocity, grid_size, new_weight, particle_count);
+    initParticlesKernel2<<<particles_grid, block_dim>>>(particle_array, rng_states, params.init_max_velocity, grid_size,
+                                                        new_weight, particle_count);
 
     CUDA_CALL(cudaGetLastError());
 }

@@ -66,8 +66,8 @@ __global__ void initBirthParticlesKernel(ParticlesSoA birth_particle_array, cura
     // global_state[thread_id] = local_state;
 }
 
-__global__ void initGridCellsKernel(GridCellsSoA grid_cell_array,
-                                    MeasurementCellsSoA meas_cell_array, int grid_size, int cell_count)
+__global__ void initGridCellsKernel(GridCellsSoA grid_cell_array, MeasurementCellsSoA meas_cell_array, int grid_size,
+                                    int cell_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {

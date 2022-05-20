@@ -24,11 +24,12 @@ __device__ float2 update_masses(float m_occ_pred, float m_free_pred, const Measu
     float meas_unknown = 1.0f - meas_cells.free_mass[meas_idx] - meas_cells.occ_mass[meas_idx];
     float K = m_free_pred * meas_cells.occ_mass[meas_idx] + m_occ_pred * meas_cells.free_mass[meas_idx];
 
-    float occ_mass =
-        (m_occ_pred * meas_unknown + unknown_pred * meas_cells.occ_mass[meas_idx] + m_occ_pred * meas_cells.occ_mass[meas_idx]) / (1.0f - K);
-    float free_mass =
-        (m_free_pred * meas_unknown + unknown_pred * meas_cells.free_mass[meas_idx] + m_free_pred * meas_cells.free_mass[meas_idx]) /
-        (1.0f - K);
+    float occ_mass = (m_occ_pred * meas_unknown + unknown_pred * meas_cells.occ_mass[meas_idx] +
+                      m_occ_pred * meas_cells.occ_mass[meas_idx]) /
+                     (1.0f - K);
+    float free_mass = (m_free_pred * meas_unknown + unknown_pred * meas_cells.free_mass[meas_idx] +
+                       m_free_pred * meas_cells.free_mass[meas_idx]) /
+                      (1.0f - K);
 
     return make_float2(occ_mass, free_mass);
 }

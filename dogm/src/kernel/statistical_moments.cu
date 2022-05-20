@@ -45,8 +45,8 @@ __device__ float calc_covariance(const float* __restrict__ vel_xy_array_accum, i
     return 0.0f;
 }
 
-__device__ void store(GridCellsSoA grid_cell_array, int cell_idx, float mean_x_vel, float mean_y_vel,
-                      float var_x_vel, float var_y_vel, float covar_xy_vel)
+__device__ void store(GridCellsSoA grid_cell_array, int cell_idx, float mean_x_vel, float mean_y_vel, float var_x_vel,
+                      float var_y_vel, float covar_xy_vel)
 {
     grid_cell_array.mean_x_vel[cell_idx] = mean_x_vel;
     grid_cell_array.mean_y_vel[cell_idx] = mean_y_vel;
@@ -75,8 +75,7 @@ __global__ void statisticalMomentsKernel1(const ParticlesSoA particle_array, con
     }
 }
 
-__global__ void statisticalMomentsKernel2(GridCellsSoA grid_cell_array,
-                                          const float* __restrict__ vel_x_array_accum,
+__global__ void statisticalMomentsKernel2(GridCellsSoA grid_cell_array, const float* __restrict__ vel_x_array_accum,
                                           const float* __restrict__ vel_y_array_accum,
                                           const float* __restrict__ vel_x_squared_array_accum,
                                           const float* __restrict__ vel_y_squared_array_accum,
