@@ -48,22 +48,13 @@ std::vector<Point<dogm::GridCell>> computeCellsWithVelocity(const dogm::DOGM& gr
             if (occ >= min_occupancy_threshold &&
                 velocity_normalized_by_variance.at<float>(0, 0) >= min_velocity_threshold)
             {
-                Point<dogm::GridCell> point;
+                Point<dogm::GridCell> point{};
 
                 // Storing the point as grid index to be consistent with cell.mean_x_vel and cell.mean_y_vel
                 point.x = static_cast<float>(x);
                 point.y = static_cast<float>(y);
-                point.data.start_idx = grid_cells.start_idx[index];
-                point.data.end_idx = grid_cells.end_idx[index];
-                point.data.new_born_occ_mass = grid_cells.new_born_occ_mass[index];
-                point.data.pers_occ_mass = grid_cells.pers_occ_mass[index];
                 point.data.free_mass = grid_cells.free_mass[index];
                 point.data.occ_mass = grid_cells.occ_mass[index];
-                point.data.pred_occ_mass = grid_cells.pred_occ_mass[index];
-                point.data.mu_A = grid_cells.mu_A[index];
-                point.data.mu_UA = grid_cells.mu_UA[index];
-                point.data.w_A = grid_cells.w_A[index];
-                point.data.w_UA = grid_cells.w_UA[index];
                 point.data.mean_x_vel = grid_cells.mean_x_vel[index];
                 point.data.mean_y_vel = grid_cells.mean_y_vel[index];
                 point.data.var_x_vel = grid_cells.var_x_vel[index];
