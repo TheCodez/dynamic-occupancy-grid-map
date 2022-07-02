@@ -45,7 +45,7 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<floa
     // create polar texture
     polar_texture.beginCudaAccess(&polar_surface);
     createPolarGridTextureKernel<<<grid_dim, dim_block>>>(polar_surface, d_measurements, polar_width, polar_height,
-                                                          params.resolution);
+                                                          params.resolution, params.sigma);
 
     CHECK_ERROR(cudaGetLastError());
     polar_texture.endCudaAccess(polar_surface);

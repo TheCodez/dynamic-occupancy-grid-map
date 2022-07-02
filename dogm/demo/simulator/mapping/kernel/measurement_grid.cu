@@ -35,15 +35,15 @@ __device__ float pFree(int i, float p_min, float p_max, int max_range)
     return p_min + i * (p_max - p_min) / max_range;
 }
 
-__device__ float pOcc(int r, float zk, int index, float resolution)
+__device__ float pOcc(int r, float zk, int index, float resolution, float sigma)
 {
     float occ_max = 0.95f;
-    float delta = 0.6f / resolution;
+    auto diff = float(index - r) * resolution;
 
-    return occ_max * exp(-0.5f * (index - r) * (index - r) / (delta * delta));
+    return occ_max * exp(-0.5f * diff * diff / (sigma * sigma));
 }
 
-__device__ float2 inverse_sensor_model(int i, float resolution, float zk, float r_max)
+__device__ float2 inverse_sensor_model(int i, float resolution, float zk, float r_max, float sigma)
 {
     // Masses: mOcc, mFree
 
@@ -52,7 +52,7 @@ __device__ float2 inverse_sensor_model(int i, float resolution, float zk, float 
     if (isfinite(zk))
     {
         const int r = static_cast<int>(zk / resolution);
-        const float occ = pOcc(r, zk, i, resolution);
+        const float occ = pOcc(r, zk, i, resolution, sigma);
 
         if (i <= r)
         {
@@ -70,7 +70,7 @@ __device__ float2 inverse_sensor_model(int i, float resolution, float zk, float 
 }
 
 __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements,
-                                             int width, int height, float resolution)
+                                             int width, int height, float resolution, float sigma)
 {
     const int theta = blockIdx.x * blockDim.x + threadIdx.x;
     const int range = blockIdx.y * blockDim.y + threadIdx.y;
@@ -80,7 +80,7 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, const fl
         const float epsilon = 0.00001f;
         const float zk = measurements[theta];
 
-        float2 masses = inverse_sensor_model(range, resolution, zk, height);
+        float2 masses = inverse_sensor_model(range, resolution, zk, height, sigma);
         masses.x = max(epsilon, min(1.0f - epsilon, masses.x));
         masses.y = max(epsilon, min(1.0f - epsilon, masses.y));
 
@@ -89,7 +89,7 @@ __global__ void createPolarGridTextureKernel(cudaSurfaceObject_t polar, const fl
 }
 
 __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const float* __restrict__ measurements, int width,
-                                           int height, float resolution)
+                                           int height, float resolution, float sigma)
 {
     const int theta = blockIdx.x * blockDim.x + threadIdx.x;
     const int range = blockIdx.y * blockDim.y + threadIdx.y;
@@ -100,7 +100,7 @@ __global__ void fusePolarGridTextureKernel(cudaSurfaceObject_t polar, const floa
         const float zk = measurements[theta];
 
         float2 prior = surf2Dread<float2>(polar, theta * sizeof(float2), range);
-        float2 masses = inverse_sensor_model(range, resolution, zk, height);
+        float2 masses = inverse_sensor_model(range, resolution, zk, height, sigma);
         masses.x = max(epsilon, min(1.0f - epsilon, masses.x));
         masses.y = max(epsilon, min(1.0f - epsilon, masses.y));
 

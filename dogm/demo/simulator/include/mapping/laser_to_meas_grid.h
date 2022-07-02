@@ -18,6 +18,7 @@ public:
         float max_range;
         float resolution;
         float fov;
+        float sigma;
     };
 
     LaserMeasurementGrid(const Params& params, float grid_length, float resolution);
