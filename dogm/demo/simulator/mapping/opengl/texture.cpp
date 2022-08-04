@@ -31,7 +31,7 @@ Texture::Texture(int width, int height, float anisotropy_level)
     float color[] = {0.0f, 0.0f, 1.0f, 1.0f};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 
-    CHECK_ERROR(
+    CUDA_CALL(
         cudaGraphicsGLRegisterImage(&resource, texture, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsSurfaceLoadStore));
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -44,24 +44,24 @@ Texture::~Texture()
 
 void Texture::beginCudaAccess(cudaSurfaceObject_t* surfaceObject)
 {
-    CHECK_ERROR(cudaGraphicsMapResources(1, &resource, nullptr));
+    CUDA_CALL(cudaGraphicsMapResources(1, &resource, nullptr));
 
     cudaArray_t cudaArray;
-    CHECK_ERROR(cudaGraphicsSubResourceGetMappedArray(&cudaArray, resource, 0, 0));
+    CUDA_CALL(cudaGraphicsSubResourceGetMappedArray(&cudaArray, resource, 0, 0));
 
     cudaResourceDesc resourceDesc;
     memset(&resourceDesc, 0, sizeof(cudaResourceDesc));
     resourceDesc.resType = cudaResourceTypeArray;
     resourceDesc.res.array.array = cudaArray;
 
-    CHECK_ERROR(cudaCreateSurfaceObject(surfaceObject, &resourceDesc));
+    CUDA_CALL(cudaCreateSurfaceObject(surfaceObject, &resourceDesc));
 }
 
 void Texture::endCudaAccess(cudaSurfaceObject_t surfaceObject)
 {
-    CHECK_ERROR(cudaGraphicsUnmapResources(1, &resource, nullptr));
-    CHECK_ERROR(cudaGraphicsUnregisterResource(resource));
-    CHECK_ERROR(cudaDestroySurfaceObject(surfaceObject));
+    CUDA_CALL(cudaGraphicsUnmapResources(1, &resource, nullptr));
+    CUDA_CALL(cudaGraphicsUnregisterResource(resource));
+    CUDA_CALL(cudaDestroySurfaceObject(surfaceObject));
 }
 
 void Texture::generateMipMap()

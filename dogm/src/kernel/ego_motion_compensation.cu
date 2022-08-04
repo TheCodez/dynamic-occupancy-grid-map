@@ -22,8 +22,9 @@ __global__ void moveParticlesKernel(ParticlesSoA particle_array, int x_move, int
     }
 }
 
-__global__ void moveMapKernel(GridCell* __restrict__ grid_cell_array, const GridCell* __restrict__ old_grid_cell_array,
-                              int x_move, int y_move, int grid_size)
+__global__ void moveMapKernel(GridCellsSoA grid_cell_array, GridCellsSoA old_grid_cell_array,
+                              MeasurementCellsSoA meas_cell_array, ParticlesSoA particle_array, int x_move, int y_move,
+                              int grid_size)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -37,7 +38,7 @@ __global__ void moveMapKernel(GridCell* __restrict__ grid_cell_array, const Grid
 
         if (new_x > 0 && new_x < grid_size && new_y > 0 && new_y < grid_size)
         {
-            grid_cell_array[index] = old_grid_cell_array[new_index];
+            grid_cell_array.copy(old_grid_cell_array, index, new_index);
         }
     }
 }

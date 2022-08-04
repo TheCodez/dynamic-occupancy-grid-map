@@ -13,22 +13,23 @@
 namespace dogm
 {
 
-__device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, float alpha = 0.9)
+__device__ float predict_free_mass(float grid_cell_free_mass, float m_occ_pred, float alpha = 0.9)
 {
-    return min(alpha * grid_cell.free_mass, 1.0f - m_occ_pred);
+    return min(alpha * grid_cell_free_mass, 1.0f - m_occ_pred);
 }
 
-__device__ float2 update_masses(float m_occ_pred, float m_free_pred, const MeasurementCell& meas_cell)
+__device__ float2 update_masses(float m_occ_pred, float m_free_pred, const MeasurementCellsSoA meas_cells, int meas_idx)
 {
     float unknown_pred = 1.0f - m_occ_pred - m_free_pred;
-    float meas_unknown = 1.0f - meas_cell.free_mass - meas_cell.occ_mass;
-    float K = m_free_pred * meas_cell.occ_mass + m_occ_pred * meas_cell.free_mass;
+    float meas_unknown = 1.0f - meas_cells.free_mass[meas_idx] - meas_cells.occ_mass[meas_idx];
+    float K = m_free_pred * meas_cells.occ_mass[meas_idx] + m_occ_pred * meas_cells.free_mass[meas_idx];
 
-    float occ_mass =
-        (m_occ_pred * meas_unknown + unknown_pred * meas_cell.occ_mass + m_occ_pred * meas_cell.occ_mass) / (1.0f - K);
-    float free_mass =
-        (m_free_pred * meas_unknown + unknown_pred * meas_cell.free_mass + m_free_pred * meas_cell.free_mass) /
-        (1.0f - K);
+    float occ_mass = (m_occ_pred * meas_unknown + unknown_pred * meas_cells.occ_mass[meas_idx] +
+                      m_occ_pred * meas_cells.occ_mass[meas_idx]) /
+                     (1.0f - K);
+    float free_mass = (m_free_pred * meas_unknown + unknown_pred * meas_cells.free_mass[meas_idx] +
+                       m_free_pred * meas_cells.free_mass[meas_idx]) /
+                      (1.0f - K);
 
     return make_float2(occ_mass, free_mass);
 }
@@ -39,13 +40,13 @@ __device__ float separate_newborn_part(float m_occ_pred, float m_occ_up, float p
 }
 
 __device__ void store_values(float rho_b, float rho_p, float m_free_up, float m_occ_up, float m_occ_pred,
-                             GridCell* __restrict__ grid_cell_array, int i)
+                             GridCellsSoA grid_cell_array, int i)
 {
-    grid_cell_array[i].pers_occ_mass = rho_p;
-    grid_cell_array[i].new_born_occ_mass = rho_b;
-    grid_cell_array[i].free_mass = m_free_up;
-    grid_cell_array[i].occ_mass = m_occ_up;
-    grid_cell_array[i].pred_occ_mass = m_occ_pred;
+    grid_cell_array.pers_occ_mass[i] = rho_p;
+    grid_cell_array.new_born_occ_mass[i] = rho_b;
+    grid_cell_array.free_mass[i] = m_free_up;
+    grid_cell_array.occ_mass[i] = m_occ_up;
+    grid_cell_array.pred_occ_mass[i] = m_occ_pred;
 }
 
 __device__ void normalize_weights(const ParticlesSoA& particle_array, float* __restrict__ weight_array, int start_idx,
@@ -58,16 +59,16 @@ __device__ void normalize_weights(const ParticlesSoA& particle_array, float* __r
     }
 }
 
-__global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_array, ParticlesSoA particle_array,
+__global__ void gridCellPredictionUpdateKernel(GridCellsSoA grid_cell_array, ParticlesSoA particle_array,
                                                float* __restrict__ weight_array,
                                                const float* __restrict__ weight_array_accum,
-                                               const MeasurementCell* __restrict__ meas_cell_array,
+                                               const MeasurementCellsSoA meas_cell_array,
                                                float* __restrict__ born_masses_array, float p_B, int cell_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
-        int start_idx = grid_cell_array[i].start_idx;
-        int end_idx = grid_cell_array[i].end_idx;
+        int start_idx = grid_cell_array.start_idx[i];
+        int end_idx = grid_cell_array.end_idx[i];
 
         if (start_idx != -1)
         {
@@ -79,8 +80,8 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
                 m_occ_pred = 1.0f;
             }
 
-            float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);
-            float2 masses_up = update_masses(m_occ_pred, m_free_pred, meas_cell_array[i]);
+            float m_free_pred = predict_free_mass(grid_cell_array.free_mass[i], m_occ_pred);
+            float2 masses_up = update_masses(m_occ_pred, m_free_pred, meas_cell_array, i);
             float rho_b = separate_newborn_part(m_occ_pred, masses_up.x, p_B);
             float rho_p = masses_up.x - rho_b;
             born_masses_array[i] = rho_b;
@@ -89,9 +90,9 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
         }
         else
         {
-            float m_occ = grid_cell_array[i].occ_mass;
-            float m_free = predict_free_mass(grid_cell_array[i], m_occ);
-            float2 masses_up = update_masses(m_occ, m_free, meas_cell_array[i]);
+            float m_occ = grid_cell_array.occ_mass[i];
+            float m_free = predict_free_mass(grid_cell_array.free_mass[i], m_occ);
+            float2 masses_up = update_masses(m_occ, m_free, meas_cell_array, i);
             born_masses_array[i] = 0.0f;
             store_values(0.0f, masses_up.x, masses_up.y, masses_up.x, 0.0f, grid_cell_array, i);
         }

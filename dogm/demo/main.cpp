@@ -81,7 +81,7 @@ int main(int argc, const char** argv)
 
     for (int step = 0; step < num_simulation_steps; ++step)
     {
-        dogm::MeasurementCell* meas_grid = grid_generator.generateGrid(sim_data[step].measurements);
+        dogm::MeasurementCellsSoA meas_grid = grid_generator.generateGrid(sim_data[step].measurements);
 
         const auto update_grid_caller = [&grid_map](auto&&... args) {
             grid_map.updateGrid(std::forward<decltype(args)>(args)...);

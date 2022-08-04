@@ -12,23 +12,23 @@ LaserMeasurementGrid::LaserMeasurementGrid(const Params& params, float grid_leng
 {
     int grid_cell_count = grid_size * grid_size;
 
-    CHECK_ERROR(cudaMalloc(&meas_grid, grid_cell_count * sizeof(dogm::MeasurementCell)));
+    meas_grid.init(grid_cell_count, true);
 
     renderer = std::make_unique<Renderer>(grid_size, params.fov, grid_length, params.max_range);
 }
 
 LaserMeasurementGrid::~LaserMeasurementGrid()
 {
-    CHECK_ERROR(cudaFree(meas_grid));
+    meas_grid.free();
 }
 
-dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<float>& measurements)
+dogm::MeasurementCellsSoA LaserMeasurementGrid::generateGrid(const std::vector<float>& measurements)
 {
     const int num_measurements = measurements.size();
 
     float* d_measurements;
-    CHECK_ERROR(cudaMalloc(&d_measurements, num_measurements * sizeof(float)));
-    CHECK_ERROR(
+    CUDA_CALL(cudaMalloc(&d_measurements, num_measurements * sizeof(float)));
+    CUDA_CALL(
         cudaMemcpy(d_measurements, measurements.data(), num_measurements * sizeof(float), cudaMemcpyHostToDevice));
 
     const int polar_width = num_measurements;
@@ -47,7 +47,7 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<floa
     createPolarGridTextureKernel<<<grid_dim, dim_block>>>(polar_surface, d_measurements, polar_width, polar_height,
                                                           params.resolution, params.stddev_range);
 
-    CHECK_ERROR(cudaGetLastError());
+    CUDA_CALL(cudaGetLastError());
     polar_texture.endCudaAccess(polar_surface);
 
     // render cartesian image to texture using polar texture
@@ -60,11 +60,11 @@ dogm::MeasurementCell* LaserMeasurementGrid::generateGrid(const std::vector<floa
     // transform RGBA texture to measurement grid
     cartesianGridToMeasurementGridKernel<<<cart_grid_dim, dim_block>>>(meas_grid, cartesian_surface, grid_size);
 
-    CHECK_ERROR(cudaGetLastError());
+    CUDA_CALL(cudaGetLastError());
     framebuffer->endCudaAccess(cartesian_surface);
 
-    CHECK_ERROR(cudaFree(d_measurements));
-    CHECK_ERROR(cudaDeviceSynchronize());
+    CUDA_CALL(cudaFree(d_measurements));
+    CUDA_CALL(cudaDeviceSynchronize());
 
     return meas_grid;
 }

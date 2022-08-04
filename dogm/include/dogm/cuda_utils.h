@@ -10,18 +10,15 @@
 
 #define GPU_LAMBDA [=] __host__ __device__
 
-#define CHECK_ERROR(ans)                                                                                               \
+#ifndef CUDA_CALL
+#define CUDA_CALL(call)                                                                                                \
     {                                                                                                                  \
-        checkError((ans), __FILE__, __LINE__);                                                                         \
+        auto status = static_cast<cudaError_t>(call);                                                                  \
+        if (status != cudaSuccess)                                                                                     \
+            fprintf(stderr, "ERROR: CUDA RT call \"%s\" in line %d of file %s failed with %s (%d).\n", #call,          \
+                    __LINE__, __FILE__, cudaGetErrorString(status), status);                                           \
     }
-
-inline void checkError(cudaError_t code, const char* file, int line)
-{
-    if (code != cudaSuccess)
-    {
-        printf("GPU Kernel Error: %s %s %d\n", cudaGetErrorString(code), file, line);
-    }
-}
+#endif
 
 inline int divUp(int total, int grain)
 {
