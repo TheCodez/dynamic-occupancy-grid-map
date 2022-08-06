@@ -35,4 +35,4 @@ jobs:
     - name: Clang-Tidy on cpp (non-failing)
       run: find -iname '*.cpp' | xargs -I{} clang-tidy -p dogm/build {}
     - name: Clang-Tidy on cuda (non-failing)
-      run: find dogm/src -iname '*.cu' | xargs -I{} clang-tidy -p build {} -- --cuda-host-only -Idogm/include | grep -v "clang-diagnostic-error"
+      run: find dogm/src -iname '*.cu' | xargs -I{} clang-tidy -p build {} -- --cuda-host-only -Idogm/include
