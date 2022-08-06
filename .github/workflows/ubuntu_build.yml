@@ -31,8 +31,8 @@ jobs:
       run: ctest
       working-directory: dogm/build/demo
     - name: Install clang-tidy
-      run: sudo apt install clang-tidy
+      run: sudo apt install clang clang-tidy
     - name: Clang-Tidy on cpp (non-failing)
-      run: find -iname '*.cpp' | xargs -I{} clang-tidy -p dogm/build {} | grep -v "clang-diagnostic-error"
+      run: find -iname '*.cpp' | xargs -I{} clang-tidy -p dogm/build {}
     - name: Clang-Tidy on cuda (non-failing)
       run: find dogm/src -iname '*.cu' | xargs -I{} clang-tidy -p build {} -- --cuda-host-only -Idogm/include | grep -v "clang-diagnostic-error"
