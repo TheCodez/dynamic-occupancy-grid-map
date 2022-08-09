@@ -22,6 +22,7 @@
 
 #include <cuda_runtime.h>
 
+#include <cmath>
 #include <vector>
 
 namespace dogm
@@ -287,7 +288,7 @@ void DOGM::gridCellOccupancyUpdate(float dt)
     accumulate(weight_array, weights_accum);
     float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
-    float freespace_discount_factor = std::powf(params.freespace_discount, dt);
+    float freespace_discount_factor = std::pow(params.freespace_discount, dt);
 
     gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(
         grid_cell_array, particle_array, weight_array, weight_array_accum, meas_cell_array, born_masses_array,
