@@ -13,9 +13,9 @@
 namespace dogm
 {
 
-__device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, float alpha = 0.9)
+__device__ float predict_free_mass(const GridCell& grid_cell, float m_occ_pred, float alpha_t)
 {
-    return min(alpha * grid_cell.free_mass, 1.0f - m_occ_pred);
+    return min(alpha_t * grid_cell.free_mass, 1.0f - m_occ_pred);
 }
 
 __device__ float2 update_masses(float m_occ_pred, float m_free_pred, const MeasurementCell& meas_cell)
@@ -62,7 +62,8 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
                                                float* __restrict__ weight_array,
                                                const float* __restrict__ weight_array_accum,
                                                const MeasurementCell* __restrict__ meas_cell_array,
-                                               float* __restrict__ born_masses_array, float p_B, int cell_count)
+                                               float* __restrict__ born_masses_array, float p_B,
+                                               float freespace_discount_factor, int cell_count)
 {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < cell_count; i += blockDim.x * gridDim.x)
     {
@@ -81,7 +82,7 @@ __global__ void gridCellPredictionUpdateKernel(GridCell* __restrict__ grid_cell_
             m_occ_pred = 1.0f;
         }
 
-        float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred);
+        float m_free_pred = predict_free_mass(grid_cell_array[i], m_occ_pred, freespace_discount_factor);
         float2 masses_up = update_masses(m_occ_pred, m_free_pred, meas_cell_array[i]);
         float rho_b = separate_newborn_part(m_occ_pred, masses_up.x, p_B);
         float rho_p = masses_up.x - rho_b;
