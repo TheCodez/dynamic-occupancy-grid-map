@@ -153,7 +153,7 @@ std::vector<MeasurementCell> DOGM::getMeasurementCells() const
 ParticlesSoA DOGM::getParticles() const
 {
     ParticlesSoA particles(particle_count, false);
-    particles.copy(particle_array, cudaMemcpyDeviceToHost);
+    particles.copy(particle_array);
 
     return particles;
 }
