@@ -22,6 +22,7 @@
 
 #include <cuda_runtime.h>
 
+#include <cmath>
 #include <vector>
 
 namespace dogm
@@ -118,7 +119,7 @@ void DOGM::updateGrid(MeasurementCell* measurement_grid, float new_x, float new_
 
     particlePrediction(dt);
     particleAssignment();
-    gridCellOccupancyUpdate();
+    gridCellOccupancyUpdate(dt);
     updatePersistentParticles();
     initializeNewParticles();
     statisticalMoments();
@@ -279,7 +280,7 @@ void DOGM::particleAssignment()
     CHECK_ERROR(cudaGetLastError());
 }
 
-void DOGM::gridCellOccupancyUpdate()
+void DOGM::gridCellOccupancyUpdate(float dt)
 {
     // CHECK_ERROR(cudaDeviceSynchronize());
 
@@ -287,9 +288,11 @@ void DOGM::gridCellOccupancyUpdate()
     accumulate(weight_array, weights_accum);
     float* weight_array_accum = thrust::raw_pointer_cast(weights_accum.data());
 
-    gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(grid_cell_array, particle_array, weight_array,
-                                                                 weight_array_accum, meas_cell_array, born_masses_array,
-                                                                 params.birth_prob, grid_cell_count);
+    float freespace_discount_factor = std::pow(params.freespace_discount, dt);
+
+    gridCellPredictionUpdateKernel<<<grid_map_grid, block_dim>>>(
+        grid_cell_array, particle_array, weight_array, weight_array_accum, meas_cell_array, born_masses_array,
+        params.birth_prob, freespace_discount_factor, grid_cell_count);
 
     CHECK_ERROR(cudaGetLastError());
 }

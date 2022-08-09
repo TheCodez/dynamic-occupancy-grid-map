@@ -54,6 +54,9 @@ public:
 
         // Velocity to sample the initial particles from (uniform distribution) [m/s]
         float init_max_velocity;
+
+        // Freespace discount is calculated as freespace_discount^dT
+        float freespace_discount;
     };
 
     /**
@@ -146,7 +149,7 @@ public:
 
     void particlePrediction(float dt);
     void particleAssignment();
-    void gridCellOccupancyUpdate();
+    void gridCellOccupancyUpdate(float dt);
     void updatePersistentParticles();
     void initializeNewParticles();
     void statisticalMoments();

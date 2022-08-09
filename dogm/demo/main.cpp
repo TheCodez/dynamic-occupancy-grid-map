@@ -31,6 +31,7 @@ int main(int argc, const char** argv)
     grid_params.birth_prob = 0.02f;
     grid_params.stddev_velocity = 30.0f;
     grid_params.init_max_velocity = 30.0f;
+    grid_params.freespace_discount = 0.01f;
 
     LaserMeasurementGrid::Params laser_params;
     laser_params.fov = 120.0f;
