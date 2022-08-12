@@ -50,11 +50,15 @@ struct Particle
 
 struct ParticlesSoA
 {
-    glm::vec4* state;
-    int* grid_cell_idx;
-    float* weight;
-    bool* associated;
+    struct
+    {
+        glm::vec4* state;
+        int* grid_cell_idx;
+        float* weight;
+        bool* associated;
+    };
 
+    void* memory_block;
     int size;
     bool device;
 
@@ -66,53 +70,56 @@ struct ParticlesSoA
     {
         size = new_size;
         device = is_device;
+        const size_t num_bytes = size * sizeof(Particle);
+
         if (device)
         {
-            CHECK_ERROR(cudaMalloc((void**)&state, size * sizeof(glm::vec4)));
-            CHECK_ERROR(cudaMalloc((void**)&grid_cell_idx, size * sizeof(int)));
-            CHECK_ERROR(cudaMalloc((void**)&weight, size * sizeof(float)));
-            CHECK_ERROR(cudaMalloc((void**)&associated, size * sizeof(bool)));
+            CHECK_ERROR(cudaMalloc((void**)&memory_block, num_bytes));
         }
         else
         {
-            state = (glm::vec4*)malloc(size * sizeof(glm::vec4));
-            grid_cell_idx = (int*)malloc(size * sizeof(int));
-            weight = (float*)malloc(size * sizeof(float));
-            associated = (bool*)malloc(size * sizeof(bool));
+            memory_block = malloc(num_bytes);
         }
+
+        assignPointers();
     }
 
     void free()
     {
+        assert(size);
         if (device)
         {
-            CHECK_ERROR(cudaFree(state));
-            CHECK_ERROR(cudaFree(grid_cell_idx));
-            CHECK_ERROR(cudaFree(weight));
-            CHECK_ERROR(cudaFree(associated));
+            CHECK_ERROR(cudaFree(memory_block));
         }
         else
         {
-            ::free(state);
-            ::free(grid_cell_idx);
-            ::free(weight);
-            ::free(associated);
+            ::free(memory_block);
         }
+
+        memory_block = nullptr;
+        size = 0;
     }
 
-    void copy(const ParticlesSoA& other, cudaMemcpyKind kind)
+    void copy(const ParticlesSoA& other)
     {
-        CHECK_ERROR(cudaMemcpy(grid_cell_idx, other.grid_cell_idx, size * sizeof(int), kind));
-        CHECK_ERROR(cudaMemcpy(weight, other.weight, size * sizeof(float), kind));
-        CHECK_ERROR(cudaMemcpy(associated, other.associated, size * sizeof(bool), kind));
-        CHECK_ERROR(cudaMemcpy(state, other.state, size * sizeof(glm::vec4), kind));
+        assert(size && size == other.size);
+
+        cudaMemcpyKind kind = cudaMemcpyDeviceToDevice;
+        if (device != other.device)
+        {
+            kind = device ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost;
+        }
+
+        const size_t num_bytes = size * sizeof(Particle);
+        CHECK_ERROR(cudaMemcpy(memory_block, other.memory_block, num_bytes, kind));
+        assignPointers();
     }
 
     ParticlesSoA& operator=(const ParticlesSoA& other)
     {
         if (this != &other)
         {
-            copy(other, cudaMemcpyDeviceToDevice);
+            copy(other);
         }
 
         return *this;
@@ -124,6 +131,15 @@ struct ParticlesSoA
         weight[index] = other.weight[other_index];
         associated[index] = other.associated[other_index];
         state[index] = other.state[other_index];
+    }
+
+private:
+    void assignPointers()
+    {
+        state = reinterpret_cast<glm::vec4*>(memory_block);
+        grid_cell_idx = reinterpret_cast<int*>(state + size);
+        weight = reinterpret_cast<float*>(grid_cell_idx + size);
+        associated = reinterpret_cast<bool*>(weight + size);
     }
 };
 
